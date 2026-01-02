@@ -1,11 +1,10 @@
 :root {
   --primary-orange: #FF7A00;
-  --secondary-yellow: #FFD700;
-  --bg-dark: #1a1a1a;
-  --bg-card: #242424;
-  --text-light: #f5f5f5;
+  --bg-dark: #000000;
+  --bg-card: #111111;
+  --text-light: #ffffff;
   --text-dim: #a0a0a0;
-  --accent-gradient: linear-gradient(135deg, var(--primary-orange), var(--secondary-yellow));
+  --accent-gradient: linear-gradient(135deg, #FF7A00, #ff9100);
   --font-main: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
@@ -35,7 +34,12 @@ button {
   background: none;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   line-height: 1.2;
   font-weight: 700;
 }
@@ -44,13 +48,16 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--bg-dark);
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #444;
+  background: #333;
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-orange);
 }

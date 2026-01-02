@@ -11,6 +11,18 @@ const About = () => {
                 </p>
             </section>
 
+            <section className="why-exists-section">
+                <div className="why-content">
+                    <h2>Why Hiring Plug Exists</h2>
+                    <p>
+                        We built Hiring Plug to remove the barriers in traditional hiring.
+                        In the decentralized world, talent is everywhere, but opportunity is often gated.
+                        We exist to bridge that gap—giving communities direct access to real opportunities
+                        while ensuring projects can hire transparently and efficiently.
+                    </p>
+                </div>
+            </section>
+
             <section className="vision-section">
                 <div className="vision-content">
                     <h2>Our Vision</h2>
@@ -53,6 +65,27 @@ const About = () => {
                     max-width: 800px;
                     margin: 0 auto;
                     color: var(--text-light);
+                }
+
+                .why-exists-section {
+                    padding: 4rem 20px;
+                    background-color: var(--bg-dark);
+                    text-align: center;
+                }
+                .why-content {
+                    max-width: 800px;
+                    margin: 0 auto;
+                    border-left: 4px solid var(--primary-orange);
+                    padding-left: 2rem;
+                    text-align: left;
+                }
+                .why-content h2 {
+                    margin-bottom: 2rem;
+                    color: var(--text-light);
+                }
+                .why-content p {
+                    font-size: 1.2rem;
+                    color: var(--text-dim);
                 }
                 
                 .vision-section {

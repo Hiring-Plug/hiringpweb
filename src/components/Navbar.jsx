@@ -1,45 +1,46 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { FaBars, FaTimes } from 'react-icons/fa';
+import logo from '../assets/logo-light.png';
 
 const Navbar = () => {
-    const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-    const toggleMenu = () => setIsOpen(!isOpen);
+  const toggleMenu = () => setIsOpen(!isOpen);
 
-    return (
-        <nav className="navbar">
-            <div className="nav-container">
-                <Link to="/" className="nav-logo">
-                    Hiring<span className="highlight">Plug</span>
-                </Link>
-                <div className="menu-icon" onClick={toggleMenu}>
-                    {isOpen ? <FaTimes /> : <FaBars />}
-                </div>
-                <ul className={isOpen ? 'nav-menu active' : 'nav-menu'}>
-                    <li className="nav-item">
-                        <Link to="/" className="nav-links" onClick={toggleMenu}>
-                            Home
-                        </Link>
-                    </li>
-                    <li className="nav-item">
-                        <Link to="/about" className="nav-links" onClick={toggleMenu}>
-                            About
-                        </Link>
-                    </li>
-                    <li className="nav-item">
-                        <Link to="/projects" className="nav-links" onClick={toggleMenu}>
-                            Projects
-                        </Link>
-                    </li>
-                    <li className="nav-item">
-                        <Link to="/join" className="nav-cta" onClick={toggleMenu}>
-                            Join Network
-                        </Link>
-                    </li>
-                </ul>
-            </div>
-            <style>{`
+  return (
+    <nav className="navbar">
+      <div className="nav-container">
+        <Link to="/" className="nav-logo">
+          <img src={logo} alt="Hiring Plug" style={{ height: '40px' }} />
+        </Link>
+        <div className="menu-icon" onClick={toggleMenu}>
+          {isOpen ? <FaTimes /> : <FaBars />}
+        </div>
+        <ul className={isOpen ? 'nav-menu active' : 'nav-menu'}>
+          <li className="nav-item">
+            <Link to="/" className="nav-links" onClick={toggleMenu}>
+              Home
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/about" className="nav-links" onClick={toggleMenu}>
+              About
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/projects" className="nav-links" onClick={toggleMenu}>
+              Projects
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/join" className="nav-cta" onClick={toggleMenu}>
+              Join Network
+            </Link>
+          </li>
+        </ul>
+      </div>
+      <style>{`
         .navbar {
           background: #000;
           height: 80px;
@@ -179,8 +180,8 @@ const Navbar = () => {
           }
         }
       `}</style>
-        </nav>
-    );
+    </nav>
+  );
 };
 
 export default Navbar;

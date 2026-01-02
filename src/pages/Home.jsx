@@ -39,18 +39,41 @@ const Home = () => {
       <section className="section-container how-it-works">
         <h2>How It Works</h2>
         <div className="card-grid">
-          <Card title="1. Join the Community" className="process-card">
+          <Card title="Join the Community" className="process-card">
             <FaNetworkWired className="card-icon" />
-            <p>Sign up and verify your skills on-chain. Connect with a global network.</p>
+            <p>Become part of a growing Web3 talent network. Verified on-chain.</p>
           </Card>
-          <Card title="2. Explore Opportunities" className="process-card">
+          <Card title="Discover Opportunities" className="process-card">
             <FaRocket className="card-icon" />
-            <p>Browse curated projects and jobs that match your expertise and passion.</p>
+            <p>Access real roles and projects from Web3 teams and DAOs.</p>
           </Card>
-          <Card title="3. Plug Into Projects" className="process-card">
+          <Card title="Get Plugged In" className="process-card">
             <FaHandshake className="card-icon" />
-            <p>Get hired transparently and start building the future of Web3.</p>
+            <p>Connect, contribute, and grow your career without borders.</p>
           </Card>
+        </div>
+      </section>
+
+      {/* Who It's For */}
+      <section className="section-container who-its-for">
+        <h2>Who's Plugging In?</h2>
+        <div className="audience-grid">
+          <div className="audience-card">
+            <h3>Developers</h3>
+            <p>Smart Contract, Frontend, ZK Engineers</p>
+          </div>
+          <div className="audience-card">
+            <h3>Designers</h3>
+            <p>UI/UX, 3D Artists, Brand Designers</p>
+          </div>
+          <div className="audience-card">
+            <h3>Community</h3>
+            <p>Moderators, Managers, Growth Hackers</p>
+          </div>
+          <div className="audience-card">
+            <h3>Startups</h3>
+            <p>DAOs, DeFi Protocols, NFT Collections</p>
+          </div>
         </div>
       </section>
 
@@ -150,8 +173,38 @@ const Home = () => {
 
                 .card-icon {
                     font-size: 3rem;
-                    color: var(--secondary-yellow);
+                    color: var(--primary-orange);
                     margin-bottom: 1rem;
+                }
+
+                .audience-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 1.5rem;
+                    margin-top: 3rem;
+                }
+
+                .audience-card {
+                    background: var(--bg-card);
+                    padding: 1.5rem;
+                    border-radius: 8px;
+                    border: 1px solid #222;
+                    text-align: center;
+                    transition: border-color 0.3s;
+                }
+                
+                .audience-card:hover {
+                    border-color: var(--primary-orange);
+                }
+
+                .audience-card h3 {
+                    color: var(--text-light);
+                    margin-bottom: 0.5rem;
+                }
+
+                .audience-card p {
+                    color: var(--text-dim);
+                    font-size: 0.9rem;
                 }
 
                 .values-grid {
