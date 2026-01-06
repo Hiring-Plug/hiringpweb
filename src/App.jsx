@@ -10,7 +10,7 @@ function App() {
   return (
     <div className="app-container">
       <Navbar />
-      <main style={{ minHeight: '80vh', paddingTop: '80px' }}>
+      <main style={{ minHeight: '80vh' }}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />

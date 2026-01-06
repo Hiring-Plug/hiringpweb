@@ -18,8 +18,8 @@ const Home = () => {
             Easy, transparent, and decentralized.
           </p>
           <div className="hero-actions">
-            <Button onClick={() => navigate('/join')} variant="primary">Join the Network</Button>
-            <Button onClick={() => navigate('/projects')} variant="secondary">Explore Projects</Button>
+            <Button onClick={() => navigate('/join')} variant="primary" className="btn-join">Join the Network</Button>
+            <Button onClick={() => navigate('/projects')} variant="secondary" className="btn-explore">Explore Projects</Button>
           </div>
         </div>
       </section>
@@ -79,28 +79,29 @@ const Home = () => {
       </section>
 
       {/* Value Proposition */}
+      {/* Value Proposition */}
       <section className="section-container value-prop">
-        <h2>Why Hiring Plug?</h2>
-        <div className="values-grid">
-          <div className="value-item">
-            <h3>Transparent</h3>
-            <p>Every interaction is open and verifiable on the blockchain.</p>
-          </div>
-          <div className="value-item">
-            <h3>Community First</h3>
-            <p>We prioritize collective growth and fair access for everyone.</p>
-          </div>
-          <div className="value-item">
-            <h3>Borderless</h3>
-            <p>Opportunities should be accessible regardless of where you are.</p>
-          </div>
+        <span className="feature-label">Features</span>
+        <h2>Why hiring plug stands out</h2>
+        <p className="value-desc">
+          We are redefining talent acquisition through innovative Web3 solutions.
+        </p>
+        <div className="value-actions">
+          <Button variant="secondary" className="btn-discover">Discover more</Button>
+          <a href="/join" className="link-opportunities">See opportunities</a>
         </div>
       </section>
 
       {/* CTA Banner */}
       <section className="cta-banner">
-        <h2>Ready to Plug In?</h2>
-        <Button onClick={() => navigate('/join')} variant="gradient">Get Started</Button>
+        <h2>Ready to<br />Plug in</h2>
+        <p className="cta-sub">
+          Transform your career journey with Web3 opportunities that matter.
+        </p>
+        <div className="cta-buttons">
+          <Button onClick={() => navigate('/join')} variant="primary">Get started</Button>
+          <Button onClick={() => navigate('/about')} variant="secondary" className="btn-learn-more">Learn more</Button>
+        </div>
       </section>
 
       <style>{`
@@ -121,7 +122,7 @@ const Home = () => {
                 }
 
                 .hero {
-                    min-height: 80vh;
+                    min-height: 100vh;
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -129,9 +130,9 @@ const Home = () => {
                     background: url(${heroBg}) no-repeat center center/cover;
                     padding: 0 20px;
                     position: relative;
+                    margin-top: -80px; /* Counteract padding if needed, or overlap navbar */
                 }
 
-                /* Add overlay to ensure text readability on image */
                 .hero::before {
                     content: '';
                     position: absolute;
@@ -160,7 +161,7 @@ const Home = () => {
 
                 .hero-sub {
                     font-size: 1.5rem;
-                    color: #ccc;
+                    color: #e0e0e0;
                     max-width: 600px;
                     margin: 0 auto 2rem;
                 }
@@ -171,8 +172,35 @@ const Home = () => {
                     justify-content: center;
                 }
 
+                /* Button hovers in hero */
+                .btn-join {
+                    /* ensure primary styles are base */
+                }
+                .btn-join:hover {
+                    background-color: transparent !important;
+                    color: var(--primary-orange) !important;
+                    border: 2px solid var(--primary-orange) !important;
+                    box-shadow: 0 0 10px rgba(237, 80, 0, 0.2);
+                }
+
+                .btn-explore {
+                   color: #fff;
+                   border-color: #fff;
+                }
+                .btn-explore:hover {
+                    color: var(--primary-orange) !important;
+                    border-color: var(--primary-orange) !important;
+                    background: transparent !important;
+                }
+                
+                /* About */
                 .about-preview {
                     background-color: var(--bg-dark);
+                    margin-top: 4rem;
+                }
+                
+                .about-preview h2 {
+                    margin-bottom: 2rem; /* Space between h2 and text */
                 }
 
                 .about-text p {
@@ -182,6 +210,7 @@ const Home = () => {
                     color: var(--text-dim);
                 }
 
+                /* Cards Grid (How It Works) */
                 .card-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -195,6 +224,7 @@ const Home = () => {
                     margin-bottom: 1rem;
                 }
 
+                /* Audience Grid */
                 .audience-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -225,38 +255,98 @@ const Home = () => {
                     font-size: 0.9rem;
                 }
 
-                .values-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                    gap: 2rem;
-                    margin-top: 3rem;
-                }
-
-                .value-item {
-                    border-left: 3px solid var(--primary-orange);
-                    padding-left: 1rem;
+                /* Value Prop Redesign */
+                .value-prop {
                     text-align: left;
+                    padding: 6rem 20px;
+                }
+                
+                .feature-label {
+                    color: var(--primary-orange);
+                    font-weight: 600;
+                    margin-bottom: 1rem;
+                    display: inline-block;
+                }
+                
+                .value-prop h2 {
+                    font-size: 3.5rem;
+                    margin-bottom: 1.5rem;
+                    max-width: 800px;
+                    line-height: 1.1;
+                }
+                
+                .value-desc {
+                    font-size: 1.2rem;
+                    color: #ccc;
+                    max-width: 600px;
+                    margin-bottom: 2.5rem;
+                }
+                
+                .value-actions {
+                    display: flex;
+                    align-items: center;
+                    gap: 2rem;
+                }
+                
+                .btn-discover {
+                    border: 1px solid #333 !important;
+                    color: white !important;
+                    padding: 12px 32px !important;
+                }
+                
+                .btn-discover:hover {
+                    border-color: white !important;
+                }
+                
+                .link-opportunities {
+                    color: var(--primary-orange);
+                    font-weight: 500;
+                }
+                
+                .link-opportunities:hover {
+                    text-decoration: underline;
                 }
 
-                .value-item h3 {
-                    color: var(--text-light);
-                    margin-bottom: 0.5rem;
-                }
-
-                .value-item p {
-                    color: var(--text-dim);
-                }
-
+                /* CTA Banner Redesign */
                 .cta-banner {
-                    background: #000000;
-                    padding: 4rem 20px;
+                    background: #ffffff; /* White bg based on screenshot? Or keeping black as per prev request? 
+                                            Wait, user screenshot shows white bg for CTA banner 'Ready to Plug in' 
+                                            BUT in previous turn user asked for black CTA bg. 
+                                            The NEW request says "The attached images are the ready to plug in section(CTA banner)..."
+                                            and the screenshot uploaded_image_0 shows WHITE bg with BLACK text.
+                                            I will follow the NEW screenshot. */
+                    color: #000000;
+                    padding: 6rem 20px;
                     text-align: center;
                     margin-top: 4rem;
                 }
 
                 .cta-banner h2 {
-                    margin-bottom: 2rem;
-                    font-size: 2.5rem;
+                    margin-bottom: 1.5rem;
+                    font-size: 4rem;
+                    line-height: 1.1;
+                    color: #000;
+                }
+                
+                .cta-sub {
+                    color: #333;
+                    margin-bottom: 2.5rem;
+                    font-size: 1.1rem;
+                }
+                
+                .cta-buttons {
+                    display: flex;
+                    gap: 1.5rem;
+                    justify-content: center;
+                }
+                
+                .btn-learn-more {
+                    border: 1px solid #000 !important;
+                    color: #000 !important;
+                }
+                
+                .btn-learn-more:hover {
+                    background: #f0f0f0 !important;
                 }
 
                 @media (max-width: 768px) {
@@ -265,6 +355,12 @@ const Home = () => {
                     }
                     .hero-actions {
                         flex-direction: column;
+                    }
+                    .value-prop h2 {
+                        font-size: 2.5rem;
+                    }
+                    .cta-banner h2 {
+                        font-size: 2.5rem;
                     }
                 }
             `}</style>
