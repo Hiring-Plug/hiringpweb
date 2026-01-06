@@ -228,23 +228,29 @@ const Navbar = () => {
         /* Mobile Menu */
         .mobile-menu {
             position: fixed;
-            top: 0;
+            top: 60px; /* Below navbar */
             left: 0;
             width: 100%;
-            height: 100vh;
-            background: #000000;
-            transform: translateY(-100%);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            height: auto;
+            background: rgba(10, 10, 10, 0.95); /* Deep dark glass */
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transform-origin: top;
+            transform: scaleY(0);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 999;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding-top: 60px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .mobile-menu.active {
-            transform: translateY(0);
+            transform: scaleY(1);
+            opacity: 1;
+            padding: 20px 0 30px;
         }
 
         .mobile-nav-list {
@@ -252,24 +258,39 @@ const Navbar = () => {
             text-align: center;
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            gap: 1.5rem;
+            margin: 0;
+            padding: 0;
         }
 
         .mobile-nav-link {
-            color: white;
-            font-size: 1.5rem;
+            color: #ccc;
+            font-size: 1.1rem;
             font-weight: 500;
             display: block;
+            transition: color 0.3s ease;
+        }
+        
+        .mobile-nav-link:hover {
+            color: var(--primary-orange);
         }
 
         .mobile-btn-signup {
-            background: white;
-            color: black;
-            padding: 12px 32px;
-            border-radius: 999px;
+            background: var(--primary-orange);
+            color: white;
+            padding: 10px 32px;
+            border-radius: 8px;
             font-weight: 600;
-            font-size: 1.2rem;
+            font-size: 1rem;
             display: inline-block;
+            border: 2px solid var(--primary-orange);
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-btn-signup:hover {
+            background: transparent;
+            color: var(--primary-orange);
+            box-shadow: 0 0 15px rgba(237, 80, 0, 0.4);
         }
         
         /* Responsive */
@@ -283,7 +304,7 @@ const Navbar = () => {
             }
 
             .nav-container {
-                padding: 0 24px;
+                padding: 0 20px;
             }
         }
       `}</style>
