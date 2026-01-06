@@ -1,11 +1,11 @@
 :root {
   --primary-orange: #FF7A00;
   --bg-dark: #000000;
-  --bg-card: #111111;
+  --bg-card: #000000;
   --text-light: #ffffff;
   --text-dim: #a0a0a0;
   --accent-gradient: linear-gradient(135deg, #FF7A00, #ff9100);
-  --font-main: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-main: 'Roboto', sans-serif;
 }
 
 * {
@@ -14,9 +14,11 @@
   padding: 0;
 }
 
+html,
 body {
+  background-color: #000000;
+  /* Force pure black */
   font-family: var(--font-main);
-  background-color: var(--bg-dark);
   color: var(--text-light);
   line-height: 1.6;
   min-height: 100vh;

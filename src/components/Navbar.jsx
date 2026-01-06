@@ -1,183 +1,262 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import logo from '../assets/logo-light.png';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 70) {
+        // Scrolling down & passed header
+        setIsVisible(false);
+      } else {
+        // Scrolling up
+        setIsVisible(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
+
+  // Prevent scroll when mobile menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [isOpen]);
+
+  const navLinks = [
+    { title: 'Home', path: '/' },
+    { title: 'About', path: '/about' },
+    { title: 'Solutions', path: '/' }, // Placeholder
+    { title: 'Resources', path: '/' }, // Placeholder
+    { title: 'Projects', path: '/projects' },
+    { title: 'Applicants', path: '/join' }
+  ];
+
   return (
-    <nav className="navbar">
+    <nav className={`navbar ${isVisible ? 'visible' : 'hidden'}`}>
       <div className="nav-container">
-        <Link to="/" className="nav-logo">
-          <img src={logo} alt="Hiring Plug" style={{ height: '40px' }} />
+        {/* Left: Logo */}
+        <Link to="/" className="nav-logo" onClick={() => setIsOpen(false)}>
+          <img src={logo} alt="Hiring Plug" className="logo-img" />
         </Link>
+
+        {/* Center: Desktop Links */}
+        <div className="nav-links-container">
+          {navLinks.map((link, index) => (
+            <Link key={index} to={link.path} className="nav-link">
+              {link.title}
+            </Link>
+          ))}
+        </div>
+
+        {/* Right: Auth Buttons */}
+        <div className="nav-auth">
+          <Link to="/" className="btn-login">Log in</Link>
+          <Link to="/join" className="btn-signup">Sign up</Link>
+        </div>
+
+        {/* Mobile Toggle */}
         <div className="menu-icon" onClick={toggleMenu}>
           {isOpen ? <FaTimes /> : <FaBars />}
         </div>
-        <ul className={isOpen ? 'nav-menu active' : 'nav-menu'}>
-          <li className="nav-item">
-            <Link to="/" className="nav-links" onClick={toggleMenu}>
-              Home
-            </Link>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      <div className={`mobile-menu ${isOpen ? 'active' : ''}`}>
+        <ul className="mobile-nav-list">
+          {navLinks.map((link, index) => (
+            <li key={index} className="mobile-nav-item">
+              <Link to={link.path} className="mobile-nav-link" onClick={toggleMenu}>
+                {link.title}
+              </Link>
+            </li>
+          ))}
+          <li className="mobile-nav-item">
+            <Link to="/" className="mobile-nav-link" onClick={toggleMenu}>Log in</Link>
           </li>
-          <li className="nav-item">
-            <Link to="/about" className="nav-links" onClick={toggleMenu}>
-              About
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/projects" className="nav-links" onClick={toggleMenu}>
-              Projects
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/join" className="nav-cta" onClick={toggleMenu}>
-              Join Network
-            </Link>
+          <li className="mobile-nav-item">
+            <Link to="/join" className="mobile-btn-signup" onClick={toggleMenu}>Sign up</Link>
           </li>
         </ul>
       </div>
+
       <style>{`
         .navbar {
-          background: #000;
+          background: rgba(0, 0, 0, 0.95);
+          backdrop-filter: blur(10px);
           height: 80px;
           display: flex;
           justify-content: center;
           align-items: center;
-          font-size: 1.2rem;
-          position: sticky;
+          position: fixed;
           top: 0;
-          z-index: 999;
-          border-bottom: 1px solid #333;
+          left: 0;
+          right: 0;
+          z-index: 1000;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          transition: transform 0.3s ease-in-out;
+        }
+
+        .navbar.hidden {
+            transform: translateY(-100%);
+        }
+
+        .navbar.visible {
+            transform: translateY(0);
         }
 
         .nav-container {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          height: 80px;
-          max-width: 1500px;
           width: 100%;
-          margin: 0 auto;
-          padding: 0 50px;
+          max-width: 1400px;
+          padding: 0 40px;
+          height: 100%;
         }
 
-        .nav-logo {
-          color: #fff;
-          justify-self: start;
-          cursor: pointer;
-          text-decoration: none;
-          font-size: 1.5rem;
-          font-weight: bold;
+        .logo-img {
+            height: 32px;
+            width: auto;
+            display: block;
         }
 
-        .highlight {
-            color: var(--primary-orange);
+        /* Center Links */
+        .nav-links-container {
+            display: flex;
+            gap: 32px;
+            align-items: center;
         }
 
-        .nav-menu {
-          display: grid;
-          grid-template-columns: repeat(4, auto);
-          grid-gap: 10px;
-          list-style: none;
-          text-align: center;
-          width: 70vw;
-          justify-content: end;
-          margin-right: 2rem;
+        .nav-link {
+            color: #e0e0e0;
+            font-size: 0.95rem;
+            font-weight: 400;
+            transition: color 0.2s ease;
         }
 
-        .nav-item {
-          display: flex;
-          align-items: center;
-          height: 80px;
+        .nav-link:hover {
+            color: #ffffff;
         }
 
-        .nav-links {
-          color: white;
-          text-decoration: none;
-          padding: 0.5rem 1rem;
-          transition: all 0.3s ease;
+        /* Right Auth */
+        .nav-auth {
+            display: flex;
+            gap: 24px;
+            align-items: center;
         }
 
-        .nav-links:hover {
-          color: var(--primary-orange);
+        .btn-login {
+            color: #ffffff;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: opacity 0.2s;
+        }
+        
+        .btn-login:hover {
+            opacity: 0.8;
         }
 
-        .nav-cta {
-          padding: 0.5rem 1rem;
-          background: var(--primary-orange);
-          color: white;
-          border-radius: 4px;
-          text-decoration: none;
-          margin-left: 1rem;
-          font-weight: 600;
-          transition: all 0.3s ease;
+        .btn-signup {
+            background-color: #ffffff;
+            color: #000000;
+            padding: 10px 20px;
+            border-radius: 9999px; /* Rounded pill shape */
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
         }
 
-        .nav-cta:hover {
-            background: var(--secondary-yellow);
-            color: black;
+        .btn-signup:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-1px);
         }
 
         .menu-icon {
           display: none;
+          color: white;
+          font-size: 1.5rem;
+          cursor: pointer;
+          z-index: 1001;
         }
 
-        @media screen and (max-width: 960px) {
-          .nav-container {
-             padding: 0 20px;
-          }
-          
-          .nav-menu {
+        /* Mobile Menu */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #000000;
+            transform: translateY(-100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 999;
             display: flex;
             flex-direction: column;
-            width: 100%;
-            height: 90vh;
-            position: absolute;
-            top: 80px;
-            left: -100%;
-            opacity: 1;
-            transition: all 0.5s ease;
-            background: #1a1a1a;
-          }
+            justify-content: center;
+            align-items: center;
+            padding-top: 60px;
+        }
 
-          .nav-menu.active {
-            background: #1a1a1a;
-            left: 0;
-            opacity: 1;
-            transition: all 0.5s ease;
-            z-index: 1;
-          }
+        .mobile-menu.active {
+            transform: translateY(0);
+        }
 
-          .nav-item {
-              height: auto;
-              padding: 2rem 0;
-          }
-
-          .nav-links {
+        .mobile-nav-list {
+            list-style: none;
             text-align: center;
-            padding: 2rem;
-            width: 100%;
-            display: table;
-          }
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
 
-          .menu-icon {
-            display: block;
-            position: absolute;
-            top: 0;
-            right: 0;
-            transform: translate(-100%, 60%);
-            font-size: 1.8rem;
-            cursor: pointer;
+        .mobile-nav-link {
             color: white;
-          }
-          
-          .nav-cta {
-              margin: 0;
-          }
+            font-size: 1.5rem;
+            font-weight: 500;
+            display: block;
+        }
+
+        .mobile-btn-signup {
+            background: white;
+            color: black;
+            padding: 12px 32px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            display: inline-block;
+        }
+        
+        /* Responsive */
+        @media screen and (max-width: 960px) {
+            .nav-links-container, .nav-auth {
+                display: none;
+            }
+            
+            .menu-icon {
+                display: block;
+            }
+
+            .nav-container {
+                padding: 0 24px;
+            }
         }
       `}</style>
     </nav>
