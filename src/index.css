@@ -1,10 +1,10 @@
 :root {
-  --primary-orange: #FF7A00;
+  --primary-orange: #ED5000;
   --bg-dark: #000000;
-  --bg-card: #000000;
+  --bg-card: #111111;
   --text-light: #ffffff;
   --text-dim: #a0a0a0;
-  --accent-gradient: linear-gradient(135deg, #FF7A00, #ff9100);
+  --accent-gradient: linear-gradient(135deg, #ED5000, #ff9100);
   --font-main: 'Roboto', sans-serif;
 }
 

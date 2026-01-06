@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { FaBars, FaTimes } from 'react-icons/fa';
-import logo from '../assets/logo-light.png';
+import logo from '../assets/banner-dark.png';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
