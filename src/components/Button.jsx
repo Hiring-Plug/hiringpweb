@@ -25,8 +25,8 @@ const Button = ({ children, onClick, variant = 'primary', className = '' }) => {
     } else if (variant === 'gradient') {
         buttonStyle = {
             ...buttonStyle,
-            background: 'var(--accent-gradient)',
-            color: '#000',
+            backgroundColor: 'var(--primary-orange)',
+            color: '#fff',
         };
     }
 

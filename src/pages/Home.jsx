@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { FaNetworkWired, FaRocket, FaHandshake } from 'react-icons/fa';
+import heroBg from '../assets/608.jpg';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const Home = () => {
           <h1>Plug Into the <span className="highlight-text">Future of Hiring</span></h1>
           <p className="hero-sub">
             Hiring Plug connects communities to real opportunities in Web3.
-            Seamless, transparent, and decentralized.
+            Easy, transparent, and decentralized.
           </p>
           <div className="hero-actions">
             <Button onClick={() => navigate('/join')} variant="primary">Join the Network</Button>
@@ -125,8 +126,26 @@ const Home = () => {
                     align-items: center;
                     justify-content: center;
                     text-align: center;
-                    background: radial-gradient(circle at center, #2a2a2a 0%, #1a1a1a 70%);
+                    background: url(${heroBg}) no-repeat center center/cover;
                     padding: 0 20px;
+                    position: relative;
+                }
+
+                /* Add overlay to ensure text readability on image */
+                .hero::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.6);
+                    z-index: 1;
+                }
+
+                .hero-content {
+                    position: relative;
+                    z-index: 2;
                 }
 
                 .hero h1 {
@@ -135,9 +154,8 @@ const Home = () => {
                 }
 
                 .highlight-text {
-                    background: var(--accent-gradient);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
+                    color: var(--primary-orange);
+                    font-weight: bold;
                 }
 
                 .hero-sub {
@@ -230,7 +248,7 @@ const Home = () => {
                 }
 
                 .cta-banner {
-                    background: linear-gradient(90deg, #222, #333);
+                    background: #000000;
                     padding: 4rem 20px;
                     text-align: center;
                     margin-top: 4rem;
