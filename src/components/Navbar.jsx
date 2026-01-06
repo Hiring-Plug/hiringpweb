@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { FaBars, FaTimes } from 'react-icons/fa';
-import logo from '../assets/banner-dark.png';
+import logo from '../assets/banner-dark-transparent.png';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -99,9 +99,9 @@ const Navbar = () => {
 
       <style>{`
         .navbar {
-          background: rgba(0, 0, 0, 0.95);
-          backdrop-filter: blur(10px);
-          height: 80px;
+          background: rgba(0, 0, 0, 0.2); /* More transparent */
+          backdrop-filter: blur(5px); /* Reduced blur */
+          height: 60px;
           display: flex;
           justify-content: center;
           align-items: center;
@@ -110,7 +110,7 @@ const Navbar = () => {
           left: 0;
           right: 0;
           z-index: 1000;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
           transition: transform 0.3s ease-in-out;
         }
 
@@ -150,10 +150,30 @@ const Navbar = () => {
             font-size: 0.95rem;
             font-weight: 400;
             transition: color 0.2s ease;
+            position: relative; /* Needed for ::after positioning */
+            padding-bottom: 4px; /* Space for the line */
         }
 
         .nav-link:hover {
             color: #ffffff;
+            text-shadow: 0 0 8px var(--primary-orange);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            background-color: var(--primary-orange);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 8px var(--primary-orange);
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
         }
 
         /* Right Auth */
@@ -166,26 +186,34 @@ const Navbar = () => {
         .btn-login {
             color: #ffffff;
             font-weight: 500;
-            font-size: 0.95rem;
-            transition: opacity 0.2s;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            padding: 8px 16px;
+            border-radius: 6px;
         }
         
         .btn-login:hover {
-            opacity: 0.8;
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary-orange);
+            text-shadow: 0 0 8px rgba(237, 80, 0, 0.5);
         }
 
         .btn-signup {
-            background-color: #ffffff;
-            color: #000000;
-            padding: 10px 20px;
-            border-radius: 9999px; /* Rounded pill shape */
+            background-color: var(--primary-orange);
+            color: #ffffff;
+            padding: 8px 20px;
+            border-radius: 6px; /* Rounded rectangle */
             font-weight: 600;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: 2px solid var(--primary-orange);
         }
 
         .btn-signup:hover {
-            background-color: #e0e0e0;
+            background-color: transparent;
+            color: var(--primary-orange);
+            box-shadow: 0 0 15px rgba(237, 80, 0, 0.4);
             transform: translateY(-1px);
         }
 

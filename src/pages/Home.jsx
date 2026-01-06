@@ -80,15 +80,22 @@ const Home = () => {
 
       {/* Value Proposition */}
       {/* Value Proposition */}
+      {/* Value Proposition */}
       <section className="section-container value-prop">
-        <span className="feature-label">Features</span>
-        <h2>Why hiring plug stands out</h2>
-        <p className="value-desc">
-          We are redefining talent acquisition through innovative Web3 solutions.
-        </p>
-        <div className="value-actions">
-          <Button variant="secondary" className="btn-discover">Discover more</Button>
-          <a href="/join" className="link-opportunities">See opportunities</a>
+        <h2>Why Hiring Plug?</h2>
+        <div className="values-grid">
+          <div className="value-item">
+            <h3>Transparent</h3>
+            <p>Every interaction is open and verifiable on the blockchain.</p>
+          </div>
+          <div className="value-item">
+            <h3>Community First</h3>
+            <p>We prioritize collective growth and fair access for everyone.</p>
+          </div>
+          <div className="value-item">
+            <h3>Borderless</h3>
+            <p>Opportunities should be accessible regardless of where you are.</p>
+          </div>
         </div>
       </section>
 
@@ -122,15 +129,18 @@ const Home = () => {
                 }
 
                 .hero {
-                    min-height: 100vh;
+                    min-height: 100vh; /* Full viewport height */
+                    width: 100%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     text-align: center;
-                    background: url(${heroBg}) no-repeat center center/cover;
+                    background: url(${heroBg}) no-repeat center center;
+                    background-size: cover;
                     padding: 0 20px;
                     position: relative;
-                    margin-top: -80px; /* Counteract padding if needed, or overlap navbar */
+                    margin-top: -60px; /* Overlap 60px navbar */
+                    padding-top: 60px; /* Center content visually */
                 }
 
                 .hero::before {
@@ -143,7 +153,7 @@ const Home = () => {
                     background: rgba(0, 0, 0, 0.6);
                     z-index: 1;
                 }
-
+                
                 .hero-content {
                     position: relative;
                     z-index: 2;
@@ -174,23 +184,27 @@ const Home = () => {
 
                 /* Button hovers in hero */
                 .btn-join {
-                    /* ensure primary styles are base */
+                   transition: all 0.3s ease;
                 }
                 .btn-join:hover {
                     background-color: transparent !important;
                     color: var(--primary-orange) !important;
                     border: 2px solid var(--primary-orange) !important;
-                    box-shadow: 0 0 10px rgba(237, 80, 0, 0.2);
+                    box-shadow: 0 0 15px rgba(237, 80, 0, 0.4);
+                    transform: translateY(-2px);
                 }
 
                 .btn-explore {
                    color: #fff;
                    border-color: #fff;
+                   transition: all 0.3s ease;
                 }
                 .btn-explore:hover {
                     color: var(--primary-orange) !important;
                     border-color: var(--primary-orange) !important;
                     background: transparent !important;
+                    box-shadow: 0 0 15px rgba(237, 80, 0, 0.4);
+                    transform: translateY(-2px);
                 }
                 
                 /* About */
@@ -200,7 +214,7 @@ const Home = () => {
                 }
                 
                 .about-preview h2 {
-                    margin-bottom: 2rem; /* Space between h2 and text */
+                    margin-bottom: 2rem;
                 }
 
                 .about-text p {
@@ -216,6 +230,15 @@ const Home = () => {
                     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
                     gap: 2rem;
                     margin-top: 3rem;
+                }
+
+                .process-card, .audience-card, .value-item {
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                }
+                
+                .process-card:hover, .audience-card:hover, .value-item:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
                 }
 
                 .card-icon {
@@ -238,11 +261,12 @@ const Home = () => {
                     border-radius: 8px;
                     border: 1px solid #222;
                     text-align: center;
-                    transition: border-color 0.3s;
+                    transition: border-color 0.3s, transform 0.3s;
                 }
                 
                 .audience-card:hover {
                     border-color: var(--primary-orange);
+                    transform: translateY(-5px);
                 }
 
                 .audience-card h3 {
@@ -255,67 +279,41 @@ const Home = () => {
                     font-size: 0.9rem;
                 }
 
-                /* Value Prop Redesign */
-                .value-prop {
-                    text-align: left;
-                    padding: 6rem 20px;
-                }
-                
-                .feature-label {
-                    color: var(--primary-orange);
-                    font-weight: 600;
-                    margin-bottom: 1rem;
-                    display: inline-block;
-                }
-                
-                .value-prop h2 {
-                    font-size: 3.5rem;
-                    margin-bottom: 1.5rem;
-                    max-width: 800px;
-                    line-height: 1.1;
-                }
-                
-                .value-desc {
-                    font-size: 1.2rem;
-                    color: #ccc;
-                    max-width: 600px;
-                    margin-bottom: 2.5rem;
-                }
-                
-                .value-actions {
-                    display: flex;
-                    align-items: center;
+                /* Value Prop Revert */
+                .values-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
                     gap: 2rem;
+                    margin-top: 3rem;
+                }
+
+                .value-item {
+                    border-left: 3px solid var(--primary-orange);
+                    padding-left: 1rem;
+                    text-align: left;
+                    transition: all 0.3s ease;
+                    padding-top: 10px;
+                    padding-bottom: 10px;
                 }
                 
-                .btn-discover {
-                    border: 1px solid #333 !important;
-                    color: white !important;
-                    padding: 12px 32px !important;
+                .value-item:hover {
+                    background: rgba(255,255,255,0.05);
+                    transform: translateX(5px);
                 }
-                
-                .btn-discover:hover {
-                    border-color: white !important;
+
+                .value-item h3 {
+                    color: var(--text-light);
+                    margin-bottom: 0.5rem;
                 }
-                
-                .link-opportunities {
-                    color: var(--primary-orange);
-                    font-weight: 500;
-                }
-                
-                .link-opportunities:hover {
-                    text-decoration: underline;
+
+                .value-item p {
+                    color: var(--text-dim);
                 }
 
                 /* CTA Banner Redesign */
                 .cta-banner {
-                    background: #ffffff; /* White bg based on screenshot? Or keeping black as per prev request? 
-                                            Wait, user screenshot shows white bg for CTA banner 'Ready to Plug in' 
-                                            BUT in previous turn user asked for black CTA bg. 
-                                            The NEW request says "The attached images are the ready to plug in section(CTA banner)..."
-                                            and the screenshot uploaded_image_0 shows WHITE bg with BLACK text.
-                                            I will follow the NEW screenshot. */
-                    color: #000000;
+                    background: #000000; /* Revert to Black */
+                    color: #ffffff;
                     padding: 6rem 20px;
                     text-align: center;
                     margin-top: 4rem;
@@ -325,11 +323,11 @@ const Home = () => {
                     margin-bottom: 1.5rem;
                     font-size: 4rem;
                     line-height: 1.1;
-                    color: #000;
+                    color: #ffffff;
                 }
                 
                 .cta-sub {
-                    color: #333;
+                    color: #a0a0a0;
                     margin-bottom: 2.5rem;
                     font-size: 1.1rem;
                 }
@@ -341,12 +339,15 @@ const Home = () => {
                 }
                 
                 .btn-learn-more {
-                    border: 1px solid #000 !important;
-                    color: #000 !important;
+                    border: 1px solid #ffffff !important;
+                    color: #ffffff !important;
+                    transition: all 0.3s ease;
                 }
                 
                 .btn-learn-more:hover {
-                    background: #f0f0f0 !important;
+                    background: #ffffff !important;
+                    color: #000000 !important;
+                    transform: translateY(-2px);
                 }
 
                 @media (max-width: 768px) {
@@ -355,9 +356,6 @@ const Home = () => {
                     }
                     .hero-actions {
                         flex-direction: column;
-                    }
-                    .value-prop h2 {
-                        font-size: 2.5rem;
                     }
                     .cta-banner h2 {
                         font-size: 2.5rem;

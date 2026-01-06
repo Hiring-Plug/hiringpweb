@@ -1,9 +1,9 @@
 :root {
   --primary-orange: #ED5000;
   --bg-dark: #000000;
-  --bg-card: #111111;
+  --bg-card: #000000;
   --text-light: #ffffff;
-  --text-dim: #a0a0a0;
+  --text-dim: #acacac;
   --accent-gradient: #ED5000;
   --font-main: 'Roboto', sans-serif;
 }

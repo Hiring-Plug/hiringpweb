@@ -95,9 +95,10 @@ const Footer = () => {
 
             <style>{`
                 .footer {
-                    background-color: #ffffff;
-                    color: #000000;
+                    background-color: #000000;
+                    color: #ffffff;
                     margin-top: auto;
+                    border-top: 1px solid #222;
                 }
 
                 .footer-container {
@@ -108,7 +109,8 @@ const Footer = () => {
 
                 .footer-top {
                     padding: 4rem 0;
-                    background-color: #fff;
+                    background-color: #000000;
+                    border-bottom: 1px solid #1a1a1a;
                 }
                 
                 .footer-top .footer-container {
@@ -122,6 +124,11 @@ const Footer = () => {
                 .stay-connected h3 {
                     font-size: 1.5rem;
                     margin-bottom: 0.5rem;
+                    color: white;
+                }
+
+                .stay-connected p {
+                    color: #a0a0a0;
                 }
 
                 .newsletter-form {
@@ -131,9 +138,16 @@ const Footer = () => {
 
                 .newsletter-input {
                     padding: 0.8rem 1rem;
-                    border: 1px solid #ddd;
+                    border: 1px solid #333;
+                    background: #111;
+                    color: white;
                     min-width: 300px;
                     font-size: 1rem;
+                }
+                
+                .newsletter-input:focus {
+                    outline: none;
+                    border-color: var(--primary-orange);
                 }
 
                 .newsletter-btn {
@@ -143,12 +157,18 @@ const Footer = () => {
                     border: none;
                     font-weight: 600;
                     cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+                
+                .newsletter-btn:hover {
+                     filter: brightness(1.1);
+                     transform: translateY(-1px);
                 }
 
                 .footer-content {
                     max-width: 1200px;
                     margin: 0 auto;
-                    padding: 2rem 20px 4rem;
+                    padding: 4rem 20px;
                     display: flex;
                     gap: 4rem;
                 }
@@ -156,6 +176,7 @@ const Footer = () => {
                 .brand-logo {
                     font-size: 1.5rem;
                     font-weight: 800;
+                    color: white;
                 }
 
                 .footer-links-grid {
@@ -181,7 +202,7 @@ const Footer = () => {
                 }
 
                 .footer-col a {
-                    color: #333;
+                    color: #a0a0a0;
                     font-size: 0.9rem;
                     transition: color 0.2s;
                 }
@@ -191,10 +212,10 @@ const Footer = () => {
                 }
 
                 .footer-bottom {
-                    border-top: 1px solid #eee;
+                    border-top: 1px solid #1a1a1a;
                     padding: 2rem 0;
                     font-size: 0.85rem;
-                    color: #333;
+                    color: #666;
                 }
 
                 .bottom-flex {
@@ -212,18 +233,29 @@ const Footer = () => {
 
                 .legal-links a {
                     text-decoration: underline;
-                    color: #333;
+                    color: #666;
+                    transition: color 0.2s;
+                }
+                
+                .legal-links a:hover {
+                    color: white;
                 }
 
                 .social-icons {
                     display: flex;
                     gap: 1.5rem;
                     font-size: 1.2rem;
-                    color: #000;
+                    color: #fff;
                 }
                 
                 .social-icons a {
-                    color: black;
+                    color: white;
+                    transition: all 0.3s;
+                }
+                
+                .social-icons a:hover {
+                    color: var(--primary-orange);
+                    transform: translateY(-2px);
                 }
 
                 @media (max-width: 768px) {
