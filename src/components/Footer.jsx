@@ -87,7 +87,7 @@ const Footer = () => {
                         <a href="https://x.com/hiring_plug" target="_blank" rel="noreferrer"><FaTwitter /></a>
                         <a href="https://t.me/hiring_plug" target="_blank" rel="noreferrer"><FaTelegram /></a>
                         <a href="https://discord.com" target="_blank" rel="noreferrer"><FaDiscord /></a>
-                        <a href="https://linkedin.com" target="_blank" rel="noreferrer"><FaLinkedin /></a>
+                        <a href="https://www.linkedin.com/company/hiring-plug" target="_blank" rel="noreferrer"><FaLinkedin /></a>
                         <a href="https://github.com/Hiring-Plug" target="_blank" rel="noreferrer"><FaGithub /></a>
                     </div>
                 </div>
