@@ -1,10 +1,8 @@
 
-import { Helmet } from 'react-helmet-async';
-
 const SEO = ({ title, description, keywords, image, url, type = 'website' }) => {
     const siteTitle = 'Hiring Plug';
     const defaultDescription = 'Hiring Plug connects skilled professionals with real opportunities through a transparent, talent-driven platform.';
-    const defaultImage = 'https://hiringplug.com/banner-dark-transparent.png'; // Update with actual deployed URL when available
+    const defaultImage = 'https://hiringplug.com/banner-dark-transparent.png';
     const siteUrl = 'https://hiringplug.com';
 
     const metaTitle = title ? `${title} | ${siteTitle}` : siteTitle;
@@ -13,8 +11,7 @@ const SEO = ({ title, description, keywords, image, url, type = 'website' }) => 
     const metaUrl = url ? `${siteUrl}${url}` : siteUrl;
 
     return (
-        <Helmet>
-            {/* Standard Metadata */}
+        <>
             <title>{metaTitle}</title>
             <meta name="description" content={metaDescription} />
             {keywords && <meta name="keywords" content={keywords} />}
@@ -34,7 +31,7 @@ const SEO = ({ title, description, keywords, image, url, type = 'website' }) => 
             <meta name="twitter:title" content={metaTitle} />
             <meta name="twitter:description" content={metaDescription} />
             <meta name="twitter:image" content={metaImage} />
-        </Helmet>
+        </>
     );
 };
 
