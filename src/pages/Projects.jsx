@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
+import SEO from '../components/SEO';
 
 const Projects = () => {
     const [filter, setFilter] = useState('All');
@@ -30,6 +31,11 @@ const Projects = () => {
 
     return (
         <div className="projects-page">
+            <SEO
+                title="Projects"
+                description="Browse active Web3 projects and opportunities specifically curated for the Hiring Plug community."
+                url="/projects"
+            />
             <header className="projects-header">
                 <h1>Explore Opportunities</h1>
                 <div className="filters">

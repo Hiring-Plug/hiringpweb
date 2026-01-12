@@ -3,12 +3,17 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import { FaNetworkWired, FaRocket, FaHandshake } from 'react-icons/fa';
 import heroBg from '../assets/608.jpg';
+import SEO from '../components/SEO';
 
 const Home = () => {
   const navigate = useNavigate();
 
   return (
     <div className="home-page">
+      <SEO
+        title="Home"
+        description="Connect with Web3 opportunities, join a decentralized talent network, and build the future of work."
+      />
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">

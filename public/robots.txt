@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://hiringplug.com/sitemap.xml

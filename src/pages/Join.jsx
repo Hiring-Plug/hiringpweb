@@ -1,9 +1,15 @@
 import Button from '../components/Button';
 import { FaCheckCircle } from 'react-icons/fa';
+import SEO from '../components/SEO';
 
 const Join = () => {
     return (
         <div className="join-page">
+            <SEO
+                title="Join Us"
+                description="Create your profile, verify your skills, and get matched with top Web3 projects."
+                url="/join"
+            />
             <div className="join-container">
                 <div className="join-content">
                     <h1>Become Part of the <span className="highlight-text">Plug</span></h1>

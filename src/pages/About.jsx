@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import { FaHandshake, FaClipboardCheck, FaGraduationCap, FaBriefcase, FaGlobe, FaMedal, FaChartPie, FaUserTie } from 'react-icons/fa';
+import SEO from '../components/SEO';
 
 const About = () => {
     const navigate = useNavigate();
@@ -25,6 +26,11 @@ const About = () => {
 
     return (
         <div className="about-page">
+            <SEO
+                title="About Us"
+                description="Learn about Hiring Plug's mission to bridge the gap between global talent and decentralized opportunities."
+                url="/about"
+            />
             <section className="about-header">
                 <h1 className="reveal-up">Powering the Future of Work Through Talent, Technology, and Opportunity</h1>
                 <div className="section-divider"></div>
