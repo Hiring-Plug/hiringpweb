@@ -1,7 +1,7 @@
 
 const SEO = ({ title, description, keywords, image, url, type = 'website' }) => {
     const siteTitle = 'Hiring Plug';
-    const defaultDescription = 'Hiring Plug connects skilled professionals with real opportunities through a transparent, talent-driven platform.';
+    const defaultDescription = 'Hiring Plug: The Web3-powered hiring ecosystem connecting talent with decentralized opportunities.';
     const defaultImage = 'https://hiringplug.com/banner-dark-transparent.png';
     const siteUrl = 'https://hiringplug.com';
 
