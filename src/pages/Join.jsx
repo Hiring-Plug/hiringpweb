@@ -6,7 +6,7 @@ const Join = () => {
     return (
         <div className="join-page">
             <SEO
-                title="Join Us"
+                title="Join - Create Your Web3 Talent Profile"
                 description="Create your profile, verify your skills, and get matched with top Web3 projects."
                 url="/join"
             />

@@ -11,7 +11,7 @@ const Home = () => {
   return (
     <div className="home-page">
       <SEO
-        title="Home"
+        title="Web3 Hiring Ecosystem for Talent & Founders"
         description="Connect with Web3 opportunities, join a decentralized talent network, and build the future of work."
       />
       {/* Hero Section */}

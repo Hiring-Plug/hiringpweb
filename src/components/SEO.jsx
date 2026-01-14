@@ -2,12 +2,12 @@
 const SEO = ({ title, description, keywords, image, url, type = 'website' }) => {
     const siteTitle = 'Hiring Plug';
     const defaultDescription = 'Hiring Plug: The Web3-powered hiring ecosystem connecting talent with decentralized opportunities.';
-    const defaultImage = 'https://hiringplug.com/banner-dark-transparent.png';
-    const siteUrl = 'https://hiringplug.com';
+    const defaultImage = 'https://hiringplug.xyz/og-image.png';
+    const siteUrl = 'https://hiringplug.xyz';
 
     const metaTitle = title ? `${title} | ${siteTitle}` : siteTitle;
     const metaDescription = description || defaultDescription;
-    const metaImage = image || defaultImage;
+    const metaImage = image ? (image.startsWith('http') ? image : `${siteUrl}${image}`) : defaultImage;
     const metaUrl = url ? `${siteUrl}${url}` : siteUrl;
 
     return (

@@ -32,7 +32,7 @@ const Projects = () => {
     return (
         <div className="projects-page">
             <SEO
-                title="Projects"
+                title="Explore Projects & Web3 Opportunities"
                 description="Browse active Web3 projects and opportunities specifically curated for the Hiring Plug community."
                 url="/projects"
             />

@@ -27,7 +27,7 @@ const About = () => {
     return (
         <div className="about-page">
             <SEO
-                title="About Us"
+                title="About Us - Powering the Future of Work"
                 description="Learn about Hiring Plug's mission to bridge the gap between global talent and decentralized opportunities."
                 url="/about"
             />
