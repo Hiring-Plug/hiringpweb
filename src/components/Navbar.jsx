@@ -44,7 +44,7 @@ const Navbar = () => {
     { title: 'Home', path: '/' },
     { title: 'About', path: '/about' },
     { title: 'Solutions', path: '/solutions' },
-    { title: 'Resources', path: '/' }, // Placeholder
+    { title: 'Resources', path: '/resources' },
     { title: 'Projects', path: '/projects' },
     { title: 'Applicants', path: '/join' }
   ];

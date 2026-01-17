@@ -7,6 +7,7 @@ import About from './pages/About'
 import Projects from './pages/Projects'
 import Join from './pages/Join'
 import Solutions from './pages/Solutions'
+import Resources from './pages/Resources'
 
 function App() {
   const { pathname } = useLocation();
@@ -23,6 +24,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/solutions" element={<Solutions />} />
+          <Route path="/resources" element={<Resources />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/join" element={<Join />} />
         </Routes>
