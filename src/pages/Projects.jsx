@@ -4,14 +4,14 @@ import Button from '../components/Button';
 import Modal from '../components/Modal';
 import SEO from '../components/SEO';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 
 const Projects = () => {
     const { projects, getIconComponent } = useData();
+    const { user } = useAuth();
     const [filter, setFilter] = useState('All');
     const [selectedJob, setSelectedJob] = useState(null);
     const [applicationStep, setApplicationStep] = useState('initial');
-    // Mock user profile check - In real app, this comes from AuthContext
-    const userProfile = null;
 
     const renderLogo = (job) => {
         if (job.logoUrl) {
@@ -25,7 +25,7 @@ const Projects = () => {
     const handleOneClickApply = (e) => {
         e.preventDefault();
 
-        if (!userProfile && applicationStep === 'initial') {
+        if (!user && applicationStep === 'initial') {
             // If trying to fast apply without profile, prompt for login/signup
             alert("You need a Hiring Plug Profile to Fast Apply. Please Log In or Sign Up.");
             return;
@@ -151,7 +151,7 @@ const Projects = () => {
                                     {applicationStep === 'initial' ? (
                                         <div className="quick-apply-actions">
                                             <Button variant="primary" onClick={handleOneClickApply} className="full-width-btn">
-                                                {userProfile ? 'Fast Apply with Profile' : 'Log In to Fast Apply'}
+                                                {user ? 'Fast Apply with Profile' : 'Log In to Fast Apply'}
                                             </Button>
                                             <p className="divider-text">or</p>
                                             <button className="text-btn" onClick={() => setApplicationStep('customized')}>

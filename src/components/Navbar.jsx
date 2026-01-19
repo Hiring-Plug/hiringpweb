@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { FaBars, FaTimes } from 'react-icons/fa';
+import { FaBars, FaTimes, FaUserCircle } from 'react-icons/fa';
+import { useAuth } from '../context/AuthContext';
 import logo from '../assets/banner-dark-transparent.png';
 
 const Navbar = () => {
+  const { user, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -68,8 +70,17 @@ const Navbar = () => {
 
         {/* Right: Auth Buttons */}
         <div className="nav-auth">
-          <Link to="/" className="btn-login">Log in</Link>
-          <Link to="/join" className="btn-signup">Sign up</Link>
+          {user ? (
+            <>
+              <span className="user-greeting">Hi, {user.user_metadata?.username || 'User'}</span>
+              <button onClick={signOut} className="btn-login" style={{ cursor: 'pointer', background: 'none', border: 'none' }}>Log out</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="btn-login">Log in</Link>
+              <Link to="/signup" className="btn-signup">Sign up</Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Toggle */}
@@ -215,6 +226,12 @@ const Navbar = () => {
             color: var(--primary-orange);
             box-shadow: 0 0 15px rgba(237, 80, 0, 0.4);
             transform: translateY(-1px);
+        }
+
+        .user-greeting {
+            color: #ccc;
+            font-size: 0.9rem;
+            margin-right: 10px;
         }
 
         .menu-icon {
