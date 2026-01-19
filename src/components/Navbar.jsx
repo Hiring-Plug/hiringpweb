@@ -46,7 +46,7 @@ const Navbar = () => {
     { title: 'Solutions', path: '/solutions' },
     { title: 'Resources', path: '/resources' },
     { title: 'Projects', path: '/projects' },
-    { title: 'Applicants', path: '/join' }
+    { title: 'Communities', path: '/communities' }
   ];
 
   return (

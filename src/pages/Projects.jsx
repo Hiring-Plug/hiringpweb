@@ -1,99 +1,36 @@
 import { useState } from 'react';
-import { FaBitcoin, FaEthereum, FaLayerGroup, FaGamepad, FaWallet, FaGlobe, FaMapMarkerAlt, FaClock, FaMoneyBillWave, FaCheckCircle, FaPaperclip } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaClock, FaMoneyBillWave, FaCheckCircle, FaPaperclip } from 'react-icons/fa';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import SEO from '../components/SEO';
+import { useData } from '../context/DataContext';
 
 const Projects = () => {
+    const { projects, getIconComponent } = useData();
     const [filter, setFilter] = useState('All');
     const [selectedJob, setSelectedJob] = useState(null);
-    const [applicationStep, setApplicationStep] = useState('initial'); // initial, customized, success
+    const [applicationStep, setApplicationStep] = useState('initial');
+    // Mock user profile check - In real app, this comes from AuthContext
+    const userProfile = null;
 
-    const projects = [
-        {
-            id: 1,
-            company: 'DeFi Protocol X',
-            logo: <FaBitcoin />,
-            role: 'Senior Rust Engineer',
-            category: 'DeFi',
-            location: 'Remote',
-            type: 'Full-time',
-            salary: '$120k - $180k',
-            posted: '2 days ago',
-            tags: ['Rust', 'Solana', 'Cryptography'],
-            description: "We are building the next generation of decentralized exchanges. We need a Rust expert to optimize our matching engine and innovative AMM curves."
-        },
-        {
-            id: 2,
-            company: 'NFT Marketplace Y',
-            logo: <FaEthereum />,
-            role: 'Frontend Lead',
-            category: 'NFT',
-            location: 'Remote (US/EU)',
-            type: 'Contract',
-            salary: '$80 - $120 / hr',
-            posted: '5 hours ago',
-            tags: ['React', 'Web3.js', 'UI/UX'],
-            description: "Leading the frontend architecture for a high-volume NFT marketplace. Experience with optimization and wallet integration is a must."
-        },
-        {
-            id: 3,
-            company: 'DAO Governance Z',
-            logo: <FaGlobe />,
-            role: 'Community Manager',
-            category: 'DAO',
-            location: 'Remote',
-            type: 'Full-time',
-            salary: '$60k - $90k + Tokens',
-            posted: '1 week ago',
-            tags: ['Discord', 'Governance', 'Marketing'],
-            description: "Manage our global community of 50k+ members. You will oversee governance proposals, moderate discussions, and organize community calls."
-        },
-        {
-            id: 4,
-            company: 'Layer 2 Solution',
-            logo: <FaLayerGroup />,
-            role: 'Protocol Engineer',
-            category: 'Infrastructure',
-            location: 'Berlin / Remote',
-            type: 'Full-time',
-            salary: '$150k - $220k',
-            posted: '3 days ago',
-            tags: ['Go', 'ZK-Rollups', 'L2'],
-            description: "Work on the core protocol of our ZK-Rollup solution. Deep understanding of Ethereum Virtual Machine (EVM) and zero-knowledge proofs required."
-        },
-        {
-            id: 5,
-            company: 'Play-to-Earn Game',
-            logo: <FaGamepad />,
-            role: 'Unity Developer',
-            category: 'GameFi',
-            location: 'Remote (Asia)',
-            type: 'Contract',
-            salary: '$4k - $6k / mo',
-            posted: 'Just now',
-            tags: ['C#', 'Unity', 'Web3'],
-            description: "Integrate blockchain mechanics into a AAA-quality Unity game. Wallet connection, asset minting, and on-chain state management."
-        },
-        {
-            id: 6,
-            company: 'Crypto Wallet App',
-            logo: <FaWallet />,
-            role: 'Mobile Developer',
-            category: 'DeFi',
-            location: 'London / Hybrid',
-            type: 'Full-time',
-            salary: '£80k - £110k',
-            posted: '4 days ago',
-            tags: ['React Native', 'Mobile Security'],
-            description: "Build a non-custodial wallet with a focus on security and user experience. Biometrics, key management, and multi-chain support."
+    const renderLogo = (job) => {
+        if (job.logoUrl) {
+            return <img src={job.logoUrl} alt={job.company} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />;
         }
-    ];
+        return getIconComponent(job.logoIcon);
+    };
 
     const filteredProjects = filter === 'All' ? projects : projects.filter(p => p.category === filter);
 
     const handleOneClickApply = (e) => {
         e.preventDefault();
+
+        if (!userProfile && applicationStep === 'initial') {
+            // If trying to fast apply without profile, prompt for login/signup
+            alert("You need a Hiring Plug Profile to Fast Apply. Please Log In or Sign Up.");
+            return;
+        }
+
         setApplicationStep('success');
         setTimeout(() => {
             setSelectedJob(null);
@@ -130,7 +67,7 @@ const Projects = () => {
                 {filteredProjects.map(job => (
                     <div key={job.id} className="job-card" onClick={() => setSelectedJob(job)}>
                         <div className="job-header">
-                            <div className="company-logo">{job.logo}</div>
+                            <div className="company-logo">{renderLogo(job)}</div>
                             <div className="job-info">
                                 <h3>{job.role}</h3>
                                 <p className="company-name">{job.company}</p>
@@ -166,13 +103,23 @@ const Projects = () => {
                         setApplicationStep('initial');
                     }}
                     title={null}
+                    maxWidth="800px"
                 >
                     <div className="job-modal-content">
                         <div className="modal-header">
-                            <div className="modal-logo">{selectedJob.logo}</div>
+                            <div className="modal-logo">{renderLogo(selectedJob)}</div>
                             <div>
                                 <h2>{selectedJob.role}</h2>
-                                <p className="modal-company">{selectedJob.company} • {selectedJob.location}</p>
+                                <p className="modal-company">
+                                    {selectedJob.company} • {selectedJob.location}
+                                    {selectedJob.website && (
+                                        <span style={{ marginLeft: '10px' }}>
+                                            <a href={selectedJob.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-orange)' }}>
+                                                Visit Website
+                                            </a>
+                                        </span>
+                                    )}
+                                </p>
                             </div>
                         </div>
 
@@ -197,18 +144,18 @@ const Projects = () => {
                                 <div className="success-message">
                                     <FaCheckCircle className="success-icon" />
                                     <h3>Application Sent!</h3>
-                                    <p>The team at {selectedJob.company} will review your profile shortly.</p>
+                                    <p>The team at {selectedJob.company} will receive your profile at <br /><code>{selectedJob.notificationEmail || 'their internal email'}</code>.</p>
                                 </div>
                             ) : (
                                 <>
                                     {applicationStep === 'initial' ? (
                                         <div className="quick-apply-actions">
                                             <Button variant="primary" onClick={handleOneClickApply} className="full-width-btn">
-                                                Fast Apply with Profile
+                                                {userProfile ? 'Fast Apply with Profile' : 'Log In to Fast Apply'}
                                             </Button>
                                             <p className="divider-text">or</p>
                                             <button className="text-btn" onClick={() => setApplicationStep('customized')}>
-                                                Customize Application (CV / Cover Letter)
+                                                Apply as Guest (CV / Cover Letter)
                                             </button>
                                         </div>
                                     ) : (

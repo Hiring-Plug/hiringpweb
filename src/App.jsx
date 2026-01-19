@@ -8,6 +8,9 @@ import Projects from './pages/Projects'
 import Join from './pages/Join'
 import Solutions from './pages/Solutions'
 import Resources from './pages/Resources'
+import Admin from './pages/Admin'
+import Communities from './pages/Communities'
+import { DataProvider } from './context/DataContext'
 
 function App() {
   const { pathname } = useLocation();
@@ -17,20 +20,24 @@ function App() {
   }, [pathname]);
 
   return (
-    <div className="app-container">
-      <Navbar />
-      <main style={{ minHeight: '80vh' }}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/solutions" element={<Solutions />} />
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/join" element={<Join />} />
-        </Routes>
-      </main>
-      <Footer />
-    </div>
+    <DataProvider>
+      <div className="app-container">
+        {pathname !== '/admin' && <Navbar />}
+        <main style={{ minHeight: '80vh' }}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/solutions" element={<Solutions />} />
+            <Route path="/resources" element={<Resources />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/join" element={<Join />} />
+            <Route path="/communities" element={<Communities />} />
+            <Route path="/admin" element={<Admin />} />
+          </Routes>
+        </main>
+        {pathname !== '/admin' && <Footer />}
+      </div>
+    </DataProvider>
   )
 }
 

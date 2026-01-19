@@ -1,7 +1,7 @@
 import { FaTimes } from 'react-icons/fa';
 import Button from './Button';
 
-const Modal = ({ isOpen, onClose, title, children }) => {
+const Modal = ({ isOpen, onClose, title, children, maxWidth = '500px' }) => {
     if (!isOpen) return null;
 
     return (
@@ -13,8 +13,10 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                         <FaTimes />
                     </button>
                 </div>
-                <div className="modal-body">
-                    {children}
+                <div className="modal-scroll-area">
+                    <div className="modal-body">
+                        {children}
+                    </div>
                 </div>
             </div>
             <style>{`
@@ -35,11 +37,15 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                 .modal-content {
                     background: var(--bg-card);
                     width: 90%;
-                    max-width: 500px;
+                    max-width: ${maxWidth};
+                    max-height: 90vh;
                     border-radius: 12px;
                     border: 1px solid #333;
                     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
                     animation: slideUp 0.3s ease;
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
                 }
 
                 @keyframes slideUp {
@@ -67,6 +73,11 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                     transition: color 0.3s;
                 }
                 .close-btn:hover { color: #fff; }
+
+                .modal-scroll-area {
+                    overflow-y: auto;
+                    flex: 1;
+                }
 
                 .modal-body {
                     padding: 1.5rem;
