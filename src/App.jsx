@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -12,6 +12,13 @@ import Admin from './pages/Admin'
 import Communities from './pages/Communities'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import DashboardLayout from './components/DashboardLayout'
+import Dashboard from './pages/dashboard/Dashboard'
+import Profile from './pages/dashboard/Profile'
+import Messages from './pages/dashboard/Messages'
+import Freelance from './pages/dashboard/Freelance'
+import AppProjects from './pages/dashboard/AppProjects'
+import ProtectedRoute from './components/ProtectedRoute'
 import { DataProvider } from './context/DataContext'
 import { AuthProvider } from './context/AuthContext'
 
@@ -26,9 +33,12 @@ function App() {
     <AuthProvider>
       <DataProvider>
         <div className="app-container">
-          {pathname !== '/admin' && <Navbar />}
+          {/* Hide Navbar/Footer for Admin AND Dashboard routes to give full app feel */}
+          {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && <Navbar />}
+
           <main style={{ minHeight: '80vh' }}>
             <Routes>
+              {/* Public Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/solutions" element={<Solutions />} />
@@ -36,12 +46,29 @@ function App() {
               <Route path="/projects" element={<Projects />} />
               <Route path="/join" element={<Join />} />
               <Route path="/communities" element={<Communities />} />
-              <Route path="/admin" element={<Admin />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+
+              {/* Protected App Routes */}
+              <Route path="/app" element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }>
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="messages" element={<Messages />} />
+                <Route path="freelance" element={<Freelance />} />
+                <Route path="projects" element={<AppProjects />} />
+                {/* Redirect /app to /app/dashboard */}
+                <Route index element={<Navigate to="dashboard" replace />} />
+              </Route>
+
+              {/* Admin Routes */}
+              <Route path="/admin" element={<Admin />} />
             </Routes>
           </main>
-          {pathname !== '/admin' && <Footer />}
+          {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && <Footer />}
         </div>
       </DataProvider>
     </AuthProvider>

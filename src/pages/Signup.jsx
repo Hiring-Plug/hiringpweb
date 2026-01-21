@@ -14,6 +14,7 @@ const Signup = () => {
         username: '',
         email: '',
         password: '',
+        role: 'talent', // Default role
         primarySkill: ''
     });
 
@@ -33,6 +34,7 @@ const Signup = () => {
         try {
             const { error, data } = await signUp(formData.email, formData.password, {
                 username: formData.username,
+                role: formData.role,
                 primarySkill: formData.primarySkill
             });
 
@@ -41,7 +43,7 @@ const Signup = () => {
             if (data?.user && !data?.session) {
                 setSuccessMsg('Registration successful! Please check your email to verify your account.');
             } else {
-                navigate('/projects');
+                navigate('/app/dashboard');
             }
         } catch (err) {
             setError(err.message);
@@ -109,8 +111,35 @@ const Signup = () => {
                             minLength="6"
                         />
                     </div>
+
                     <div className="form-group">
-                        <label>Primary Skill</label>
+                        <label>I am joining as a...</label>
+                        <div className="role-selector">
+                            <label className={`role-option ${formData.role === 'talent' ? 'active' : ''}`}>
+                                <input
+                                    type="radio"
+                                    name="role"
+                                    value="talent"
+                                    checked={formData.role === 'talent'}
+                                    onChange={handleChange}
+                                />
+                                Talent
+                            </label>
+                            <label className={`role-option ${formData.role === 'project' ? 'active' : ''}`}>
+                                <input
+                                    type="radio"
+                                    name="role"
+                                    value="project"
+                                    checked={formData.role === 'project'}
+                                    onChange={handleChange}
+                                />
+                                Project
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Primary Focus</label>
                         <select
                             name="primarySkill"
                             value={formData.primarySkill}
@@ -189,6 +218,35 @@ const Signup = () => {
                     outline: none;
                     border-color: var(--primary-orange);
                 }
+
+                .role-selector {
+                    display: flex;
+                    gap: 1rem;
+                }
+                .role-option {
+                    flex: 1;
+                    padding: 0.8rem;
+                    border: 1px solid #333;
+                    border-radius: 6px;
+                    text-align: center;
+                    cursor: pointer;
+                    background: #050505;
+                    color: #888;
+                    transition: all 0.2s;
+                    position: relative;
+                }
+                .role-option input {
+                    position: absolute;
+                    opacity: 0;
+                    cursor: pointer;
+                }
+                .role-option.active {
+                    background: rgba(237, 80, 0, 0.1);
+                    border-color: var(--primary-orange);
+                    color: var(--primary-orange);
+                    font-weight: 600;
+                }
+
                 .full-width {
                     width: 100%;
                     font-size: 1.1rem;
