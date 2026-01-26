@@ -25,8 +25,8 @@ const Home = () => {
             Easy, transparent, and decentralized.
           </p>
           <div className="hero-actions">
-            <Button onClick={() => navigate('/join')} variant="primary" className="btn-join">Join the Network</Button>
-            <Button onClick={() => navigate('/projects')} variant="secondary" className="btn-explore">Explore Projects</Button>
+            <Button onClick={() => navigate('/signup')} variant="glow" size="lg" className="btn-join">Join the Network</Button>
+            <Button onClick={() => navigate('/projects')} variant="secondary" size="lg" className="btn-explore">Explore Projects</Button>
           </div>
         </div>
       </section>

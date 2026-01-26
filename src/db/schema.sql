@@ -10,6 +10,14 @@ create table profiles (
   role text check (role in ('talent', 'project')),
   primary_skill text,
   skills text[],
+  
+  -- New fields for Project/Talent refinement
+  banner_url text,
+  services text, -- Replaces skills for projects if needed
+  rating_average numeric default 5.0,
+  rating_count int default 0,
+  views_count int default 0,
+  custom_metrics jsonb, -- For specific stats like TVL, Funding
 
   primary key (id),
   unique(username),

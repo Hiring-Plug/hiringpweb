@@ -21,6 +21,7 @@ import AppProjects from './pages/dashboard/AppProjects'
 import Jobs from './pages/dashboard/Jobs'
 import JobDetail from './pages/dashboard/JobDetail'
 import Applications from './pages/dashboard/Applications'
+import Settings from './pages/dashboard/Settings'
 import ProtectedRoute from './components/ProtectedRoute'
 import { DataProvider } from './context/DataContext'
 import { AuthProvider } from './context/AuthContext'
@@ -66,6 +67,7 @@ function App() {
                 <Route path="jobs" element={<Jobs />} />
                 <Route path="jobs/:id" element={<JobDetail />} />
                 <Route path="applications" element={<Applications />} />
+                <Route path="settings" element={<Settings />} />
                 {/* Redirect /app to /app/dashboard */}
                 <Route index element={<Navigate to="dashboard" replace />} />
               </Route>

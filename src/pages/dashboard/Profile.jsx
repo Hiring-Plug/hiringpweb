@@ -2,119 +2,137 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabaseClient';
-import { FaCamera, FaMapMarkerAlt, FaLink, FaTwitter, FaGithub, FaLinkedin, FaPen, FaBriefcase, FaHeart, FaGlobe, FaStar } from 'react-icons/fa';
+import { FaCamera, FaMapMarkerAlt, FaLink, FaTwitter, FaGithub, FaLinkedin, FaPen, FaBriefcase, FaHeart, FaGlobe, FaStar, FaCheckCircle, FaBuilding } from 'react-icons/fa';
 import Button from '../../components/Button';
-import profileCover from '../../assets/7.jpg';
+import profileCover from '../../assets/7.jpg'; // Default fallback
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
+    const [jobs, setJobs] = useState([]);
+
+    // Profile State
     const [profile, setProfile] = useState({
         username: '',
         website: '',
         bio: '',
-        skills: '',
-        role: 'Product Designer', // Mock default
-        location: 'San Francisco, CA', // Mock default
+        skills: '',       // Talent
+        services: '',     // Project
+        role: '',         // Talent Job Title
+        location: '',
+        banner_url: '',
+        avatar_url: '',
+        custom_metrics: {}, // { tvl: '$10M', funding: 'Series A' }
+        bg_color: '',     // Project Branding ?
     });
 
-    // Role-based Stats
-    const getStats = () => {
-        const role = user?.user_metadata?.role || 'talent';
-        if (role === 'project') {
-            return [
-                { label: 'Total Value Locked', value: '$2.4M' },
-                { label: 'Fundraising', value: 'Seed A' },
-                { label: 'Rating', value: '4.9/5' },
-            ];
-        }
-        return [
-            { label: 'Job Success', value: '98%' },
-            { label: 'On-time', value: '100%' },
-            { label: 'Rating', value: '5.0' },
-        ];
-    };
-
-    const stats = getStats();
-
-    const portfolio = [
-        { id: 1, title: 'DeFi Dashboard', image: 'https://placehold.co/600x400/111/333?text=DeFi+UI', likes: 234 },
-        { id: 2, title: 'NFT Marketplace', image: 'https://placehold.co/600x400/111/333?text=NFT+App', likes: 189 },
-        { id: 3, title: 'Wallet Mobile App', image: 'https://placehold.co/600x400/111/333?text=Wallet+UX', likes: 542 },
-    ];
+    const isProject = user?.user_metadata?.role === 'project';
+    const roleLabel = isProject ? 'Project' : 'Talent';
 
     useEffect(() => {
-        if (user && user.user_metadata) {
-            setProfile(prev => ({
-                ...prev,
-                username: user.user_metadata.username || '',
-                website: user.user_metadata.website || '',
-                bio: user.user_metadata.bio || '',
-                skills: user.user_metadata.skills || prev.skills,
-            }));
+        if (user) {
+            fetchProfile();
+            if (isProject) fetchJobs();
         }
     }, [user]);
 
-    const handleSave = async () => {
-        setLoading(true);
+    const fetchProfile = async () => {
         try {
-            const { error } = await supabase.auth.updateUser({
-                data: profile
-            });
-            if (error) throw error;
-            setIsEditing(false);
+            const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+            if (data) {
+                setProfile({
+                    username: data.username || user.user_metadata?.username,
+                    website: data.website,
+                    bio: data.bio,
+                    skills: data.skills || '', // database might be array or string, let's assume string for simple input
+                    services: data.services || '',
+                    role: data.primary_skill || (isProject ? 'Web3 Protocol' : 'Product Designer'),
+                    location: user.user_metadata?.location || 'Remote',
+                    banner_url: data.banner_url || user.user_metadata?.banner_url,
+                    avatar_url: data.avatar_url,
+                    custom_metrics: data.custom_metrics || {},
+                });
+            }
         } catch (error) {
-            console.error('Error updating profile:', error.message);
-        } finally {
-            setLoading(false);
+            console.error('Error fetching profile:', error);
         }
     };
 
+    const fetchJobs = async () => {
+        const { data } = await supabase.from('jobs').select('*').eq('project_id', user.id).eq('status', 'open');
+        setJobs(data || []);
+    };
+
+    // Stats Logic
+    const stats = isProject ? [
+        // Only show if they exist in custom_metrics
+        profile.custom_metrics?.tvl ? { label: 'TVL', value: profile.custom_metrics.tvl } : null,
+        profile.custom_metrics?.funding ? { label: 'Funding', value: profile.custom_metrics.funding } : null,
+        { label: 'Rating', value: '4.9/5' }, // Mock rating for now
+    ].filter(Boolean) : [
+        { label: 'Job Success', value: '98%' },
+        { label: 'On-time', value: '100%' },
+        { label: 'Rating', value: '5.0' },
+    ];
+
+    const handleEdit = () => navigate('/app/settings');
+
     return (
-        <div className="profile-container">
-            {/* Hero Banner */}
+        <div className={`profile-container ${isProject ? 'project-mode' : ''}`}>
+            {/* Banner */}
             <div className="profile-banner" style={{
-                backgroundImage: `url(${profileCover})`,
+                backgroundImage: `url(${profile.banner_url || profileCover})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center'
             }}>
                 <div className="banner-gradient"></div>
-                <button className="cover-edit-btn"><FaCamera /> Edit Cover</button>
+                <button className="cover-edit-btn" onClick={handleEdit}><FaCamera /> Edit Cover</button>
             </div>
 
             <div className="profile-content">
-                {/* Header Section */}
+                {/* Header */}
                 <div className="profile-header">
-                    <div className="avatar-wrapper">
+                    <div className="avatar-section">
                         <div className="profile-avatar">
-                            {profile.username.charAt(0).toUpperCase() || 'U'}
+                            {/* Logo / Avatar Logic */}
+                            {profile.avatar_url ? (
+                                <img src={profile.avatar_url} alt="Profile" className="avatar-img" />
+                            ) : (
+                                isProject ? <FaBuilding /> : (profile.username?.charAt(0).toUpperCase() || 'U')
+                            )}
                         </div>
-                        {isEditing && <button className="avatar-edit-btn"><FaCamera /></button>}
                     </div>
 
                     <div className="header-info">
                         <div className="info-main">
-                            <div className="name-row">
-                                <h1>{profile.username || 'Anonymous User'}</h1>
-                                <span className="pro-badge"><FaStar className="gold-star" /> VERIFIED</span>
+                            {/* Project Layout: Username below Logo, Verified Badge */}
+                            <div className="name-block">
+                                <h1>{profile.username || 'Anonymous'}</h1>
+                                <span className="verified-badge">
+                                    {isProject ? <FaCheckCircle /> : <FaStar />} {isProject ? 'VERIFIED PROJECT' : 'VERIFIED'}
+                                </span>
                             </div>
-                            <p className="role-text">{profile.role} • {profile.location} • <span className="role-tag">{user?.user_metadata?.role || 'talent'}</span></p>
 
-                            {!isEditing && (
-                                <div className="social-links">
-                                    <a href="#" className="social-link"><FaGithub /></a>
-                                    <a href="#" className="social-link"><FaTwitter /></a>
-                                    <a href="#" className="social-link"><FaLinkedin /></a>
-                                    {profile.website && (
-                                        <a href={profile.website} target="_blank" rel="noreferrer" className="website-link">
-                                            <FaLink /> {profile.website.replace(/^https?:\/\//, '')}
-                                        </a>
-                                    )}
-                                </div>
-                            )}
+                            <p className="role-line">
+                                {profile.role} • {profile.location}
+                                {!isProject && <span className="role-tag"> • {roleLabel}</span>}
+                            </p>
+
+                            {/* Socials */}
+                            <div className="social-links">
+                                <a href="#" className="social-link"><FaTwitter /></a>
+                                {isProject ? <a href="#" className="social-link"><FaGlobe /></a> : <a href="#" className="social-link"><FaGithub /></a>}
+                                {profile.website && (
+                                    <a href={profile.website} target="_blank" rel="noreferrer" className="website-link">
+                                        <FaLink /> {profile.website.replace(/^https?:\/\//, '')}
+                                    </a>
+                                )}
+                            </div>
                         </div>
 
+                        {/* Stats */}
                         <div className="header-stats">
                             {stats.map((stat, i) => (
                                 <div key={i} className="stat-box">
@@ -124,529 +142,219 @@ const Profile = () => {
                             ))}
                         </div>
 
+                        {/* Actions */}
                         <div className="header-actions">
-                            {isEditing ? (
+                            {isProject ? (
                                 <>
-                                    <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
-                                    <Button variant="primary" onClick={handleSave} disabled={loading}>
-                                        {loading ? 'Saving...' : 'Save Profile'}
-                                    </Button>
+                                    <Button variant="primary" onClick={() => window.open(profile.website, '_blank')}>Visit Website</Button>
+                                    <Button variant="outline" onClick={handleEdit}><FaPen /> Settings</Button>
                                 </>
                             ) : (
                                 <>
                                     <Button variant="primary">Hire Me</Button>
-                                    <Button variant="outline" onClick={() => setIsEditing(true)}>
-                                        <FaPen /> Edit Profile
-                                    </Button>
+                                    <Button variant="outline" onClick={handleEdit}><FaPen /> Edit Profile</Button>
                                 </>
                             )}
                         </div>
                     </div>
                 </div>
 
-                {/* Main Grid Layout */}
+                {/* Grid Content */}
                 <div className="profile-grid">
-                    {/* Left Sidebar */}
+                    {/* Sidebar */}
                     <div className="grid-sidebar">
-                        {/* Bio Card */}
                         <div className="card info-card">
-                            <h3>About</h3>
-                            {isEditing ? (
-                                <textarea
-                                    className="edit-bio"
-                                    rows="4"
-                                    value={profile.bio}
-                                    onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                                    placeholder="Tell your story..."
-                                />
-                            ) : (
-                                <p className="bio-text">
-                                    {profile.bio || "No bio yet. Introduce yourself to the community!"}
-                                </p>
-                            )}
+                            <h3>{isProject ? 'About Project' : 'About'}</h3>
+                            <p className="bio-text">
+                                {profile.bio || (isProject ? "Introduce your project to the world." : "Tell your story...")}
+                            </p>
 
                             <div className="meta-list">
                                 <div className="meta-item">
                                     <FaMapMarkerAlt />
                                     <span>{profile.location}</span>
                                 </div>
-                                <div className="meta-item">
-                                    <FaBriefcase />
-                                    <span>Open to Work</span>
-                                </div>
-                                <div className="meta-item">
-                                    <FaGlobe />
-                                    <span>English, Spanish</span>
-                                </div>
+                                {isProject && (
+                                    <div className="meta-item">
+                                        <FaGlobe />
+                                        <span>Blockchain Services</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
-                        {/* Skills Card */}
                         <div className="card skills-card">
-                            <h3>Skills</h3>
-                            {isEditing ? (
-                                <input
-                                    className="edit-input"
-                                    value={profile.skills}
-                                    onChange={(e) => setProfile({ ...profile, skills: e.target.value })}
-                                    placeholder="React, Solidity (comma separated)"
-                                />
-                            ) : (
-                                <div className="skills-tags">
-                                    {(profile.skills ? profile.skills.split(',') : ['Design', 'Product', 'Strategy']).map(skill => (
-                                        <span key={skill} className="skill-tag">{skill.trim()}</span>
-                                    ))}
-                                </div>
-                            )}
+                            <h3>{isProject ? 'Services' : 'Skills'}</h3>
+                            <div className="skills-tags">
+                                {isProject ? (
+                                    // Project Services
+                                    (profile.services ? profile.services.split(',') : ['DeFi', 'NFTs', 'Smart Contracts']).map(s => <span key={s} className="skill-tag">{s.trim()}</span>)
+                                ) : (
+                                    // Talent Skills
+                                    (profile.skills ? profile.skills.split(',') : ['React', 'Solidity', 'Design']).map(s => <span key={s} className="skill-tag">{s.trim()}</span>)
+                                )}
+                            </div>
                         </div>
                     </div>
 
-                    {/* Right Content */}
+                    {/* Main Content */}
                     <div className="grid-main">
-                        <div className="content-tabs">
-                            <button className="tab active">Work</button>
-                            <button className="tab">Moodboards</button>
-                            <button className="tab">Services</button>
-                        </div>
+                        {!isProject ? (
+                            // TALENT VIEW
+                            <>
+                                <div className="content-tabs">
+                                    <button className="tab active">Work</button>
+                                    <button className="tab">Moodboards</button>
+                                    <button className="tab">Services</button>
+                                </div>
+                                <div className="portfolio-grid">
+                                    {/* Mock Portfolio for Talent */}
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="portfolio-item">
+                                            <div className="portfolio-image" style={{ backgroundColor: '#222' }}></div>
+                                            <div className="portfolio-meta"><h4>Project {i}</h4> <FaHeart /> 24</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            // PROJECT VIEW
+                            <div className="project-jobs-section">
+                                <div className="section-header">
+                                    <h3>Active Roles</h3>
+                                    {jobs.length > 0 && <span className="count-badge">{jobs.length}</span>}
+                                </div>
 
-                        <div className="portfolio-grid">
-                            {portfolio.map(item => (
-                                <div key={item.id} className="portfolio-item">
-                                    <div className="portfolio-image" style={{ backgroundImage: `url(${item.image})` }}>
-                                        <div className="portfolio-overlay">
-                                            <button className="view-btn">View Case Study</button>
-                                        </div>
+                                {jobs.length === 0 ? (
+                                    <div className="empty-jobs">
+                                        <p>No active jobs posted.</p>
+                                        <Button size="sm" onClick={() => navigate('/app/jobs')}>Post a Job</Button>
                                     </div>
-                                    <div className="portfolio-meta">
-                                        <h4>{item.title}</h4>
-                                        <div className="likes">
-                                            <FaHeart /> {item.likes}
-                                        </div>
+                                ) : (
+                                    <div className="jobs-list-simple">
+                                        {jobs.map(job => (
+                                            <div key={job.id} className="job-card-row">
+                                                <div className="job-info">
+                                                    <h4>{job.title}</h4>
+                                                    <span className="job-type">{job.type} • {job.location}</span>
+                                                </div>
+                                                <Button size="sm" variant="outline" onClick={() => navigate(`/app/jobs/${job.id}`)}>Apply</Button>
+                                            </div>
+                                        ))}
                                     </div>
-                                </div>
-                            ))}
-                            {/* Empty State / Add New */}
-                            <div className="portfolio-item add-new">
-                                <div className="add-content">
-                                    <span className="plus">+</span>
-                                    <span>Upload Project</span>
-                                </div>
+                                )}
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>
 
             <style>{`
                 .profile-container {
-                    /* Variable Definitions locally to ensure self-contained style */
-                    --bg-dark: #0a0a0a;
-                    --bg-card: #111;
-                    --border: #222;
                     --accent: var(--primary-orange);
-                    color: #fff;
                     padding-bottom: 4rem;
                 }
 
-                .gold-star { color: #f1c40f; margin-right: 4px; }
-
-                /* Banner */
+                /* Banner & Header */
                 .profile-banner {
-                    height: 220px;
-                    position: relative;
+                    height: 240px;
                     background: #111;
-                    border-radius: 0 0 0 0; /* Or rounded if wanted */
+                    position: relative;
                 }
                 .banner-gradient {
-                    width: 100%;
-                    height: 100%;
-                    background: radial-gradient(circle at top right, rgba(237, 80, 0, 0.15), transparent 60%),
-                                linear-gradient(to bottom, #1a1a1a, #0a0a0a);
+                    width: 100%; height: 100%;
+                    background: linear-gradient(to bottom, transparent 50%, #0a0a0a);
                 }
                 .cover-edit-btn {
-                    position: absolute;
-                    top: 20px;
-                    right: 20px;
-                    background: rgba(0,0,0,0.5);
-                    border: 1px solid rgba(255,255,255,0.1);
-                    color: #fff;
-                    padding: 8px 16px;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    font-size: 0.85rem;
-                    backdrop-filter: blur(5px);
-                    transition: all 0.2s;
-                }
-                .cover-edit-btn:hover { background: rgba(0,0,0,0.7); }
-
-                /* Header */
-                .profile-content {
-                    max-width: 1100px;
-                    margin: 0 auto;
-                    padding: 0 2rem;
-                    margin-top: -60px; /* Overlap banner */
-                    position: relative;
+                    position: absolute; top: 20px; right: 20px;
+                    background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);
+                    color: white; padding: 6px 14px; border-radius: 6px; cursor: pointer;
+                    display: flex; gap: 8px; align-items: center;
                 }
 
+                /* Header Layout */
+                .profile-content { max-width: 1100px; margin: 0 auto; padding: 0 2rem; position: relative; margin-top: -80px; }
+                
                 .profile-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-end;
-                    margin-bottom: 3rem;
-                    flex-wrap: wrap;
-                    gap: 2rem;
+                    display: flex; align-items: flex-end; gap: 2rem; margin-bottom: 3rem; flex-wrap: wrap;
                 }
 
-                .avatar-wrapper {
-                    position: relative;
-                }
                 .profile-avatar {
-                    width: 140px;
-                    height: 140px;
-                    border-radius: 30%; /* Rounded square style like reference */
-                    background: #111;
-                    border: 4px solid #000;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 3.5rem;
-                    font-weight: 700;
-                    color: var(--accent);
+                    width: 150px; height: 150px;
+                    background: #111; border: 4px solid #0a0a0a;
+                    border-radius: 24px; /* Squircle for Projects */
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 3rem; color: var(--accent);
+                    overflow: hidden;
                     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
                 }
-                .avatar-edit-btn {
-                    position: absolute;
-                    bottom: 0;
-                    right: -10px;
-                    background: var(--accent);
-                    color: white;
-                    border: 4px solid #000;
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
+                .avatar-img { width: 100%; height: 100%; object-fit: cover; }
 
-                .header-info {
-                    flex: 1;
-                    display: flex;
-                    align-items: flex-end;
-                    justify-content: space-between;
-                    padding-bottom: 10px;
-                    flex-wrap: wrap;
-                    gap: 2rem;
-                }
-
-                .info-main h1 {
-                    font-size: 2rem;
-                    margin: 0;
-                    line-height: 1.2;
-                }
-                .name-row {
-                    display: flex;
-                    align-items: center;
-                    gap: 1rem;
-                    margin-bottom: 0.5rem;
-                }
-                .pro-badge {
-                    background: rgba(255,255,255,0.1);
-                    border: 1px solid #333;
-                    color: white;
-                    font-size: 0.7rem;
-                    padding: 4px 8px;
-                    border-radius: 4px;
-                    font-weight: 700;
-                    display: flex;
-                    align-items: center;
-                    gap: 4px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                .role-tag {
-                    color: var(--primary-orange);
-                    text-transform: capitalize;
-                    font-weight: 600;
-                }
-                .role-text {
-                    font-size: 1rem;
-                    color: #888;
-                    margin-bottom: 1rem;
-                }
-
-                .social-links {
-                    display: flex;
-                    gap: 1rem;
-                }
-                .social-link {
-                    color: #aaa;
-                    font-size: 1.2rem;
-                    transition: color 0.2s;
-                }
-                .social-link:hover { color: white; }
-                .website-link {
-                    color: var(--accent);
-                    text-decoration: none;
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                    font-size: 0.9rem;
-                }
-
-                .header-stats {
-                    display: flex;
-                    gap: 2rem;
-                }
-                .stat-box {
-                    text-align: center;
-                }
-                .stat-value {
-                    display: block;
-                    font-size: 1.4rem;
-                    font-weight: 700;
-                    color: #fff;
-                }
-                .stat-label {
-                    font-size: 0.8rem;
-                    color: #666;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-
-                .header-actions {
-                    display: flex;
-                    gap: 1rem;
-                }
-
-                /* Grid Layout */
-                .profile-grid {
-                    display: grid;
-                    grid-template-columns: 320px 1fr;
-                    gap: 2.5rem;
-                }
-
-                .card {
-                    background: var(--bg-card);
-                    border: 1px solid var(--border);
-                    border-radius: 16px;
-                    padding: 1.5rem;
-                    margin-bottom: 1.5rem;
-                }
-                .card h3 {
-                    font-size: 1.1rem;
-                    margin-bottom: 1rem;
-                    padding-bottom: 0.8rem;
-                    border-bottom: 1px solid var(--border);
-                }
-
-                .bio-text {
-                    color: #ccc;
-                    line-height: 1.6;
-                    font-size: 0.95rem;
-                    margin-bottom: 1.5rem;
-                }
-
-                .meta-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.8rem;
-                }
-                .meta-item {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    color: #888;
-                    font-size: 0.9rem;
-                }
-                .meta-item svg { color: #555; }
-
-                .skills-tags {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 0.5rem;
-                }
-                .skill-tag {
-                    background: rgba(255,255,255,0.05);
-                    border: 1px solid #333;
-                    padding: 6px 12px;
-                    border-radius: 50px;
-                    font-size: 0.85rem;
-                    color: #ddd;
-                }
-
-                /* Main Content Tabs */
-                .content-tabs {
-                    display: flex;
-                    gap: 2rem;
-                    margin-bottom: 2rem;
-                    border-bottom: 1px solid var(--border);
-                }
-                .tab {
-                    background: none;
-                    border: none;
-                    padding: 1rem 0;
-                    color: #666;
-                    font-size: 1rem;
-                    cursor: pointer;
-                    position: relative;
-                }
-                .tab.active {
-                    color: #fff;
-                    font-weight: 600;
-                }
-                .tab.active::after {
-                    content: '';
-                    position: absolute;
-                    bottom: -1px;
-                    left: 0;
-                    width: 100%;
-                    height: 2px;
-                    background: var(--accent);
-                }
-
-                /* Portfolio Grid */
-                .portfolio-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-                    gap: 1.5rem;
-                }
-
-                .portfolio-item {
-                    background: var(--bg-card);
-                    border: 1px solid var(--border);
-                    border-radius: 16px;
-                    overflow: hidden;
-                    transition: transform 0.2s, box-shadow 0.2s;
-                }
-                .portfolio-item:hover {
-                    border-color: #333;
-                    transform: translateY(-4px);
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                }
-
-                .portfolio-image {
-                    height: 180px;
-                    background-size: cover;
-                    background-position: center;
-                    position: relative;
-                }
-                .portfolio-overlay {
-                    position: absolute;
-                    inset: 0;
-                    background: rgba(0,0,0,0.6);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    opacity: 0;
-                    transition: opacity 0.2s;
-                }
-                .portfolio-item:hover .portfolio-overlay { opacity: 1; }
+                .header-info { flex: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; padding-bottom: 10px; flex-wrap: wrap; }
                 
-                .view-btn {
-                    background: white;
-                    color: black;
-                    border: none;
-                    padding: 8px 16px;
-                    border-radius: 20px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transform: translateY(10px);
-                    transition: transform 0.2s;
+                .name-block { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+                .name-block h1 { margin: 0; font-size: 2.2rem; line-height: 1; }
+                
+                .verified-badge {
+                    background: rgba(76, 209, 55, 0.1); color: #4cd137; border: 1px solid rgba(76, 209, 55, 0.2);
+                    font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 4px;
+                    display: flex; align-items: center; gap: 5px;
                 }
-                .portfolio-item:hover .view-btn { transform: translateY(0); }
-
-                .portfolio-meta {
-                    padding: 1rem;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-                .portfolio-meta h4 {
-                    margin: 0;
-                    font-size: 1rem;
-                }
-                .likes {
-                    font-size: 0.8rem;
-                    color: #666;
-                    display: flex;
-                    align-items: center;
-                    gap: 4px;
+                /* Talent Badge Override */
+                .profile-container:not(.project-mode) .verified-badge {
+                     background: rgba(241, 196, 15, 0.1); color: #f1c40f; border-color: rgba(241, 196, 15, 0.2);
                 }
 
-                .add-new {
-                    border: 1px dashed #333;
-                    background: transparent;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    min-height: 236px; /* Match approx height of others */
-                    color: #555;
-                    transition: all 0.2s;
-                }
-                .add-new:hover {
-                    border-color: var(--accent);
-                    color: var(--accent);
-                    background: rgba(237, 80, 0, 0.05);
-                }
-                .add-content {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 10px;
-                }
-                .plus { font-size: 2rem; font-weight: 300; }
+                .role-line { color: #888; font-size: 1rem; margin-bottom: 1rem; }
+                
+                .social-links { display: flex; gap: 1rem; font-size: 1.2rem; color: #666; }
+                .social-link:hover { color: var(--accent); }
+                .website-link { font-size: 0.9rem; text-decoration: none; display: flex; align-items: center; gap: 6px; color: var(--accent); }
 
-                /* Inputs for edit mode */
-                .edit-bio, .edit-input {
-                    background: #000;
-                    border: 1px solid #333;
-                    color: #fff;
-                    width: 100%;
-                    padding: 10px;
-                    border-radius: 8px;
-                    font-family: inherit;
+                .header-stats { display: flex; gap: 2rem; }
+                .stat-box { text-align: center; }
+                .stat-value { display: block; font-size: 1.3rem; font-weight: 700; color: #fff; }
+                .stat-label { font-size: 0.75rem; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
+
+                .header-actions { display: flex; gap: 10px; }
+
+                /* Grid */
+                .profile-grid { display: grid; grid-template-columns: 320px 1fr; gap: 2.5rem; }
+                .card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+                .card h3 { margin-top: 0; font-size: 1.1rem; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 1rem; }
+                
+                .bio-text { color: #ccc; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap; }
+                
+                .meta-list { display: flex; flex-direction: column; gap: 10px; margin-top: 1.5rem; }
+                .meta-item { display: flex; align-items: center; gap: 10px; color: #888; font-size: 0.9rem; }
+                
+                .skills-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+                .skill-tag { background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; border: 1px solid #333; }
+
+                /* Project Jobs List */
+                .project-jobs-section { background: #111; border: 1px solid #222; border-radius: 12px; padding: 1.5rem; }
+                .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
+                .count-badge { background: #333; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; }
+                
+                .jobs-list-simple { display: flex; flex-direction: column; gap: 1rem; }
+                .job-card-row {
+                    display: flex; justify-content: space-between; align-items: center;
+                    background: #161616; padding: 1rem; border-radius: 8px; border: 1px solid #222;
                 }
-                .edit-bio:focus, .edit-input:focus {
-                    outline: none;
-                    border-color: var(--accent);
-                }
+                .job-info h4 { margin: 0 0 5px 0; color: #fff; }
+                .job-type { color: #666; font-size: 0.85rem; }
+                
+                .empty-jobs { text-align: center; padding: 2rem; color: #666; }
 
                 @media (max-width: 900px) {
-                    .profile-header {
-                        justify-content: center;
-                        text-align: center;
-                    }
-                    .header-info {
-                        justify-content: center;
-                    }
-                    .info-main {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                    }
-                    .profile-grid {
-                        grid-template-columns: 1fr;
-                    }
-                    .grid-sidebar {
-                        order: 2; /* Move below main content on mobile if desired, or keep top */
-                    }
+                    .profile-header { flex-direction: column; align-items: center; text-align: center; }
+                    .header-info { width: 100%; justify-content: center; }
+                    .profile-grid { grid-template-columns: 1fr; }
+                    .name-block { justify-content: center; }
                 }
             `}</style>
-        </div >
+        </div>
     );
 };
-
-// Simple Bolt icon component for the PRO badge
-const FaBoltIcon = () => (
-    <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 320 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-        <path d="M296 160H180.6l42.6-129.8C227.2 15 215.7 0 200 0H56C44 0 33.8 8.9 32.2 20.8l-32 240C-1.7 275.2 9.5 288 24 288h115.4L96.8 417.8C92.8 432.8 104.3 448 120 448h144c12 0 22.2-8.9 23.8-20.8l32-240c1.9-14.3-9.3-27.2-23.8-27.2z"></path>
-    </svg>
-);
 
 export default Profile;
