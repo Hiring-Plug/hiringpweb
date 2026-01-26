@@ -2,7 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { FaNetworkWired, FaRocket, FaHandshake } from 'react-icons/fa';
-import heroBg from '../assets/608.jpg';
+
+import heroBg from '../assets/10.jpg'; // High-impact hero
+import featureBg from '../assets/1.jpg'; // Feature background
 import SEO from '../components/SEO';
 
 const Home = () => {
@@ -30,7 +32,9 @@ const Home = () => {
       </section>
 
       {/* About Summary */}
-      <section className="section-container about-preview">
+      <section className="section-container about-preview" style={{
+        background: `linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)), url(${featureBg}) center/cover fixed`
+      }}>
         <h2>Bridging Talent & Opportunity</h2>
         <div className="about-text">
           <p>
@@ -367,7 +371,7 @@ const Home = () => {
                     }
                 }
             `}</style>
-    </div>
+    </div >
   );
 };
 

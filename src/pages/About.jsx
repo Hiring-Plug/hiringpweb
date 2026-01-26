@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import { FaHandshake, FaClipboardCheck, FaGraduationCap, FaBriefcase, FaGlobe, FaMedal, FaChartPie, FaUserTie } from 'react-icons/fa';
+import team1 from '../assets/5.jpg';
+import team2 from '../assets/6.jpg';
+
 import SEO from '../components/SEO';
 
 const About = () => {
@@ -179,6 +182,33 @@ const About = () => {
                     <Card title="Transparency" className="value-card"><p>Clear expectations on both sides</p></Card>
                     <Card title="Quality Over Quantity" className="value-card"><p>Right fit matters</p></Card>
                     <Card title="Growth Mindset" className="value-card"><p>Learning through real work</p></Card>
+                </div>
+            </section>
+
+            <section className="section-container">
+                <h2 className="reveal-up">Life at Hiring Plug</h2>
+                <div className="section-divider"></div>
+                <div className="culture-grid">
+                    <div className="culture-img-wrapper reveal-up">
+                        <img src={team1} alt="Team collaboration" className="culture-img" />
+                    </div>
+                    <div className="culture-text reveal-up">
+                        <h3>A Culture of Builders</h3>
+                        <p>
+                            We are a distributed team of developers, designers, and dreamers.
+                            We believe in autonomy, ownership, and the power of shipping code that matters.
+                        </p>
+                    </div>
+                    <div className="culture-text reveal-up">
+                        <h3>Remote First, Always</h3>
+                        <p>
+                            Work from anywhere. We value output over hours and async communication over endless meetings.
+                            Our community is our office.
+                        </p>
+                    </div>
+                    <div className="culture-img-wrapper reveal-up">
+                        <img src={team2} alt="Remote work lifestyle" className="culture-img" />
+                    </div>
                 </div>
             </section>
 
@@ -466,6 +496,44 @@ const About = () => {
                     .about-header h1 {
                         font-size: 2rem;
                     }
+                    .culture-grid {
+                        grid-template-columns: 1fr !important;
+                    }
+                }
+
+                .culture-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 2rem;
+                    align-items: center;
+                    margin-top: 2rem;
+                }
+                .culture-img-wrapper {
+                    overflow: hidden;
+                    border-radius: 12px;
+                    border: 1px solid #333;
+                }
+                .culture-img {
+                    width: 100%;
+                    height: auto;
+                    display: block;
+                    transition: transform 0.5s ease;
+                }
+                .culture-img-wrapper:hover .culture-img {
+                    transform: scale(1.05);
+                }
+                .culture-text {
+                    text-align: left;
+                    padding: 1rem;
+                }
+                .culture-text h3 {
+                    color: white;
+                    margin-bottom: 1rem;
+                    font-size: 1.5rem;
+                }
+                .culture-text p {
+                    color: #ccc;
+                    line-height: 1.6;
                 }
             `}</style>
         </div>

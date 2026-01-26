@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FaHome, FaBriefcase, FaUser, FaCog, FaSignOutAlt, FaBars, FaBell, FaComments, FaBolt, FaPlusCircle } from 'react-icons/fa';
+import { FaHome, FaBriefcase, FaUser, FaCog, FaSignOutAlt, FaBars, FaBell, FaComments, FaBolt, FaPlusCircle, FaArrowLeft, FaFileAlt, FaUserCircle } from 'react-icons/fa';
+import NotificationBell from './NotificationBell';
 
 const DashboardLayout = () => {
     const { user, signOut } = useAuth();
@@ -17,14 +18,15 @@ const DashboardLayout = () => {
 
     const navItems = role === 'project' ? [
         { path: '/app/dashboard', icon: <FaHome />, label: 'Overview' },
-        { path: '/app/freelance', icon: <FaPlusCircle />, label: 'Post a Gig' },
+        { path: '/app/jobs', icon: <FaPlusCircle />, label: 'Manage Jobs' },
+        { path: '/app/applications', icon: <FaUser />, label: 'Applicants' },
         { path: '/app/messages', icon: <FaComments />, label: 'Messages' },
-        { path: '/app/profile', icon: <FaUser />, label: 'Company Profile' },
+        { path: '/app/profile', icon: <FaBriefcase />, label: 'Company Profile' },
         { path: '/app/settings', icon: <FaCog />, label: 'Settings' },
     ] : [
         { path: '/app/dashboard', icon: <FaHome />, label: 'Overview' },
-        { path: '/app/projects', icon: <FaBriefcase />, label: 'Browse Projects' },
-        { path: '/app/freelance', icon: <FaBolt />, label: 'Fast Gigs' },
+        { path: '/app/jobs', icon: <FaBriefcase />, label: 'Find Work' },
+        { path: '/app/applications', icon: <FaFileAlt />, label: 'My Applications' },
         { path: '/app/messages', icon: <FaComments />, label: 'Messages' },
         { path: '/app/profile', icon: <FaUser />, label: 'My Profile' },
         { path: '/app/settings', icon: <FaCog />, label: 'Settings' },
@@ -62,6 +64,11 @@ const DashboardLayout = () => {
                 </nav>
 
                 <div className="sidebar-footer">
+                    <button onClick={() => navigate('/')} className="nav-item back-home-btn">
+                        <span className="icon"><FaArrowLeft /></span>
+                        <span className="label">Back to Website</span>
+                    </button>
+                    <div className="footer-divider"></div>
                     <button onClick={handleSignOut} className="nav-item logout-btn">
                         <span className="icon"><FaSignOutAlt /></span>
                         <span className="label">Sign Out</span>

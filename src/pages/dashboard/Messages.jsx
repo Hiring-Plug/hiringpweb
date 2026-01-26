@@ -1,301 +1,415 @@
 
-import { useState } from 'react';
-import { FaPaperPlane, FaPhone, FaVideo, FaSearch, FaCircle } from 'react-icons/fa';
+import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../supabaseClient';
+import { FaPaperPlane, FaSearch, FaUser, FaCircle } from 'react-icons/fa';
+import { sendEmailNotification, EMAIL_TEMPLATES } from '../../services/email';
 
 const Messages = () => {
-    const [activeChat, setActiveChat] = useState(0);
-    const [messageInput, setMessageInput] = useState('');
+    const { user } = useAuth();
+    const [conversations, setConversations] = useState([]);
+    const [activeChat, setActiveChat] = useState(null);
+    const [messages, setMessages] = useState([]);
+    const [newMessage, setNewMessage] = useState('');
+    const [loading, setLoading] = useState(true);
+    const messagesEndRef = useRef(null);
 
-    // Mock Data
-    const conversations = [
-        { id: 0, name: 'DeFi Protocol X', lastMsg: 'When can you start?', time: '2m', unread: 1, online: true },
-        { id: 1, name: 'Solana Foundation', lastMsg: 'Thanks for applying!', time: '1h', unread: 0, online: false },
-        { id: 2, name: 'Alice Dev', lastMsg: 'Check out the repo.', time: '1d', unread: 0, online: true },
-    ];
+    // 1. Fetch Conversations on Mount
+    useEffect(() => {
+        if (user) {
+            fetchConversations();
 
-    const messages = [
-        { id: 1, sender: 'them', text: 'Hi! We reviewed your profile and loved your Rust experience.', time: '10:30 AM' },
-        { id: 2, sender: 'me', text: 'Thanks! I appreciate that. I have been working with Rust for 3 years now.', time: '10:32 AM' },
-        { id: 3, sender: 'them', text: 'Great. We are looking for someone to lead our matching engine optimizations.', time: '10:33 AM' },
-        { id: 4, sender: 'them', text: 'When can you start?', time: '10:33 AM' },
-    ];
+            // Subscribe to new conversations/updates
+            const subscription = supabase
+                .channel('public:conversations')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, (payload) => {
+                    // In a real app, strict checking if user is participant
+                    fetchConversations(); // refresh list
+                })
+                .subscribe();
 
-    const handleSend = (e) => {
-        e.preventDefault();
-        alert(`Sending message: ${messageInput} (Supabase Realtime integration coming soon)`);
-        setMessageInput('');
+            return () => { supabase.removeChannel(subscription); };
+        }
+    }, [user]);
+
+    // 2. Fetch Messages when Active Chat changes
+    useEffect(() => {
+        if (activeChat) {
+            fetchMessages(activeChat.id);
+
+            // Subscribe to new messages for this chat
+            const subscription = supabase
+                .channel(`chat:${activeChat.id}`)
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `conversation_id=eq.${activeChat.id}`
+                }, (payload) => {
+                    setMessages(prev => [...prev, payload.new]);
+                    scrollToBottom();
+                })
+                .subscribe();
+
+            return () => { supabase.removeChannel(subscription); };
+        }
+    }, [activeChat]);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    const handleCall = (type) => {
-        alert(`Starting ${type} call... (WebRTC implementation coming soon)`);
+    const fetchConversations = async () => {
+        try {
+            // Get conversations where user is p1 or p2
+            const { data, error } = await supabase
+                .from('conversations')
+                .select(`
+                    *,
+                    p1:participant1_id(username, avatar_url),
+                    p2:participant2_id(username, avatar_url)
+                `)
+                .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
+                .order('updated_at', { ascending: false });
+
+            if (error) throw error;
+
+            // Format data to identify "other user"
+            const formatted = data.map(conv => {
+                const other = conv.participant1_id === user.id ? conv.p2 : conv.p1;
+                return { ...conv, otherUser: other };
+            });
+            setConversations(formatted);
+        } catch (error) {
+            console.error('Error loading chats:', error);
+            // setConversations(mockConversations); // For demo visual if needed
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchMessages = async (convId) => {
+        const { data } = await supabase
+            .from('messages')
+            .select('*')
+            .eq('conversation_id', convId)
+            .order('created_at', { ascending: true });
+
+        setMessages(data || []);
+        setTimeout(scrollToBottom, 100);
+    };
+
+    const handleSendMessage = async (e) => {
+        e.preventDefault();
+        if (!newMessage.trim() || !activeChat) return;
+
+        const text = newMessage;
+        setNewMessage(''); // optimistic clear
+
+        const otherUserId = activeChat.participant1_id === user.id ? activeChat.participant2_id : activeChat.participant1_id;
+
+        try {
+            // 1. Insert Message
+            const { error } = await supabase.from('messages').insert([{
+                conversation_id: activeChat.id,
+                sender_id: user.id,
+                receiver_id: otherUserId,
+                content: text
+            }]);
+
+            if (error) throw error;
+
+            // 2. Update Conversation (last_message, updated_at) to bump it up
+            await supabase.from('conversations')
+                .update({ last_message: text, updated_at: new Date() })
+                .eq('id', activeChat.id);
+
+            // 3. Trigger Notification for Receiver
+            await supabase.from('notifications').insert([{
+                user_id: otherUserId,
+                type: 'message',
+                content: `New message from ${user.user_metadata?.username || 'User'}`,
+                link: '/app/messages',
+                is_read: false
+            }]);
+
+            // 4. Send Email Notification (Async, don't await)
+            const template = EMAIL_TEMPLATES.NEW_MESSAGE(user.user_metadata?.username || 'Someone', text);
+            sendEmailNotification({
+                recipientUserId: otherUserId,
+                ...template
+            });
+
+        } catch (error) {
+            console.error('Send error:', error);
+            alert('Failed to send');
+        }
     };
 
     return (
-        <div className="messages-page">
-            <div className="chat-layout">
-                {/* Sidebar List */}
-                <div className="chat-sidebar">
-                    <div className="chat-header">
-                        <h2>Messages</h2>
-                        <div className="search-bar">
-                            <FaSearch />
-                            <input type="text" placeholder="Search..." />
-                        </div>
-                    </div>
-                    <div className="conversation-list">
-                        {conversations.map((chat) => (
-                            <div
-                                key={chat.id}
-                                className={`chat-item ${activeChat === chat.id ? 'active' : ''}`}
-                                onClick={() => setActiveChat(chat.id)}
-                            >
-                                <div className="avatar">
-                                    {chat.name.charAt(0)}
-                                    {chat.online && <span className="online-dot"></span>}
-                                </div>
-                                <div className="chat-info">
-                                    <div className="chat-top">
-                                        <span className="name">{chat.name}</span>
-                                        <span className="time">{chat.time}</span>
-                                    </div>
-                                    <div className="chat-bottom">
-                                        <span className="preview">{chat.lastMsg}</span>
-                                        {chat.unread > 0 && <span className="unread-badge">{chat.unread}</span>}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+        <div className="messages-layout">
+            {/* Left: Chat List */}
+            <div className="chat-sidebar">
+                <div className="sidebar-header">
+                    <h2>Messages</h2>
+                    <div className="search-bar">
+                        <FaSearch />
+                        <input placeholder="Search..." />
                     </div>
                 </div>
-
-                {/* Chat Window */}
-                <div className="chat-window">
-                    <div className="window-header">
-                        <div className="header-user">
-                            <div className="avatar small">{conversations[activeChat].name.charAt(0)}</div>
-                            <div className="user-details">
-                                <span className="name">{conversations[activeChat].name}</span>
-                                <span className="status">{conversations[activeChat].online ? 'Online' : 'Offline'}</span>
-                            </div>
-                        </div>
-                        <div className="header-actions">
-                            <button onClick={() => handleCall('voice')}><FaPhone /></button>
-                            <button onClick={() => handleCall('video')}><FaVideo /></button>
-                        </div>
-                    </div>
-
-                    <div className="messages-list">
-                        {messages.map((msg) => (
-                            <div key={msg.id} className={`message-bubble ${msg.sender === 'me' ? 'sent' : 'received'}`}>
-                                <div className="message-content">
-                                    <p>{msg.text}</p>
-                                    <span className="msg-time">{msg.time}</span>
+                <div className="convo-list">
+                    {loading ? <p className="p-4 text-center">Loading...</p> : conversations.length === 0 ? <p className="p-4 text-center text-gray-500">No messages yet.</p> : (
+                        conversations.map(chat => (
+                            <div
+                                key={chat.id}
+                                className={`convo-item ${activeChat?.id === chat.id ? 'active' : ''}`}
+                                onClick={() => setActiveChat(chat)}
+                            >
+                                <div className="user-avatar">
+                                    <FaUser />
+                                </div>
+                                <div className="convo-info">
+                                    <div className="top-row">
+                                        <h4>{chat.otherUser?.username || 'Unknown'}</h4>
+                                        <span className="time">
+                                            {new Date(chat.updated_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                        </span>
+                                    </div>
+                                    <p className="preview">{chat.last_message || 'Start chatting...'}</p>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-
-                    <form className="message-input-area" onSubmit={handleSend}>
-                        <input
-                            type="text"
-                            placeholder="Type a message..."
-                            value={messageInput}
-                            onChange={(e) => setMessageInput(e.target.value)}
-                        />
-                        <button type="submit" className="send-btn">
-                            <FaPaperPlane />
-                        </button>
-                    </form>
+                        ))
+                    )}
                 </div>
             </div>
 
+            {/* Right: Active Chat */}
+            <div className="chat-main">
+                {activeChat ? (
+                    <>
+                        <div className="chat-header">
+                            <div className="header-user">
+                                <div className="user-avatar sm">
+                                    <FaUser />
+                                </div>
+                                <h3>{activeChat.otherUser?.username}</h3>
+                            </div>
+                            <div className="online-status">
+                                <FaCircle className="status-dot" /> Online
+                            </div>
+                        </div>
+
+                        <div className="messages-area">
+                            {messages.map((msg, i) => (
+                                <div key={i} className={`message-bubble ${msg.sender_id === user.id ? 'sent' : 'received'}`}>
+                                    <p>{msg.content}</p>
+                                    <span className="msg-time">
+                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                </div>
+                            ))}
+                            <div ref={messagesEndRef} />
+                        </div>
+
+                        <form className="chat-input-area" onSubmit={handleSendMessage}>
+                            <input
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                placeholder="Type a message..."
+                            />
+                            <button type="submit" disabled={!newMessage.trim()}>
+                                <FaPaperPlane />
+                            </button>
+                        </form>
+                    </>
+                ) : (
+                    <div className="no-chat-selected">
+                        <FaPaperPlane className="big-icon" />
+                        <h3>Select a conversation</h3>
+                        <p>Choose a thread from the left to start chatting.</p>
+                    </div>
+                )}
+            </div>
+
             <style>{`
-                .messages-page {
-                    height: calc(100vh - 100px); /* Adjust based on topbar */
+                .messages-layout {
+                    display: grid;
+                    grid-template-columns: 350px 1fr;
+                    height: calc(100vh - 100px); /* Adjust for header/padding */
                     background: #111;
                     border: 1px solid #222;
                     border-radius: 12px;
                     overflow: hidden;
                 }
-                .chat-layout {
-                    display: flex;
-                    height: 100%;
-                }
-                
+
                 /* Sidebar */
                 .chat-sidebar {
-                    width: 300px;
                     border-right: 1px solid #222;
-                    background: #0a0a0a;
                     display: flex;
                     flex-direction: column;
+                    background: #0f0f0f;
                 }
-                .chat-header {
+                .sidebar-header {
                     padding: 1.5rem;
                     border-bottom: 1px solid #222;
                 }
-                .chat-header h2 { font-size: 1.4rem; margin-bottom: 1rem; }
+                .sidebar-header h2 { margin: 0 0 1rem 0; font-size: 1.5rem; }
                 .search-bar {
-                    background: #161616;
-                    border-radius: 6px;
-                    padding: 0.6rem;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    color: #666;
-                }
-                .search-bar input {
-                    background: none;
-                    border: none;
-                    color: #fff;
-                    width: 100%;
-                }
-                .search-bar input:focus { outline: none; }
-
-                .conversation-list {
-                    flex: 1;
-                    overflow-y: auto;
-                }
-                .chat-item {
-                    padding: 1rem 1.5rem;
-                    display: flex;
-                    gap: 1rem;
-                    cursor: pointer;
-                    transition: background 0.2s;
-                    border-bottom: 1px solid #161616;
-                }
-                .chat-item:hover, .chat-item.active { background: #1a1a1a; }
-                .chat-item.active { border-right: 2px solid var(--primary-orange); }
-
-                .avatar {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
                     background: #222;
                     display: flex;
                     align-items: center;
-                    justify-content: center;
-                    font-weight: 600;
-                    color: var(--primary-orange);
-                    position: relative;
+                    padding: 0 1rem;
+                    border-radius: 8px;
+                    gap: 10px;
+                    color: #666;
                 }
-                .avatar.small { width: 36px; height: 36px; font-size: 0.9rem; }
-                .online-dot {
-                    position: absolute;
-                    bottom: 0;
-                    right: 0;
-                    width: 10px;
-                    height: 10px;
-                    background: #4cd137;
-                    border-radius: 50%;
-                    border: 2px solid #0a0a0a;
+                .search-bar input {
+                    background: transparent;
+                    border: none;
+                    color: white;
+                    padding: 10px 0;
+                    width: 100%;
+                    outline: none;
                 }
 
-                .chat-info { flex: 1; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
-                .chat-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
-                .name { font-weight: 600; font-size: 0.95rem; }
-                .time { font-size: 0.8rem; color: #666; }
-                .chat-bottom { display: flex; justify-content: space-between; align-items: center; }
-                .preview { font-size: 0.85rem; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px; }
-                .unread-badge { background: var(--primary-orange); color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; }
-
-                /* Chat Window */
-                .chat-window {
+                .convo-list {
                     flex: 1;
+                    overflow-y: auto;
+                }
+                .convo-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                    padding: 1.2rem;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                    border-bottom: 1px solid #1a1a1a;
+                }
+                .convo-item:hover, .convo-item.active {
+                    background: #1a1a1a;
+                }
+                .convo-item.active {
+                    border-left: 3px solid var(--primary-orange);
+                    background: rgba(237, 80, 0, 0.05);
+                }
+
+                .user-avatar {
+                    width: 45px;
+                    height: 45px;
+                    border-radius: 50%;
+                    background: #333;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #666;
+                }
+                .convo-info { flex: 1; min-width: 0; }
+                .top-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+                .top-row h4 { margin: 0; font-size: 1rem; color: #fff; }
+                .time { font-size: 0.75rem; color: #666; }
+                .preview { margin: 0; font-size: 0.9rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+                /* Main Chat */
+                .chat-main {
                     display: flex;
                     flex-direction: column;
-                    background: #0e0e0e;
+                    background: #111;
                 }
-                .window-header {
+                .chat-header {
                     padding: 1rem 1.5rem;
                     border-bottom: 1px solid #222;
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    background: #111;
                 }
-                .header-user { display: flex; align-items: center; gap: 1rem; }
-                .user-details { display: flex; flex-direction: column; }
-                .status { font-size: 0.8rem; color: #4cd137; }
-                
-                .header-actions { display: flex; gap: 1rem; }
-                .header-actions button {
-                    background: #222;
-                    border: none;
-                    color: #aaa;
-                    width: 36px;
-                    height: 36px;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all 0.2s;
-                }
-                .header-actions button:hover { background: #333; color: white; }
+                .header-user { display: flex; align-items: center; gap: 10px; }
+                .user-avatar.sm { width: 32px; height: 32px; font-size: 0.8rem; }
+                .chat-header h3 { margin: 0; font-size: 1.1rem; }
+                .online-status { font-size: 0.85rem; color: #4cd137; display: flex; align-items: center; gap: 6px; }
+                .status-dot { font-size: 0.5rem; }
 
-                .messages-list {
+                .messages-area {
                     flex: 1;
-                    padding: 1.5rem;
                     overflow-y: auto;
+                    padding: 1.5rem;
                     display: flex;
                     flex-direction: column;
                     gap: 1rem;
                 }
-                .message-bubble {
-                    display: flex;
-                    max-width: 60%;
-                }
-                .message-bubble.sent { align-self: flex-end; justify-content: flex-end; }
-                .message-bubble.received { align-self: flex-start; }
                 
-                .message-content {
-                    padding: 1rem;
+                .message-bubble {
+                    max-width: 70%;
+                    padding: 0.8rem 1.2rem;
                     border-radius: 12px;
-                    background: #222;
                     position: relative;
                 }
-                .sent .message-content { background: var(--primary-orange); color: white; }
-                .sent .msg-time { color: rgba(255,255,255,0.7); }
+                .message-bubble.received {
+                    align-self: flex-start;
+                    background: #222;
+                    border-bottom-left-radius: 2px;
+                }
+                .message-bubble.sent {
+                    align-self: flex-end;
+                    background: var(--primary-orange);
+                    color: white;
+                    border-bottom-right-radius: 2px;
+                }
                 .msg-time {
                     display: block;
                     font-size: 0.7rem;
-                    color: #666;
-                    margin-top: 5px;
+                    margin-top: 4px;
+                    opacity: 0.7;
                     text-align: right;
                 }
 
-                .message-input-area {
-                    padding: 1.5rem;
+                .chat-input-area {
+                    padding: 1rem 1.5rem;
                     border-top: 1px solid #222;
                     display: flex;
                     gap: 1rem;
-                    background: #111;
                 }
-                .message-input-area input {
+                .chat-input-area input {
                     flex: 1;
-                    padding: 1rem;
-                    border-radius: 8px;
+                    background: #1a1a1a;
                     border: 1px solid #333;
-                    background: #0a0a0a;
+                    padding: 12px;
+                    border-radius: 25px;
                     color: white;
+                    outline: none;
                 }
-                .message-input-area input:focus { outline: none; border-color: var(--primary-orange); }
-                .send-btn {
+                .chat-input-area input:focus { border-color: var(--primary-orange); }
+                .chat-input-area button {
                     background: var(--primary-orange);
                     border: none;
+                    width: 45px;
+                    height: 45px;
+                    border-radius: 50%;
                     color: white;
-                    width: 50px;
-                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                     cursor: pointer;
-                    font-size: 1.1rem;
+                    transition: transform 0.2s;
                 }
-                
+                .chat-input-area button:disabled { opacity: 0.5; cursor: default; }
+                .chat-input-area button:hover:not(:disabled) { transform: scale(1.05); }
+
+                .no-chat-selected {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    color: #444;
+                }
+                .big-icon { font-size: 4rem; opacity: 0.2; margin-bottom: 1rem; }
+
                 @media (max-width: 768px) {
-                    .chat-sidebar { width: 80px; }
-                    .chat-info, .chat-header h2, .search-bar { display: none; }
-                    .chat-header { padding: 1rem; }
-                    .avatar { margin: 0 auto; }
+                    .messages-layout { grid-template-columns: 80px 1fr; }
+                    .search-bar, .convo-info, .sidebar-header h2 { display: none; }
+                    .chat-sidebar { align-items: center; }
+                    .convo-item { justify-content: center; padding: 1rem 0; }
+                    .convo-item.active { border-left: none; border-right: 3px solid var(--primary-orange); }
                 }
             `}</style>
         </div>

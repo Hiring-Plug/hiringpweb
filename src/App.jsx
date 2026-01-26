@@ -18,6 +18,9 @@ import Profile from './pages/dashboard/Profile'
 import Messages from './pages/dashboard/Messages'
 import Freelance from './pages/dashboard/Freelance'
 import AppProjects from './pages/dashboard/AppProjects'
+import Jobs from './pages/dashboard/Jobs'
+import JobDetail from './pages/dashboard/JobDetail'
+import Applications from './pages/dashboard/Applications'
 import ProtectedRoute from './components/ProtectedRoute'
 import { DataProvider } from './context/DataContext'
 import { AuthProvider } from './context/AuthContext'
@@ -60,6 +63,9 @@ function App() {
                 <Route path="messages" element={<Messages />} />
                 <Route path="freelance" element={<Freelance />} />
                 <Route path="projects" element={<AppProjects />} />
+                <Route path="jobs" element={<Jobs />} />
+                <Route path="jobs/:id" element={<JobDetail />} />
+                <Route path="applications" element={<Applications />} />
                 {/* Redirect /app to /app/dashboard */}
                 <Route index element={<Navigate to="dashboard" replace />} />
               </Route>

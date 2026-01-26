@@ -139,7 +139,7 @@ const Signup = () => {
                     </div>
 
                     <div className="form-group">
-                        <label>Primary Focus</label>
+                        <label>{formData.role === 'project' ? 'Hiring Position / Role' : 'Primary Focus'}</label>
                         <select
                             name="primarySkill"
                             value={formData.primarySkill}
@@ -152,6 +152,8 @@ const Signup = () => {
                             <option value="marketing">Marketing & Growth</option>
                             <option value="community">Community Manager</option>
                             <option value="product">Product Manager</option>
+                            {formData.role === 'project' && <option value="founder">Founder / CEO</option>}
+                            {formData.role === 'project' && <option value="hr">HR / Recruiter</option>}
                             <option value="other">Other</option>
                         </select>
                     </div>

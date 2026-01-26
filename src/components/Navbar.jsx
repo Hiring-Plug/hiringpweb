@@ -72,8 +72,8 @@ const Navbar = () => {
         <div className="nav-auth">
           {user ? (
             <>
-              <span className="user-greeting">Hi, {user.user_metadata?.username || 'User'}</span>
-              <button onClick={signOut} className="btn-login" style={{ cursor: 'pointer', background: 'none', border: 'none' }}>Log out</button>
+              <Link to="/app/dashboard" className="btn-dashboard">Go to Dashboard</Link>
+              <button onClick={signOut} className="btn-logout">Log out</button>
             </>
           ) : (
             <>
@@ -226,6 +226,33 @@ const Navbar = () => {
             color: var(--primary-orange);
             box-shadow: 0 0 15px rgba(237, 80, 0, 0.4);
             transform: translateY(-1px);
+        }
+
+        .btn-dashboard {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.2s;
+        }
+        .btn-dashboard:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: white;
+        }
+
+        .btn-logout {
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .btn-logout:hover {
+            color: #e74c3c;
         }
 
         .user-greeting {
