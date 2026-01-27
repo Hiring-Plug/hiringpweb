@@ -17,7 +17,10 @@ create table profiles (
   rating_average numeric default 5.0,
   rating_count int default 0,
   views_count int default 0,
-  custom_metrics jsonb, -- For specific stats like TVL, Funding
+  custom_metrics jsonb, -- For specific stats
+  funding text,
+  tvl text,
+  social_links jsonb, -- For LinkedIn, Telegram, Discord, Twitter
 
   primary key (id),
   unique(username),

@@ -25,6 +25,7 @@ const Profile = () => {
         banner_url: '',
         avatar_url: '',
         custom_metrics: {}, // { tvl: '$10M', funding: 'Series A' }
+        social_links: {},
         bg_color: '',     // Project Branding ?
     });
 
@@ -46,13 +47,18 @@ const Profile = () => {
                     username: data.username || user.user_metadata?.username,
                     website: data.website,
                     bio: data.bio,
-                    skills: data.skills || '', // database might be array or string, let's assume string for simple input
+                    bio: data.bio,
+                    skills: Array.isArray(data.skills) ? data.skills : (data.skills ? data.skills.split(',') : []),
                     services: data.services || '',
                     role: data.primary_skill || (isProject ? 'Web3 Protocol' : 'Product Designer'),
                     location: user.user_metadata?.location || 'Remote',
                     banner_url: data.banner_url || user.user_metadata?.banner_url,
                     avatar_url: data.avatar_url,
+                    experience: data.experience || [],
                     custom_metrics: data.custom_metrics || {},
+                    tvl: data.tvl,
+                    funding: data.funding,
+                    social_links: data.social_links || {},
                 });
             }
         } catch (error) {
@@ -67,9 +73,8 @@ const Profile = () => {
 
     // Stats Logic
     const stats = isProject ? [
-        // Only show if they exist in custom_metrics
-        profile.custom_metrics?.tvl ? { label: 'TVL', value: profile.custom_metrics.tvl } : null,
-        profile.custom_metrics?.funding ? { label: 'Funding', value: profile.custom_metrics.funding } : null,
+        profile.tvl ? { label: 'TVL', value: profile.tvl } : null,
+        profile.funding ? { label: 'Funding', value: profile.funding } : null,
         { label: 'Rating', value: '4.9/5' }, // Mock rating for now
     ].filter(Boolean) : [
         { label: 'Job Success', value: '98%' },
@@ -122,8 +127,19 @@ const Profile = () => {
 
                             {/* Socials */}
                             <div className="social-links">
-                                <a href="#" className="social-link"><FaTwitter /></a>
-                                {isProject ? <a href="#" className="social-link"><FaGlobe /></a> : <a href="#" className="social-link"><FaGithub /></a>}
+                                {profile.social_links?.twitter && (
+                                    <a href={profile.social_links.twitter} target="_blank" rel="noreferrer" className="social-link"><FaTwitter /></a>
+                                )}
+                                {profile.social_links?.linkedin && (
+                                    <a href={profile.social_links.linkedin} target="_blank" rel="noreferrer" className="social-link"><FaLinkedin /></a>
+                                )}
+                                {profile.social_links?.telegram && (
+                                    <a href={profile.social_links.telegram} target="_blank" rel="noreferrer" className="social-link"><FaGlobe /></a>
+                                )}
+                                {profile.social_links?.discord && (
+                                    <a href={profile.social_links.discord} target="_blank" rel="noreferrer" className="social-link"><FaGlobe /></a> // Use specific icon if available
+                                )}
+                                {!isProject && !profile.social_links?.linkedin && <a href="#" className="social-link"><FaLinkedin /></a>}
                                 {profile.website && (
                                     <a href={profile.website} target="_blank" rel="noreferrer" className="website-link">
                                         <FaLink /> {profile.website.replace(/^https?:\/\//, '')}
@@ -191,7 +207,7 @@ const Profile = () => {
                                     (profile.services ? profile.services.split(',') : ['DeFi', 'NFTs', 'Smart Contracts']).map(s => <span key={s} className="skill-tag">{s.trim()}</span>)
                                 ) : (
                                     // Talent Skills
-                                    (profile.skills ? profile.skills.split(',') : ['React', 'Solidity', 'Design']).map(s => <span key={s} className="skill-tag">{s.trim()}</span>)
+                                    (profile.skills.length > 0 ? profile.skills : ['React', 'Solidity', 'Design']).map((s, i) => <span key={i} className="skill-tag">{typeof s === 'string' ? s.trim() : s}</span>)
                                 )}
                             </div>
                         </div>
@@ -202,19 +218,43 @@ const Profile = () => {
                         {!isProject ? (
                             // TALENT VIEW
                             <>
+                                {/* Experience Section */}
+                                <div className="card experience-section" style={{ marginBottom: '2rem' }}>
+                                    <h3>Experience</h3>
+                                    {profile.experience && profile.experience.length > 0 ? (
+                                        <div className="experience-list">
+                                            {profile.experience.map((exp, i) => (
+                                                <div key={i} className="experience-item-display" style={{ marginBottom: '1.5rem', borderLeft: '2px solid #333', paddingLeft: '1rem' }}>
+                                                    <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1.1rem' }}>{exp.title}</h4>
+                                                    <div style={{ color: '#ED5000', fontSize: '0.9rem', marginBottom: '0.25rem' }}>{exp.company} • <span style={{ color: '#888' }}>{exp.duration}</span></div>
+                                                    <p style={{ color: '#ccc', fontSize: '0.95rem' }}>{exp.description}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p style={{ color: '#666', fontStyle: 'italic' }}>No experience added yet.</p>
+                                    )}
+                                </div>
+
+                                {/* Certifications / Take Test */}
+                                <div className="card certification-card">
+                                    <div className="certification-content">
+                                        <h3><FaCheckCircle color="#ED5000" /> Verified Skills</h3>
+                                        <p>Take a skill assessment to earn a badge and boost your credibility.</p>
+                                    </div>
+                                    <Button variant="glow" onClick={() => alert('Skill Verification Coming Soon!')}>Take Test</Button>
+                                </div>
+
                                 <div className="content-tabs">
-                                    <button className="tab active">Work</button>
-                                    <button className="tab">Moodboards</button>
+                                    <button className="tab active">Portfolio</button>
                                     <button className="tab">Services</button>
                                 </div>
                                 <div className="portfolio-grid">
-                                    {/* Mock Portfolio for Talent */}
-                                    {[1, 2, 3].map(i => (
-                                        <div key={i} className="portfolio-item">
-                                            <div className="portfolio-image" style={{ backgroundColor: '#222' }}></div>
-                                            <div className="portfolio-meta"><h4>Project {i}</h4> <FaHeart /> 24</div>
-                                        </div>
-                                    ))}
+                                    {/* Empty State for Portfolio */}
+                                    <div className="empty-portfolio" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: '#666', border: '1px dashed #333', borderRadius: '12px' }}>
+                                        <p>No projects added to portfolio yet.</p>
+                                        <Button size="sm" variant="outline">Add Project</Button>
+                                    </div>
                                 </div>
                             </>
                         ) : (

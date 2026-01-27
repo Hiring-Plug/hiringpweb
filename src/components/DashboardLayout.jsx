@@ -43,6 +43,11 @@ const DashboardLayout = () => {
     return (
         <div className="dashboard-layout">
             {/* Sidebar */}
+            {/* Mobile Overlay */}
+            <div
+                className={`mobile-overlay ${isSidebarOpen ? 'open' : ''}`}
+                onClick={() => setIsSidebarOpen(false)}
+            />
             <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
                 <div className="sidebar-header">
                     <div className="logo">
