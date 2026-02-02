@@ -2,6 +2,7 @@ import { FaBriefcase, FaLaptopCode, FaBook, FaBlog, FaUsers, FaArrowRight, FaTwi
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import Button from '../components/Button';
+import commBg from '../assets/3.jpg';
 
 const Communities = () => {
     const cards = [
@@ -122,7 +123,9 @@ const Communities = () => {
                 /* Hero Section */
                 .comm-hero {
                     position: relative;
-                    background: linear-gradient(135deg, #1a1a1a 0%, #050505 100%);
+                    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), url(${commBg});
+                    background-size: cover;
+                    background-position: center;
                     min-height: 400px;
                     display: flex;
                     align-items: center;
