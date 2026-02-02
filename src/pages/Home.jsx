@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { FaNetworkWired, FaRocket, FaHandshake } from 'react-icons/fa';
@@ -9,6 +10,15 @@ import SEO from '../components/SEO';
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleJoin = () => {
+    if (user) {
+      navigate('/app/dashboard');
+    } else {
+      navigate('/signup');
+    }
+  };
 
   return (
     <div className="home-page">
@@ -25,7 +35,7 @@ const Home = () => {
             Easy, transparent, and decentralized.
           </p>
           <div className="hero-actions">
-            <Button onClick={() => navigate('/signup')} variant="glow" size="lg" className="btn-join">Join the Network</Button>
+            <Button onClick={handleJoin} variant="glow" size="lg" className="btn-join">Join the Network</Button>
             <Button onClick={() => navigate('/projects')} variant="secondary" size="lg" className="btn-explore">Explore Projects</Button>
           </div>
         </div>
