@@ -109,7 +109,7 @@ const Admin = () => {
                                 onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                             />
                         </div>
-                        <Button variant="primary" style={{ width: '100%' }}>Login</Button>
+                        <Button variant="primary" style={{ width: '100%' }} type="submit">Login</Button>
                     </form>
                 </div>
                 <style>{`
