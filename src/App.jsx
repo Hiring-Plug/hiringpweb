@@ -12,6 +12,7 @@ import Admin from './pages/Admin'
 import Communities from './pages/Communities'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import Litepaper from './pages/Litepaper'
 import DashboardLayout from './components/DashboardLayout'
 import Dashboard from './pages/dashboard/Dashboard'
 import Profile from './pages/dashboard/Profile'
@@ -52,6 +53,7 @@ function App() {
               <Route path="/communities" element={<Communities />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/litepaper" element={<Litepaper />} />
 
               {/* Protected App Routes */}
               <Route path="/app" element={
@@ -76,7 +78,7 @@ function App() {
               <Route path="/admin" element={<Admin />} />
             </Routes>
           </main>
-          {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && <Footer />}
+          {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && pathname !== '/litepaper' && <Footer />}
         </div>
       </DataProvider>
     </AuthProvider>

@@ -36,8 +36,8 @@ const Footer = () => {
                         <h4>Resources</h4>
                         <ul>
                             <li><a href="/">Guides</a></li>
-                            <li><a href="/">Webinars</a></li>
-                            <li><a href="/">Whitepapers</a></li>
+                            <li><a href="/litepaper">Litepaper</a></li>
+                            <li><a href="/hiring-plug-whitepaper.pdf" target="_blank" rel="noreferrer">Whitepaper (PDF)</a></li>
                             <li><a href="/">Community</a></li>
                             <li><a href="/">Events</a></li>
                         </ul>

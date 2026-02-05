@@ -148,7 +148,7 @@ const Solutions = () => {
                             <FaGithub className="github-icon" /> View on GitHub
                         </a>
                         <span className="divider">|</span>
-                        <a href="#" className="whitepaper-link">Read Whitepaper</a>
+                        <a href="/hiring-plug-whitepaper.pdf" target="_blank" rel="noopener noreferrer" className="whitepaper-link">Read Whitepaper</a>
                     </div>
                 </div>
             </section>
