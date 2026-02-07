@@ -2,7 +2,7 @@
 
 **Hiring Plug** is a decentralized, Web3-native hiring ecosystem designed to connect specialized talent with blockchain projects, DAOs, and protocols. It replaces traditional web2 recruitment with a transparent, role-based platform that emphasizes verifiable skills and on-chain identity.
 
-## 🚀 Overview
+## Overview
 
 The platform serves two distinct user types:
 1.  **Talent**: Developers, Designers, and Community Managers seeking opportunities.
@@ -10,7 +10,7 @@ The platform serves two distinct user types:
 
 Built with performance and security in mind, the application leverages **React 19** for a responsive frontend and **Supabase** for a robust, secure backend infrastructure.
 
-## ✨ Key Features
+## Key Features
 
 -   **Role-Based Access Control (RBAC)**: Distinct dashboards and permissions for "Talent" and "Project" roles.
 -   **Dynamic Profiles**:
@@ -35,7 +35,7 @@ Built with performance and security in mind, the application leverages **React 1
 -   **Storage**: Supabase Storage (Buckets for Avatars/Banners)
 -   **Security**: Row Level Security (RLS) policies enforced on all tables.
 
-## 📂 Architecture
+## Architecture
 
 The project follows a scalable, component-driven architecture:
 
@@ -51,7 +51,7 @@ src/
 └── services/        # API and utility functions
 ```
 
-## 🔒 Security & Audit Notes
+## Security & Audit Notes
 
 For auditors and developers reviewing the codebase:
 
@@ -69,7 +69,7 @@ For auditors and developers reviewing the codebase:
     -   Inputs are validated on the client side before submission.
     -   Database constraints (Check Constraints) enforce data integrity (e.g., valid role types).
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 -   Node.js (v18 or higher)
@@ -107,5 +107,3 @@ Make sure your Supabase project has the following tables set up (see `src/db/sch
 -   **profiles**: `id` (PK, FK to Auth), `role` ('talent'|'project'), `skills`, `experience`, `custom_metrics`.
 -   **jobs**: `id` (PK), `project_id` (FK), `title`, `description`, `budget`.
 -   **applications**: `id`, `job_id`, `candidate_id`, `status`.
-
----

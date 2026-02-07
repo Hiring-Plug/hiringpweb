@@ -122,8 +122,8 @@ const Litepaper = () => {
 
                     <div className="doc-callout">
                         <p>
-                            "A modern talent and project-matching platform connecting skilled professionals with real opportunities,
-                            helping individuals grow careers and organizations build faster, smarter teams."
+                            A modern talent and project-matching platform connecting skilled professionals with real opportunities,
+                            helping individuals grow careers and organizations build faster, smarter teams.
                         </p>
                     </div>
 

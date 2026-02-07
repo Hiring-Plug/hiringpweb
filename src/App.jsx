@@ -13,6 +13,7 @@ import Communities from './pages/Communities'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Litepaper from './pages/Litepaper'
+import PitchDeck from './pages/PitchDeck'
 import DashboardLayout from './components/DashboardLayout'
 import Dashboard from './pages/dashboard/Dashboard'
 import Profile from './pages/dashboard/Profile'
@@ -39,7 +40,7 @@ function App() {
       <DataProvider>
         <div className="app-container">
           {/* Hide Navbar/Footer for Admin AND Dashboard routes to give full app feel */}
-          {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && <Navbar />}
+          {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && pathname !== '/pitchdeck' && <Navbar />}
 
           <main style={{ minHeight: '80vh' }}>
             <Routes>
@@ -54,6 +55,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/litepaper" element={<Litepaper />} />
+              <Route path="/pitchdeck" element={<PitchDeck />} />
 
               {/* Protected App Routes */}
               <Route path="/app" element={
@@ -78,7 +80,7 @@ function App() {
               <Route path="/admin" element={<Admin />} />
             </Routes>
           </main>
-          {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && pathname !== '/litepaper' && <Footer />}
+          {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && pathname !== '/litepaper' && pathname !== '/pitchdeck' && <Footer />}
         </div>
       </DataProvider>
     </AuthProvider>
