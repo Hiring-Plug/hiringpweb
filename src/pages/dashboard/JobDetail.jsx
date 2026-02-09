@@ -25,28 +25,32 @@ const JobDetail = () => {
 
     const fetchJob = async () => {
         try {
-            // Fetch job + company details
-            const { data, error } = await supabase
+            // 1. Fetch job (flat query)
+            const { data: jobData, error: jobError } = await supabase
                 .from('jobs')
-                .select('*, profiles:project_id(username, avatar_url, website)')
+                .select('*')
                 .eq('id', id)
                 .single();
 
-            if (error) throw error;
-            setJob(data);
+            if (jobError) throw jobError;
+
+            if (jobData) {
+                // 2. Fetch profile separately (manual join)
+                const { data: profileData, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('username, avatar_url, website')
+                    .eq('id', jobData.project_id)
+                    .single();
+
+                if (profileError) {
+                    console.warn('Profile fetch error:', profileError);
+                    setJob({ ...jobData, profiles: { username: 'Unknown Project' } });
+                } else {
+                    setJob({ ...jobData, profiles: profileData });
+                }
+            }
         } catch (error) {
             console.error('Error loading job:', error);
-            // Fallback for demo if DB is empty/error
-            if (id === '1') setJob({
-                id: 1,
-                title: 'Senior Solidity Engineer',
-                description: 'We are looking for an expert to lead our protocol development...',
-                requirements: '- 5+ years Solidity\n- Auditing experience\n- DeFi knowledge',
-                type: 'full-time',
-                location: 'Remote',
-                salary_range: '$120k - $180k',
-                profiles: { username: 'DeFi Kingdom', website: 'https://defi.kingdom' }
-            });
         } finally {
             setLoading(false);
         }
@@ -108,8 +112,20 @@ const JobDetail = () => {
         }
     };
 
-    if (loading) return <div className="loading">Loading job details...</div>;
-    if (!job) return <div className="error">Job not found.</div>;
+    const parseMarkdown = (text) => {
+        if (!text) return null;
+        // Simple regex to find **bold** and wrap in <strong>
+        const parts = text.split(/(\*\*.*?\*\*)/g);
+        return parts.map((part, i) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={i}>{part.slice(2, -2)}</strong>;
+            }
+            return part;
+        });
+    };
+
+    if (loading) return <div className="loading-state">Loading job details...</div>;
+    if (!job) return <div className="error-state">Job not found.</div>;
 
     const isOwner = user?.id === job.project_id;
 
@@ -122,7 +138,13 @@ const JobDetail = () => {
             <div className="job-header">
                 <div className="header-main">
                     <div className="company-logo-lg">
-                        <FaBuilding />
+                        {job.logo_url ? (
+                            <img src={job.logo_url} alt={job.profiles?.username} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+                        ) : job.profiles?.avatar_url ? (
+                            <img src={job.profiles.avatar_url} alt={job.profiles.username} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+                        ) : (
+                            <FaBuilding />
+                        )}
                     </div>
                     <div>
                         <h1>{job.title}</h1>
@@ -159,15 +181,17 @@ const JobDetail = () => {
 
             <div className="job-layout">
                 <div className="job-content">
-                    <section className="detail-section">
+                    <div className="detail-section">
                         <h3>About the Role</h3>
-                        <p className="description-text">{job.description}</p>
-                    </section>
+                        <p className="description-text">{parseMarkdown(job.description)}</p>
+                    </div>
 
-                    <section className="detail-section">
-                        <h3>Requirements</h3>
-                        <p className="description-text whitespace-pre-wrap">{job.requirements}</p>
-                    </section>
+                    {job.requirements && (
+                        <div className="detail-section">
+                            <h3>Requirements</h3>
+                            <p className="description-text">{parseMarkdown(job.requirements)}</p>
+                        </div>
+                    )}
 
                     <section className="detail-section">
                         <h3>Compensation</h3>
@@ -203,7 +227,13 @@ const JobDetail = () => {
                     <div className="sidebar-card">
                         <h4>About the Company</h4>
                         <div className="company-mini-profile">
-                            <div className="company-avatar"><FaBuilding /></div>
+                            <div className="company-avatar">
+                                {job.logo_url || job.profiles?.avatar_url ? (
+                                    <img src={job.logo_url || job.profiles?.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                                ) : (
+                                    <FaBuilding />
+                                )}
+                            </div>
                             <div>
                                 <strong>{job.profiles?.username}</strong>
                                 {job.profiles?.website && (

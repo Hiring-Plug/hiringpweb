@@ -9,10 +9,8 @@ import { FaBriefcase, FaMoneyBillWave, FaMapMarkerAlt, FaPlus, FaBuilding } from
 
 const Jobs = () => {
     const { user } = useAuth();
-    const { refreshData } = useData();
+    const { projects, refreshData, loading, error } = useData();
     const navigate = useNavigate();
-    const [jobs, setJobs] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [isPosting, setIsPosting] = useState(false); // Modal state
 
     // New Job Form State
@@ -24,29 +22,11 @@ const Jobs = () => {
         salary_range: '',
         description: '',
         requirements: '',
-        tags: ''
+        tags: '',
+        logo_url: '' // Specific job/project logo
     });
 
     const isProject = user?.user_metadata?.role === 'project';
-
-    useEffect(() => {
-        fetchJobs();
-    }, []);
-
-    const fetchJobs = async () => {
-        setLoading(true);
-        // For 'project' role, maybe show only THEIR jobs? Or separate tab?
-        // showing all open jobs for now.
-        const { data, error } = await supabase
-            .from('jobs')
-            .select('*, profiles:project_id(username, avatar_url)')
-            .eq('status', 'open')
-            .order('created_at', { ascending: false });
-
-        if (error) console.error('Error fetching jobs:', error);
-        else setJobs(data || mockedJobs); // Fallback to mock if table empty
-        setLoading(false);
-    };
 
     const handlePostJob = async (e) => {
         e.preventDefault();
@@ -58,37 +38,43 @@ const Jobs = () => {
                 tags: newJob.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '')
             };
 
-            const { error } = await supabase.from('jobs').insert([jobData]);
+            const { error: insertError } = await supabase.from('jobs').insert([jobData]);
 
-            if (error) throw error;
+            if (insertError) throw insertError;
             setIsPosting(false);
 
-            // Refresh local list
-            fetchJobs();
-
-            // Refresh global context so the public Projects page updates
-            if (refreshData) refreshData();
+            // Refresh global context so the list updates
+            if (refreshData) await refreshData();
 
             alert('Job posted successfully!');
-        } catch (error) {
-            alert('Error posting job: ' + error.message);
+
+            // Reset form
+            setNewJob({
+                title: '',
+                type: 'full-time',
+                location: 'Remote',
+                category: 'DeFi',
+                salary_range: '',
+                description: '',
+                requirements: '',
+                tags: '',
+                logo_url: ''
+            });
+
+        } catch (err) {
+            alert('Error posting job: ' + err.message);
         }
     };
 
-    // Fallback Mock Data if DB is empty
-    const mockedJobs = [
-        { id: 1, title: 'Senior Solidity Engineer', type: 'full-time', location: 'Remote', salary_range: '$120k - $180k', profiles: { username: 'DeFi Kingdom' }, created_at: new Date().toISOString() },
-        { id: 2, title: 'Product Designer', type: 'contract', location: 'London / Remote', salary_range: '$80/hr', profiles: { username: 'NFT Art' }, created_at: new Date().toISOString() },
-    ];
-
-    const displayJobs = jobs?.length ? jobs : mockedJobs;
+    // Filter to show only Live jobs (exclude mocks starting with 'mock-')
+    const liveJobs = projects.filter(p => !String(p.id).startsWith('mock-'));
 
     return (
         <div className="jobs-page">
             <div className="page-header">
                 <div>
-                    <h1>Find Your Next Role</h1>
-                    <p>Curated opportunities from verified Web3 teams.</p>
+                    <h1>Explore Opportunities</h1>
+                    <p>Live roles from the ecosystem.</p>
                 </div>
                 {isProject && (
                     <Button variant="primary" onClick={() => setIsPosting(true)}>
@@ -98,27 +84,47 @@ const Jobs = () => {
             </div>
 
             <div className="jobs-list">
-                {loading ? <p>Loading opportunities...</p> : displayJobs.map(job => (
-                    <div key={job.id} className="job-row" onClick={() => navigate(`/app/jobs/${job.id}`)}>
-                        <div className="job-main">
-                            <div className="company-logo">
-                                <FaBuilding />
-                            </div>
-                            <div className="job-info">
-                                <h3>{job.title}</h3>
-                                <p className="company-name">{job.profiles?.username || 'Unknown Company'}</p>
-                            </div>
-                        </div>
-                        <div className="job-meta">
-                            <span className="tag type">{job.type}</span>
-                            <span className="meta-item"><FaMapMarkerAlt /> {job.location}</span>
-                            <span className="meta-item"><FaMoneyBillWave /> {job.salary_range}</span>
-                        </div>
-                        <div className="job-action">
-                            <Button variant="outline" size="sm">View</Button>
-                        </div>
+                {error && (
+                    <div className="error-alert" style={{ marginBottom: '2rem' }}>
+                        <p>Error loading jobs: {error}</p>
+                        <Button size="sm" variant="outline" onClick={() => refreshData && refreshData()}>Retry</Button>
                     </div>
-                ))}
+                )}
+
+                {loading ? (
+                    <p>Loading opportunities...</p>
+                ) : liveJobs.length > 0 ? (
+                    liveJobs.map(job => (
+                        <div key={job.id} className="job-row" onClick={() => navigate(`/app/jobs/${job.id}`)}>
+                            <div className="job-main">
+                                <div className="company-logo">
+                                    {job.logo_url ? (
+                                        <img src={job.logo_url} alt={job.company} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        <FaBuilding />
+                                    )}
+                                </div>
+                                <div className="job-info">
+                                    <h3>{job.role}</h3>
+                                    <p className="company-name">{job.company}</p>
+                                </div>
+                            </div>
+                            <div className="job-meta">
+                                <span className="tag type">{job.type}</span>
+                                <span className="meta-item"><FaMapMarkerAlt /> {job.location}</span>
+                                <span className="meta-item"><FaMoneyBillWave /> {job.salary}</span>
+                            </div>
+                            <div className="job-action">
+                                <Button variant="outline" size="sm">View</Button>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div className="empty-state-card">
+                        <FaBriefcase style={{ fontSize: '3rem', opacity: 0.2, marginBottom: '1rem' }} />
+                        <p>No live jobs found. {isProject ? 'Post your first job to get started!' : 'Check back soon for new roles.'}</p>
+                    </div>
+                )}
             </div>
 
             {/* Post Job Modal */}
@@ -152,22 +158,27 @@ const Jobs = () => {
                                         <option value="Other">Other</option>
                                     </select>
                                 </div>
-                                <div className="form-group">
-                                    <label>Location</label>
-                                    <input required value={newJob.location} onChange={e => setNewJob({ ...newJob, location: e.target.value })} placeholder="Remote, NYC..." />
-                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label>Location</label>
+                                <input required value={newJob.location} onChange={e => setNewJob({ ...newJob, location: e.target.value })} placeholder="e.g. Remote / London" />
                             </div>
                             <div className="form-group">
                                 <label>Salary / Compensation</label>
                                 <input required value={newJob.salary_range} onChange={e => setNewJob({ ...newJob, salary_range: e.target.value })} placeholder="$100k - $150k or $100/hr" />
                             </div>
                             <div className="form-group">
-                                <label>Tags (comma separated)</label>
-                                <input value={newJob.tags} onChange={e => setNewJob({ ...newJob, tags: e.target.value })} placeholder="React, Solidity, Rust..." />
+                                <label>Project Logo URL (Optional)</label>
+                                <input value={newJob.logo_url} onChange={e => setNewJob({ ...newJob, logo_url: e.target.value })} placeholder="https://..." />
+                                <small style={{ color: '#666' }}>Link to your project icon for branding.</small>
                             </div>
                             <div className="form-group">
-                                <label>Description</label>
-                                <textarea required rows="4" value={newJob.description} onChange={e => setNewJob({ ...newJob, description: e.target.value })} placeholder="What's the role about?" />
+                                <label>Description (Tip: use **text** for bold headings)</label>
+                                <textarea required rows="4" value={newJob.description} onChange={e => setNewJob({ ...newJob, description: e.target.value })} placeholder="What's the role about? Use **bold** for headings." />
+                            </div>
+                            <div className="form-group">
+                                <label>Tags (comma separated)</label>
+                                <input value={newJob.tags} onChange={e => setNewJob({ ...newJob, tags: e.target.value })} placeholder="React, Solidity, Rust..." />
                             </div>
                             <div className="form-group">
                                 <label>Requirements</label>
@@ -284,13 +295,38 @@ const Jobs = () => {
                 .form-row .form-group { flex: 1; }
                 .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
 
+                .error-alert {
+                    background: rgba(231, 76, 60, 0.1);
+                    border: 1px solid #e74c3c;
+                    padding: 1rem;
+                    border-radius: 8px;
+                    color: #e74c3c;
+                    margin-bottom: 2rem;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
                 @media (max-width: 768px) {
                     .job-row { flex-direction: column; align-items: flex-start; gap: 1rem; }
                     .job-meta { flex-wrap: wrap; gap: 1rem; }
                     .job-action { align-self: flex-end; }
                 }
+
+                .empty-state-card {
+                    background: #111;
+                    border: 1px dashed #333;
+                    border-radius: 12px;
+                    padding: 4rem 2rem;
+                    text-align: center;
+                    color: #555;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                }
             `}</style>
-        </div>
+        </div >
     );
 };
 

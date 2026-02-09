@@ -125,6 +125,7 @@ export const DataProvider = ({ children }) => {
 
     const [dbProjects, setDbProjects] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const [applicants, setApplicants] = useState(() => {
         const saved = localStorage.getItem('hp_applicants');
@@ -133,37 +134,77 @@ export const DataProvider = ({ children }) => {
 
     // Fetch DB Projects
     const fetchDbProjects = async () => {
+        setLoading(true);
+        setError(null);
         try {
-            const { data, error } = await supabase
+            // 1. Fetch Jobs first (flat query)
+            const { data: jobsData, error: jobsError } = await supabase
                 .from('jobs')
-                .select('*, profiles:project_id(username, avatar_url, website, contact_email)')
+                .select('*')
                 .eq('status', 'open')
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
+            if (jobsError) {
+                console.error('Supabase Jobs Query Error:', jobsError);
+                setError(jobsError.message);
+                return;
+            }
 
-            // Map DB format to UI format
-            const mapped = data.map(job => ({
-                id: job.id,
-                company: job.profiles?.username || 'Unknown Project',
-                logoIcon: 'FaGlobe',
-                logoUrl: job.profiles?.avatar_url || '',
-                website: job.profiles?.website || '',
-                contactEmail: job.profiles?.contact_email || '',
-                notificationEmail: '', // Kept hidden
-                role: job.title,
-                category: job.category || 'Other',
-                location: job.location,
-                type: job.type,
-                salary: job.salary_range,
-                posted: new Date(job.created_at).toLocaleDateString(),
-                tags: job.tags || [],
-                description: job.description
-            }));
+            if (!jobsData || jobsData.length === 0) {
+                setDbProjects([]);
+                return;
+            }
+
+            // 2. Extract unique project_ids
+            const projectIds = [...new Set(jobsData.map(j => j.project_id).filter(Boolean))];
+
+            // 3. Fetch Profiles for these IDs
+            let profilesMap = {};
+            if (projectIds.length > 0) {
+                const { data: profilesData, error: profilesError } = await supabase
+                    .from('profiles')
+                    .select('id, username, avatar_url, website, contact_email')
+                    .in('id', projectIds);
+
+                if (profilesError) {
+                    console.warn('Supabase Profiles Query Error (Non-critical):', profilesError);
+                    // We can still continue, just companies will be "Unknown"
+                } else if (profilesData) {
+                    profilesMap = profilesData.reduce((acc, p) => {
+                        acc[p.id] = p;
+                        return acc;
+                    }, {});
+                }
+            }
+
+            // 4. Map DB format to UI format with manual join
+            const mapped = jobsData.map(job => {
+                const profile = profilesMap[job.project_id] || {};
+                const projectName = profile.username || job.company || 'Project ' + (job.project_id?.substring(0, 5) || 'Unknown');
+
+                return {
+                    id: job.id,
+                    company: projectName,
+                    logoIcon: 'FaGlobe',
+                    logoUrl: job.logo_url || profile.avatar_url || '',
+                    website: profile.website || job.website || '',
+                    contactEmail: profile.contact_email || job.contactEmail || '',
+                    notificationEmail: job.notificationEmail || '',
+                    role: job.title,
+                    category: job.category || 'Other',
+                    location: job.location,
+                    type: job.type,
+                    salary: job.salary_range,
+                    posted: new Date(job.created_at).toLocaleDateString(),
+                    tags: job.tags || [],
+                    description: job.description
+                };
+            });
 
             setDbProjects(mapped);
-        } catch (error) {
-            console.error('Error fetching jobs from DB:', error);
+        } catch (err) {
+            console.error('Exception fetching jobs:', err);
+            setError(err.message);
         } finally {
             setLoading(false);
         }
@@ -231,7 +272,8 @@ export const DataProvider = ({ children }) => {
             deleteApplicant,
             getIconComponent,
             refreshData: fetchDbProjects,
-            loading
+            loading,
+            error
         }}>
             {children}
         </DataContext.Provider>

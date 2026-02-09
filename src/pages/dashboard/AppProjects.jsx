@@ -6,9 +6,12 @@ import Button from '../../components/Button';
 import { FaMapMarkerAlt, FaBriefcase, FaMoneyBillWave } from 'react-icons/fa';
 
 const AppProjects = () => {
-    const { projects, getIconComponent } = useData();
+    const { projects, getIconComponent, loading, error } = useData();
     const { user } = useAuth();
     const [filter, setFilter] = useState('All');
+
+    // Filter to show only Live jobs
+    const liveJobs = projects.filter(p => !String(p.id).startsWith('mock-'));
 
     const renderLogo = (job) => {
         if (job.logoUrl) {
@@ -24,30 +27,41 @@ const AppProjects = () => {
 
     return (
         <div className="app-projects-page">
-            <h1 className="page-title">Browse Projects</h1>
+            <h1 className="page-title">Browse Ecosystem Projects</h1>
+
+            {error && <div className="error-msg">{error}</div>}
 
             <div className="projects-list">
-                {projects.map(job => (
-                    <div key={job.id} className="job-row">
-                        <div className="job-logo">
-                            {renderLogo(job)}
+                {loading ? (
+                    <p>Loading projects...</p>
+                ) : liveJobs.length > 0 ? (
+                    liveJobs.map(job => (
+                        <div key={job.id} className="job-row">
+                            <div className="job-logo">
+                                {renderLogo(job)}
+                            </div>
+                            <div className="job-main-info">
+                                <h3>{job.role}</h3>
+                                <span className="company-name">{job.company}</span>
+                            </div>
+                            <div className="job-meta">
+                                <span className="meta-tag"><FaBriefcase /> {job.type}</span>
+                                <span className="meta-tag"><FaMapMarkerAlt /> {job.location}</span>
+                                <span className="meta-tag salary"><FaMoneyBillWave /> {job.salary}</span>
+                            </div>
+                            <div className="job-action">
+                                <Button variant="outline" onClick={() => handleApply(job.company)}>
+                                    Apply
+                                </Button>
+                            </div>
                         </div>
-                        <div className="job-main-info">
-                            <h3>{job.role}</h3>
-                            <span className="company-name">{job.company}</span>
-                        </div>
-                        <div className="job-meta">
-                            <span className="meta-tag"><FaBriefcase /> {job.type}</span>
-                            <span className="meta-tag"><FaMapMarkerAlt /> {job.location}</span>
-                            <span className="meta-tag salary"><FaMoneyBillWave /> {job.salary}</span>
-                        </div>
-                        <div className="job-action">
-                            <Button variant="outline" onClick={() => handleApply(job.company)}>
-                                Apply
-                            </Button>
-                        </div>
+                    ))
+                ) : (
+                    <div className="empty-state">
+                        <FaBriefcase style={{ fontSize: '3rem', opacity: 0.1, marginBottom: '1rem' }} />
+                        <p>No live projects found. Check back later!</p>
                     </div>
-                ))}
+                )}
             </div>
 
             <style>{`

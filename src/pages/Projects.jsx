@@ -7,7 +7,7 @@ import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 
 const Projects = () => {
-    const { projects, getIconComponent } = useData();
+    const { projects, getIconComponent, loading, error } = useData();
     const { user } = useAuth();
     const [filter, setFilter] = useState('All');
     const [selectedJob, setSelectedJob] = useState(null);
@@ -20,7 +20,27 @@ const Projects = () => {
         return getIconComponent(job.logoIcon);
     };
 
-    const filteredProjects = filter === 'All' ? projects : projects.filter(p => p.category === filter);
+    // Prioritize non-mock jobs, then sort by date if possible
+    const sortedProjects = [...projects].sort((a, b) => {
+        const aIsMock = String(a.id).startsWith('mock-');
+        const bIsMock = String(b.id).startsWith('mock-');
+        if (aIsMock && !bIsMock) return 1;
+        if (!aIsMock && bIsMock) return -1;
+        return 0;
+    });
+
+    const filteredProjects = filter === 'All' ? sortedProjects : sortedProjects.filter(p => p.category === filter);
+
+    const parseMarkdown = (text) => {
+        if (!text) return null;
+        const parts = text.split(/(\*\*.*?\*\*)/g);
+        return parts.map((part, i) => {
+            if (part && part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={i}>{part.slice(2, -2)}</strong>;
+            }
+            return part;
+        });
+    };
 
     const handleOneClickApply = (e) => {
         e.preventDefault();
@@ -64,7 +84,17 @@ const Projects = () => {
             </header>
 
             <div className="jobs-container">
-                {filteredProjects.map(job => (
+                {error && <div className="error-msg" style={{ gridColumn: '1/-1', textAlign: 'center', color: '#e74c3c' }}>Error: {error}</div>}
+
+                {loading ? (
+                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '3rem' }}>
+                        <p>Loading the ecosystem...</p>
+                    </div>
+                ) : filteredProjects.length === 0 ? (
+                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '3rem' }}>
+                        <p>No jobs found for this category.</p>
+                    </div>
+                ) : filteredProjects.map(job => (
                     <div key={job.id} className="job-card" onClick={() => setSelectedJob(job)}>
                         <div className="job-header">
                             <div className="company-logo">{renderLogo(job)}</div>
@@ -126,7 +156,7 @@ const Projects = () => {
                         <div className="modal-body">
                             <div className="modal-section">
                                 <h4>Description</h4>
-                                <p>{selectedJob.description}</p>
+                                <p className="whitespace-pre-wrap">{parseMarkdown(selectedJob.description)}</p>
                             </div>
 
                             <div className="modal-section">
