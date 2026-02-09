@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { FaBitcoin, FaEthereum, FaLayerGroup, FaGamepad, FaWallet, FaGlobe } from 'react-icons/fa';
+import { supabase } from '../supabaseClient';
 
 const DataContext = createContext();
 
@@ -7,7 +8,7 @@ export const useData = () => useContext(DataContext);
 
 const initialProjects = [
     {
-        id: 1,
+        id: 'mock-1',
         company: 'DeFi Protocol X',
         logoIcon: 'FaBitcoin',
         logoUrl: '',
@@ -24,7 +25,7 @@ const initialProjects = [
         description: "We are building the next generation of decentralized exchanges. We need a Rust expert to optimize our matching engine and innovative AMM curves."
     },
     {
-        id: 2,
+        id: 'mock-2',
         company: 'NFT Marketplace Y',
         logoIcon: 'FaEthereum',
         logoUrl: '',
@@ -41,7 +42,7 @@ const initialProjects = [
         description: "Leading the frontend architecture for a high-volume NFT marketplace. Experience with optimization and wallet integration is a must."
     },
     {
-        id: 3,
+        id: 'mock-3',
         company: 'DAO Governance Z',
         logoIcon: 'FaGlobe',
         logoUrl: '',
@@ -58,7 +59,7 @@ const initialProjects = [
         description: "Manage our global community of 50k+ members. You will oversee governance proposals, moderate discussions, and organize community calls."
     },
     {
-        id: 4,
+        id: 'mock-4',
         company: 'Layer 2 Solution',
         logoIcon: 'FaLayerGroup',
         logoUrl: '',
@@ -72,10 +73,10 @@ const initialProjects = [
         salary: '$150k - $220k',
         posted: '3 days ago',
         tags: ['Go', 'ZK-Rollups', 'L2'],
-        description: "Work on the core protocol of our ZK-Rollup solution. Deep understanding of Ethereum Virtual Machine (EVM) and zero-knowledge proofs required."
+        description: "Work on the protocol of our ZK-Rollup solution. Deep understanding of Ethereum Virtual Machine (EVM) and zero-knowledge proofs required."
     },
     {
-        id: 5,
+        id: 'mock-5',
         company: 'Play-to-Earn Game',
         logoIcon: 'FaGamepad',
         logoUrl: '',
@@ -92,7 +93,7 @@ const initialProjects = [
         description: "Integrate blockchain mechanics into a AAA-quality Unity game. Wallet connection, asset minting, and on-chain state management."
     },
     {
-        id: 6,
+        id: 'mock-6',
         company: 'Crypto Wallet App',
         logoIcon: 'FaWallet',
         logoUrl: '',
@@ -117,21 +118,68 @@ const initialApplicants = [
 ];
 
 export const DataProvider = ({ children }) => {
-    // Initialize state from localStorage or defaults
-    const [projects, setProjects] = useState(() => {
+    const [localProjects, setLocalProjects] = useState(() => {
         const saved = localStorage.getItem('hp_projects');
-        return saved ? JSON.parse(saved) : initialProjects;
+        return saved ? JSON.parse(saved) : [];
     });
+
+    const [dbProjects, setDbProjects] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const [applicants, setApplicants] = useState(() => {
         const saved = localStorage.getItem('hp_applicants');
         return saved ? JSON.parse(saved) : initialApplicants;
     });
 
+    // Fetch DB Projects
+    const fetchDbProjects = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('jobs')
+                .select('*, profiles:project_id(username, avatar_url, website, contact_email)')
+                .eq('status', 'open')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            // Map DB format to UI format
+            const mapped = data.map(job => ({
+                id: job.id,
+                company: job.profiles?.username || 'Unknown Project',
+                logoIcon: 'FaGlobe',
+                logoUrl: job.profiles?.avatar_url || '',
+                website: job.profiles?.website || '',
+                contactEmail: job.profiles?.contact_email || '',
+                notificationEmail: '', // Kept hidden
+                role: job.title,
+                category: job.category || 'Other',
+                location: job.location,
+                type: job.type,
+                salary: job.salary_range,
+                posted: new Date(job.created_at).toLocaleDateString(),
+                tags: job.tags || [],
+                description: job.description
+            }));
+
+            setDbProjects(mapped);
+        } catch (error) {
+            console.error('Error fetching jobs from DB:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchDbProjects();
+    }, []);
+
+    // Merge all projects
+    const projects = [...dbProjects, ...localProjects, ...initialProjects];
+
     // Persistence effects
     useEffect(() => {
-        localStorage.setItem('hp_projects', JSON.stringify(projects));
-    }, [projects]);
+        localStorage.setItem('hp_projects', JSON.stringify(localProjects));
+    }, [localProjects]);
 
     useEffect(() => {
         localStorage.setItem('hp_applicants', JSON.stringify(applicants));
@@ -140,15 +188,15 @@ export const DataProvider = ({ children }) => {
     // Project Actions
     const addProject = (project) => {
         const newProject = { ...project, id: Date.now() };
-        setProjects([newProject, ...projects]);
+        setLocalProjects([newProject, ...localProjects]);
     };
 
     const updateProject = (id, updatedProject) => {
-        setProjects(projects.map(p => p.id === id ? { ...updatedProject, id } : p));
+        setLocalProjects(localProjects.map(p => p.id === id ? { ...updatedProject, id } : p));
     };
 
     const deleteProject = (id) => {
-        setProjects(projects.filter(p => p.id !== id));
+        setLocalProjects(localProjects.filter(p => p.id !== id));
     };
 
     // Applicant Actions
@@ -181,7 +229,9 @@ export const DataProvider = ({ children }) => {
             addApplicant,
             updateApplicant,
             deleteApplicant,
-            getIconComponent
+            getIconComponent,
+            refreshData: fetchDbProjects,
+            loading
         }}>
             {children}
         </DataContext.Provider>

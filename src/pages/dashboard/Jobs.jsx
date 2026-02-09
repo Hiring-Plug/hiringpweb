@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useData } from '../../context/DataContext';
 import { supabase } from '../../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
@@ -8,6 +9,7 @@ import { FaBriefcase, FaMoneyBillWave, FaMapMarkerAlt, FaPlus, FaBuilding } from
 
 const Jobs = () => {
     const { user } = useAuth();
+    const { refreshData } = useData();
     const navigate = useNavigate();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -18,9 +20,11 @@ const Jobs = () => {
         title: '',
         type: 'full-time',
         location: 'Remote',
+        category: 'DeFi',
         salary_range: '',
         description: '',
-        requirements: ''
+        requirements: '',
+        tags: ''
     });
 
     const isProject = user?.user_metadata?.role === 'project';
@@ -47,15 +51,25 @@ const Jobs = () => {
     const handlePostJob = async (e) => {
         e.preventDefault();
         try {
-            const { error } = await supabase.from('jobs').insert([{
+            const jobData = {
                 ...newJob,
                 project_id: user.id,
-                status: 'open'
-            }]);
+                status: 'open',
+                tags: newJob.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '')
+            };
+
+            const { error } = await supabase.from('jobs').insert([jobData]);
 
             if (error) throw error;
             setIsPosting(false);
-            fetchJobs(); // Refresh list
+
+            // Refresh local list
+            fetchJobs();
+
+            // Refresh global context so the public Projects page updates
+            if (refreshData) refreshData();
+
+            alert('Job posted successfully!');
         } catch (error) {
             alert('Error posting job: ' + error.message);
         }
@@ -128,6 +142,17 @@ const Jobs = () => {
                                     </select>
                                 </div>
                                 <div className="form-group">
+                                    <label>Category</label>
+                                    <select value={newJob.category} onChange={e => setNewJob({ ...newJob, category: e.target.value })}>
+                                        <option value="DeFi">DeFi</option>
+                                        <option value="NFT">NFT</option>
+                                        <option value="DAO">DAO</option>
+                                        <option value="Infrastructure">Infrastructure</option>
+                                        <option value="GameFi">GameFi</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
                                     <label>Location</label>
                                     <input required value={newJob.location} onChange={e => setNewJob({ ...newJob, location: e.target.value })} placeholder="Remote, NYC..." />
                                 </div>
@@ -135,6 +160,10 @@ const Jobs = () => {
                             <div className="form-group">
                                 <label>Salary / Compensation</label>
                                 <input required value={newJob.salary_range} onChange={e => setNewJob({ ...newJob, salary_range: e.target.value })} placeholder="$100k - $150k or $100/hr" />
+                            </div>
+                            <div className="form-group">
+                                <label>Tags (comma separated)</label>
+                                <input value={newJob.tags} onChange={e => setNewJob({ ...newJob, tags: e.target.value })} placeholder="React, Solidity, Rust..." />
                             </div>
                             <div className="form-group">
                                 <label>Description</label>
