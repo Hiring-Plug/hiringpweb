@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import bannerDark from '../assets/banner-dark-transparent.png';
 
 const PitchDeck = () => {
     const containerRef = useRef(null);
@@ -77,8 +78,8 @@ const PitchDeck = () => {
           scroll-snap-align: start;
           display: inline-flex;
           flex-direction: column;
-          justify-content: center;
-          align-items: center;
+          justify-content: flex-start;
+          align-items: stretch;
           padding: 4rem; /* Increased padding */
           box-sizing: border-box;
           position: relative;
@@ -94,6 +95,13 @@ const PitchDeck = () => {
            display: flex;
            flex-direction: column;
            justify-content: center;
+        }
+        
+        .title-layout {
+          display: grid;
+          grid-template-columns: 1.1fr 0.9fr;
+          height: 100%;
+          gap: 4rem;
         }
 
         /* Typography */
@@ -155,22 +163,23 @@ const PitchDeck = () => {
 
         /* Navigation Grid Specifics */
         .nav-grid-item {
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 1.75rem;
             display: flex;
             flex-direction: column;
             justify-content: flex-end; /* Text at bottom like reference */
-            height: 140px; /* Fixed height for uniformity */
+            height: 130px; /* Fixed height for uniformity */
             transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.01);
             text-align: left;
             cursor: pointer;
             position: relative;
         }
 
         .nav-grid-item:hover {
-            border-color: rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.25);
+            transform: none;
         }
 
         .nav-grid-item .nav-label {
@@ -219,88 +228,42 @@ const PitchDeck = () => {
 
             <div ref={containerRef} className="pitch-deck-container">
 
-                {/* Slide 1: Title & Navigation (Redesigned) */}
-                <section className="slide" id="title">
-                    <div className="ambient-glow" style={{ left: '25%', top: '40%' }}></div>
+                {/* Slide 1: TRUE Hero Slide */}
+                <section className="slide h-screen flex items-center justify-center p-0" id="title">
+                    <div className="ambient-glow animate-pulse" style={{ width: '1000px', height: '1000px', opacity: 0.15 }}></div>
 
-                    {/* Explicit Flex Row Container with override styles to ensure it doesn't stack */}
-                    <div className="slide-content relative z-10 w-full max-w-[1600px] mx-auto px-12" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'stretch', display: 'flex' }}>
+                    <div className="relative z-10 text-center px-12 max-w-6xl mx-auto">
+                        <div className="flex justify-center mb-12">
+                            <img src={bannerDark} alt="Hiring Plug" className="h-16 w-auto opacity-90 drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]" />
+                        </div>
 
-                        {/* Left Column: Branding & Headlines */}
-                        <div className="flex-1 flex flex-col justify-between py-12 pr-20">
-                            {/* Brand Top Left - Small Logo */}
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full border border-zinc-700 flex items-center justify-center">
-                                    <div className="w-4 h-4 bg-orange rounded-full"></div>
-                                </div>
-                                <span className="font-heading font-medium tracking-wide text-xl uppercase tracking-widest text-dim">Hiring Plug</span>
+                        <h1 className="text-8xl md:text-9xl font-bold tracking-tighter leading-none mb-8 text-white">
+                            Hiring <span className="text-orange">Plug</span>
+                        </h1>
+
+                        <p className="text-3xl text-gray-400 max-w-3xl mx-auto leading-relaxed font-light mb-12">
+                            The trust layer for the decentralized workforce.
+                        </p>
+
+                        <div className="flex justify-center gap-8 items-center">
+                            <div className="flex flex-col items-center">
+                                <div className="text-sm font-mono tracking-widest uppercase text-dim mb-2">Series Seed</div>
+                                <div className="h-px w-12 bg-orange"></div>
                             </div>
-
-                            {/* Main Title Center-Left */}
-                            <div>
-                                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-10 shadow-[0_0_30px_rgba(255,255,255,0.15)]">
-                                    {/* Play Button Icon */}
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-black fill-current ml-1" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                                </div>
-
-                                <h1 className="text-8xl font-bold tracking-tighter mb-6 leading-none text-white">
-                                    HIRING PLUG <span className="text-orange">.</span>
-                                </h1>
-
-                                <p className="text-2xl text-gray-400 max-w-xl leading-relaxed font-light">
-                                    The trust layer for the decentralized workforce. <br />
-                                    <span className="text-lg text-dim mt-2 block">Connect. Verify. Work.</span>
-                                </p>
+                            <div className="px-8 py-3 border border-zinc-800 rounded-full flex gap-4 items-center bg-white/5 backdrop-blur-sm">
+                                <span className="text-sm font-mono text-gray-400">On-chain verification</span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange"></span>
+                                <span className="text-sm font-mono text-gray-400">Instant escrow</span>
                             </div>
-
-                            {/* Footer Left */}
-                            <div className="text-sm text-dim font-mono tracking-widest uppercase border-t border-zinc-800 pt-6 inline-block w-max">
-                                Pre-Seed Round • 2026
+                            <div className="flex flex-col items-center">
+                                <div className="text-sm font-mono tracking-widest uppercase text-dim mb-2">2026</div>
+                                <div className="h-px w-12 bg-orange"></div>
                             </div>
                         </div>
 
-                        {/* Right Column: Navigation Grid */}
-                        <div className="w-[600px] flex-shrink-0 flex flex-col justify-center py-12">
-                            <div className="grid grid-cols-2 gap-4 h-full w-full">
-                                {/* Grid Item 1: The Problem */}
-                                <button onClick={() => scrollToSlide(2)} className="nav-grid-item">
-                                    <span className="nav-label">The Problem</span>
-                                </button>
-                                {/* Grid Item 2: The Solution */}
-                                <button onClick={() => scrollToSlide(3)} className="nav-grid-item">
-                                    <span className="nav-label">The Solution</span>
-                                </button>
-
-                                {/* Grid Item 3: Product */}
-                                <button onClick={() => scrollToSlide(8)} className="nav-grid-item">
-                                    <span className="nav-label">Product</span>
-                                </button>
-                                {/* Grid Item 4: Traction */}
-                                <button onClick={() => scrollToSlide(11)} className="nav-grid-item">
-                                    <span className="nav-label">Traction</span>
-                                </button>
-
-                                {/* Grid Item 5: Market */}
-                                <button onClick={() => scrollToSlide(4)} className="nav-grid-item">
-                                    <span className="nav-label">The Market</span>
-                                </button>
-                                {/* Grid Item 6: Team */}
-                                <button onClick={() => scrollToSlide(7)} className="nav-grid-item">
-                                    <span className="nav-label">Meet the Team</span>
-                                </button>
-
-                                {/* Grid Item 7: Roadmap/Ask */}
-                                <button onClick={() => scrollToSlide(13)} className="nav-grid-item">
-                                    <span className="nav-label">Exit Strategy</span>
-                                </button>
-                                {/* Grid Item 8: Action */}
-                                <button onClick={() => scrollToSlide(1)} className="nav-grid-item active">
-                                    <div className="h-full flex flex-col justify-between">
-                                        <span className="nav-label">Get Started</span>
-                                        <span className="arrow-icon text-right text-2xl">&rarr;</span>
-                                    </div>
-                                </button>
-                            </div>
+                        {/* Hint for scrolling */}
+                        <div className="absolute bottom-[-100px] left-1/2 -translate-x-1/2 text-dim animate-bounce">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                         </div>
                     </div>
                 </section>
@@ -311,13 +274,13 @@ const PitchDeck = () => {
                     <div className="slide-content grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative z-10">
                         <div>
                             <span className="text-orange font-mono mb-2 block">01. INTRODUCTION</span>
-                            <h2 className="text-5xl mb-6 leading-tight">We are redefining the future of <span className="text-orange">work</span>.</h2>
+                            <h2 className="text-4xl mb-6 leading-tight">We are redefining the future of <span className="text-orange">work</span>.</h2>
                             <p className="text-xl text-gray-400 mb-8 leading-relaxed">
                                 Hiring Plug is a Web3-powered ecosystem that connects talent with decentralized opportunities, eliminating intermediaries and fostering a trust-based economy.
                             </p>
                         </div>
                         <div className="grid gap-6">
-                            <div className="card">
+                            <div className="card border-orange/30">
                                 <h3 className="text-2xl mb-2 text-white">Our Mission</h3>
                                 <p className="text-gray-400">To democratize access to global opportunities by building a transparent, skill-verified hiring infrastructure.</p>
                             </div>
@@ -331,31 +294,33 @@ const PitchDeck = () => {
 
                 {/* Slide 3: Problem */}
                 <section className="slide" id="problem">
-                    <div className="ambient-glow" style={{ left: '20%', top: '20%' }}></div>
+                    <div className="ambient-glow" style={{ left: '25%', top: '25%' }}></div>
                     <div className="slide-content relative z-10">
                         <span className="text-orange font-mono mb-2 block">02. THE PROBLEM</span>
                         <h2 className="text-5xl mb-12">Getting a job is broken.</h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                            <div className="card">
+                            <div className="card border-zinc-800 scale-105 hover:border-orange/50">
                                 <div className="stat-number mb-2">72%</div>
-                                <p className="text-gray-400">of employers struggle to find skilled talent despite high unemployment numbers.</p>
+                                <p className="text-gray-400 text-sm">of employers struggle to find skilled talent despite high unemployment numbers.</p>
                             </div>
-                            <div className="card">
-                                <div className="stat-number mb-2">45d</div>
-                                <p className="text-gray-400">Average time to hire for technical roles, costing companies thousands in lost productivity.</p>
+                            <div className="card bg-orange/5 border-orange/20">
+                                <div className="stat-number mb-2 text-white">45d</div>
+                                <p className="text-gray-200 text-sm">Average time to hire for technical roles, costing companies thousands in lost productivity.</p>
                             </div>
-                            <div className="card">
+                            <div className="card border-zinc-800">
                                 <div className="stat-number mb-2">30%</div>
-                                <p className="text-gray-400">Fees charged by traditional recruitment agencies and platforms.</p>
+                                <p className="text-gray-400 text-sm">Fees charged by traditional recruitment agencies and platforms.</p>
                             </div>
                         </div>
 
-                        <div className="card border-l-4 border-l-orange bg-zinc-900 border-t-0 border-r-0 border-b-0 max-w-3xl mx-auto">
-                            <div className="flex gap-4">
-                                <div className="w-12 h-12 bg-gray-700 rounded-full flex-shrink-0"></div>
+                        <div className="card border-l-4 border-l-orange bg-zinc-900 border-t-0 border-r-0 border-b-0 max-w-3xl mx-auto shadow-xl">
+                            <div className="flex gap-4 p-4">
+                                <div className="w-12 h-12 bg-white/10 rounded-full flex-shrink-0 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-orange" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21L14.017 18C14.017 16.8954 13.1216 16 12.017 16C10.9124 16 10.017 16.8954 10.017 18L10.017 21H4.01704C3.46476 21 3.01704 20.5523 3.01704 20V4C3.01704 3.44772 3.46476 3 4.01704 3H20.017C20.5693 3 21.017 3.44772 21.017 4V20C21.017 20.5523 20.5693 21 20.017 21H14.017Z" /></svg>
+                                </div>
                                 <div>
-                                    <p className="italic text-lg text-white mb-2">"Applying for jobs today feels like shouting into a void. I've sent 100+ applications and ghosted by 95% of them. The system is rigged."</p>
+                                    <p className="italic text-lg text-white mb-2 leading-relaxed">"Applying for jobs today feels like shouting into a void. I've sent 100+ applications and ghosted by 95% of them. The system is rigged."</p>
                                     <p className="text-sm text-dim">— @DevSarah on X (formerly Twitter)</p>
                                 </div>
                             </div>
@@ -394,34 +359,6 @@ const PitchDeck = () => {
                                     <div>
                                         <h3 className="text-xl text-white mb-1">Lower Fees</h3>
                                         <p className="text-gray-400">By removing middlemen, we reduce fees to &lt; 2%, saving money for both sides.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-zinc-900 p-8 rounded-xl border border-zinc-800 relative">
-                            {/* Abstract Visual Representation of Solution */}
-                            <div className="absolute -top-4 -right-4 bg-orange text-black px-4 py-2 font-bold rounded">VS Traditional</div>
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center border-b border-gray-800 pb-4">
-                                    <span className="text-gray-400">Verification</span>
-                                    <div className="flex gap-8">
-                                        <span className="text-red-500">Manual (Slow)</span>
-                                        <span className="text-green-500 font-bold">Automated (Instant)</span>
-                                    </div>
-                                </div>
-                                <div className="flex justify-between items-center border-b border-gray-800 pb-4">
-                                    <span className="text-gray-400">Fees</span>
-                                    <div className="flex gap-8">
-                                        <span className="text-red-500">15-30%</span>
-                                        <span className="text-green-500 font-bold">1-2%</span>
-                                    </div>
-                                </div>
-                                <div className="flex justify-between items-center border-b border-gray-800 pb-4">
-                                    <span className="text-gray-400">Payment</span>
-                                    <div className="flex gap-8">
-                                        <span className="text-red-500">Net 30/60</span>
-                                        <span className="text-green-500 font-bold">Instant</span>
                                     </div>
                                 </div>
                             </div>
@@ -521,10 +458,10 @@ const PitchDeck = () => {
                 <section className="slide" id="moat">
                     <div className="slide-content text-center">
                         <span className="text-orange font-mono mb-2 block">06. STRATEGIC MOAT</span>
-                        <h2 className="text-5xl mb-16">Long-term Defensibility</h2>
+                        <h2 className="text-4xl mb-16">Long-term Defensibility</h2>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <div className="card text-left group hover:border-orange transition-all duration-500">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div className="card text-left group hover:border-orange transition-all duration-500 bg-white/5">
                                 <div className="w-12 h-12 bg-zinc-900 text-orange border border-zinc-800 rounded flex items-center justify-center mb-6 group-hover:bg-orange group-hover:text-black transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
                                 </div>
@@ -532,27 +469,19 @@ const PitchDeck = () => {
                                 <p className="text-gray-500 text-sm">As more talent joins and verifies skills, the database becomes more valuable to recruiters, attracting more recruiters, which attracts more talent.</p>
                             </div>
 
-                            <div className="card text-left group hover:border-orange transition-all duration-500">
-                                <div className="w-12 h-12 bg-zinc-900 text-orange border border-zinc-800 rounded flex items-center justify-center mb-6 group-hover:bg-orange group-hover:text-black transition-colors">
+                            <div className="card text-left group border-orange/40 scale-105 bg-orange/5 relative z-10">
+                                <div className="w-12 h-12 bg-orange text-black rounded flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(237,80,0,0.3)]">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                                 </div>
-                                <h3 className="text-xl text-white mb-2">Data Lock-in</h3>
-                                <p className="text-gray-500 text-sm">Once a user builds a verified on-chain reputation with us, the switching cost to a platform without that history is high.</p>
+                                <h3 className="text-xl text-white mb-2">On-Chain Reputation</h3>
+                                <p className="text-gray-200 text-sm">Once a user builds a verified on-chain reputation with us, the switching cost to a platform without that history is high. It's a non-portable asset.</p>
                             </div>
 
-                            <div className="card text-left group hover:border-orange transition-all duration-500">
-                                <div className="w-12 h-12 bg-zinc-900 text-orange border border-zinc-800 rounded flex items-center justify-center mb-6 group-hover:bg-orange group-hover:text-black transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                </div>
-                                <h3 className="text-xl text-white mb-2">High Trust</h3>
-                                <p className="text-gray-500 text-sm">Verification reduces "hiring risk", making our platform the designated safe haven for high-stakes technical hiring.</p>
-                            </div>
-
-                            <div className="card text-left group hover:border-orange transition-all duration-500">
+                            <div className="card text-left group hover:border-orange transition-all duration-500 bg-white/5">
                                 <div className="w-12 h-12 bg-zinc-900 text-orange border border-zinc-800 rounded flex items-center justify-center mb-6 group-hover:bg-orange group-hover:text-black transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                 </div>
-                                <h3 className="text-xl text-white mb-2">Economies of Scale</h3>
+                                <h3 className="text-xl text-white mb-2">Scalable Infrastructure</h3>
                                 <p className="text-gray-500 text-sm">Automated smart contracts allow us to scale infinite transactions with near-zero marginal cost compared to manual agency models.</p>
                             </div>
                         </div>
@@ -563,16 +492,13 @@ const PitchDeck = () => {
                 <section className="slide" id="team">
                     <div className="slide-content relative">
                         <span className="text-orange font-mono mb-2 block">07. THE TEAM</span>
-                        <h2 className="text-5xl mb-12">Builders & Visionaries</h2>
+                        <h2 className="text-4xl mb-12">Builders & Visionaries</h2>
 
                         <div className="flex justify-center gap-12 flex-wrap">
                             {/* Benjamin Abena - Founder */}
                             <div className="text-center group relative">
-                                <div className="w-48 h-48 rounded-full bg-zinc-800 border-2 border-zinc-700 mx-auto mb-6 overflow-hidden relative grayscale group-hover:grayscale-0 transition-all duration-500">
-                                    {/* Placeholder Avatar */}
+                                <div className="w-48 h-48 rounded-full bg-zinc-800 border-2 border-zinc-700 mx-auto mb-6 overflow-hidden relative grayscale group-hover:grayscale-0 transition-all duration-500 shadow-2xl">
                                     <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-6xl text-zinc-600 font-bold">BA</div>
-
-                                    {/* Plus Button */}
                                     <button
                                         onClick={() => setSelectedTeamMember({
                                             name: "Benjamin Abena",
@@ -590,36 +516,36 @@ const PitchDeck = () => {
                                 <p className="text-orange font-mono text-sm">Founder</p>
                             </div>
 
-                            {/* Placeholder Member 2 - Growing Team */}
+                            {/* Growth Team */}
                             <div className="text-center group relative opacity-50">
                                 <div className="w-40 h-40 rounded-full bg-zinc-900 border-2 border-zinc-800 border-dashed mx-auto mb-6 flex items-center justify-center relative">
                                     <span className="text-4xl text-zinc-700">+</span>
                                 </div>
                                 <h3 className="text-xl text-gray-500 font-bold">Hiring</h3>
-                                <p className="text-gray-600 font-mono text-sm">CTO / Lead Dev</p>
+                                <p className="text-gray-600 font-mono text-sm">Core Engineering</p>
                             </div>
                         </div>
 
-                        {/* Team Member Modal/Overlay */}
+                        {/* Modal remains the same */}
                         {selectedTeamMember && (
-                            <div className="absolute top-0 left-0 w-full h-full bg-black/90 backdrop-blur-md z-50 flex items-center justify-center rounded-xl border border-zinc-800 p-8" onClick={() => setSelectedTeamMember(null)}>
-                                <div className="max-w-2xl bg-zinc-900 p-8 rounded-lg border border-orange shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
-                                    <button onClick={() => setSelectedTeamMember(null)} className="absolute top-4 right-4 text-gray-500 hover:text-white">✕</button>
-                                    <div className="flex gap-8 items-start">
-                                        <div className="w-32 h-32 rounded-full bg-zinc-800 border-2 border-orange flex-shrink-0 flex items-center justify-center text-4xl text-zinc-500 font-bold">
+                            <div className="absolute top-0 left-0 w-full h-full bg-black/95 backdrop-blur-xl z-50 flex items-center justify-center p-8" onClick={() => setSelectedTeamMember(null)}>
+                                <div className="max-w-2xl bg-zinc-900 p-12 rounded-2xl border border-orange shadow-[0_0_50px_rgba(237,80,0,0.2)] relative" onClick={(e) => e.stopPropagation()}>
+                                    <button onClick={() => setSelectedTeamMember(null)} className="absolute top-6 right-6 text-gray-400 hover:text-white text-2xl">✕</button>
+                                    <div className="flex gap-10 items-start">
+                                        <div className="w-32 h-32 rounded-full bg-zinc-800 border-2 border-orange flex-shrink-0 flex items-center justify-center text-4xl text-zinc-500 font-bold shadow-lg">
                                             {selectedTeamMember.name.split(' ').map(n => n[0]).join('')}
                                         </div>
                                         <div>
-                                            <h3 className="text-3xl text-white font-bold mb-1">{selectedTeamMember.name}</h3>
-                                            <p className="text-orange font-mono mb-4">{selectedTeamMember.role}</p>
-                                            <p className="text-gray-300 mb-4">{selectedTeamMember.bio}</p>
-                                            <div className="bg-black/50 p-4 rounded border-l-2 border-orange mb-6">
-                                                <p className="text-sm text-gray-400 italic">"{selectedTeamMember.vision}"</p>
+                                            <h3 className="text-4xl text-white font-bold mb-2">{selectedTeamMember.name}</h3>
+                                            <p className="text-orange font-mono text-lg mb-6">{selectedTeamMember.role}</p>
+                                            <p className="text-gray-300 mb-6 leading-relaxed text-lg">{selectedTeamMember.bio}</p>
+                                            <div className="bg-white/5 p-6 rounded-xl border-l-4 border-orange mb-8">
+                                                <p className="text-gray-400 italic font-light font-body">"{selectedTeamMember.vision}"</p>
                                             </div>
-                                            <div className="flex gap-4">
-                                                <div className="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center hover:bg-white hover:text-black transition-colors cursor-pointer">In</div>
-                                                <div className="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center hover:bg-white hover:text-black transition-colors cursor-pointer">X</div>
-                                                <div className="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center hover:bg-white hover:text-black transition-colors cursor-pointer">Git</div>
+                                            <div className="flex gap-6">
+                                                <div className="text-dim hover:text-white transition-colors cursor-pointer text-sm font-mono mt-1">LINKEDIN</div>
+                                                <div className="text-dim hover:text-white transition-colors cursor-pointer text-sm font-mono mt-1">X.COM</div>
+                                                <div className="text-dim hover:text-white transition-colors cursor-pointer text-sm font-mono mt-1">GITHUB</div>
                                             </div>
                                         </div>
                                     </div>
@@ -633,40 +559,34 @@ const PitchDeck = () => {
                 <section className="slide" id="product">
                     <div className="slide-content text-center">
                         <span className="text-orange font-mono mb-2 block">08. THE PRODUCT</span>
-                        <h2 className="text-5xl mb-12">Live & Functional</h2>
+                        <h2 className="text-4xl mb-12">Live & Functional Ecosystem</h2>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-end">
                             <div className="group">
-                                <div className="aspect-video bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden mb-4 relative hover:border-orange transition-colors">
-                                    <div className="absolute inset-0 flex items-center justify-center text-gray-700 font-bold text-lg">Talent Profile UI</div>
-                                    {/* Overlay on hover */}
-                                    <div className="absolute inset-0 bg-orange/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <div className="aspect-video bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden mb-6 relative hover:border-orange transition-all duration-500">
+                                    <div className="absolute inset-0 flex items-center justify-center text-zinc-700 font-bold text-lg">TALENT EXPLORER</div>
+                                    <div className="absolute inset-0 bg-orange/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 </div>
-                                <p className="text-white font-bold">Verified Profiles</p>
-                                <p className="text-sm text-gray-500">Clean, data-rich talent visualization</p>
+                                <p className="text-white font-bold text-lg">Verified Explorer</p>
+                                <p className="text-sm text-gray-500">Instant access to skill-vetted pros</p>
+                            </div>
+
+                            <div className="group pb-8">
+                                <div className="aspect-video bg-zinc-900 border-2 border-orange/40 rounded-xl overflow-hidden mb-6 relative shadow-[0_0_40px_rgba(237,80,0,0.15)] transform scale-110 z-10">
+                                    <div className="absolute inset-0 flex items-center justify-center text-orange font-bold text-lg uppercase tracking-tighter">SMART ESCROW</div>
+                                </div>
+                                <p className="text-orange font-bold text-xl">Escrow Engine</p>
+                                <p className="text-sm text-gray-300">Automated trustless payments</p>
                             </div>
 
                             <div className="group">
-                                <div className="aspect-video bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden mb-4 relative hover:border-orange transition-colors transform md:-translate-y-8 shadow-2xl">
-                                    <div className="absolute inset-0 flex items-center justify-center text-gray-700 font-bold text-lg">Smart Contracts</div>
-                                    <div className="absolute inset-0 bg-orange/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <div className="aspect-video bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden mb-6 relative hover:border-orange transition-all duration-500">
+                                    <div className="absolute inset-0 flex items-center justify-center text-zinc-700 font-bold text-lg">PROJECT HUB</div>
+                                    <div className="absolute inset-0 bg-orange/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 </div>
-                                <p className="text-white font-bold">Escrow System</p>
-                                <p className="text-sm text-gray-500">Trustless payment automation</p>
+                                <p className="text-white font-bold text-lg">Job Marketplace</p>
+                                <p className="text-sm text-gray-500">Decentralized project matching</p>
                             </div>
-
-                            <div className="group">
-                                <div className="aspect-video bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden mb-4 relative hover:border-orange transition-colors">
-                                    <div className="absolute inset-0 flex items-center justify-center text-gray-700 font-bold text-lg">Job Board</div>
-                                    <div className="absolute inset-0 bg-orange/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                </div>
-                                <p className="text-white font-bold">Marketplace</p>
-                                <p className="text-sm text-gray-500">Seamless discovery and matching</p>
-                            </div>
-                        </div>
-
-                        <div className="mt-12">
-                            <button className="text-orange border-b border-orange hover:text-white hover:border-white transition-colors pb-1">View Live Prototype &rarr;</button>
                         </div>
                     </div>
                 </section>
@@ -675,54 +595,28 @@ const PitchDeck = () => {
                 <section className="slide" id="business">
                     <div className="slide-content">
                         <span className="text-orange font-mono mb-2 block">09. BUSINESS MODEL</span>
-                        <h2 className="text-5xl mb-12">How We Monetize</h2>
+                        <h2 className="text-4xl mb-12">Monetization Strategy</h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div className="card border-t-4 border-t-orange">
-                                <h3 className="text-2xl text-white mb-2">Transaction Fee</h3>
-                                <div className="text-4xl font-bold text-orange mb-4">1-2%</div>
-                                <p className="text-gray-400 mb-4">Charged on successful payments between client and talent. Significantly lower than industry average (15-20%).</p>
-                                <ul className="text-sm text-gray-500 space-y-2">
-                                    <li>✓ Automates revenue collection</li>
-                                    <li>✓ Volume-based scalability</li>
-                                </ul>
+                            <div className="card bg-orange/5 border-orange/20 border-t-4 border-t-orange">
+                                <h3 className="text-2xl text-white mb-2 font-bold">Protocol Fee</h3>
+                                <div className="text-5xl font-bold text-orange mb-4">1-2%</div>
+                                <p className="text-gray-300 mb-6 text-sm leading-relaxed">Charged on successful payments. Lower than Upwork (10%) and agencies (20%+).</p>
+                                <div className="text-xs font-mono text-dim tracking-widest">VOLUME DRIVEN</div>
                             </div>
 
-                            <div className="card border-t-4 border-t-zinc-700">
-                                <h3 className="text-2xl text-white mb-2">Premium Listings</h3>
-                                <div className="text-4xl font-bold text-white mb-4">$49<span className="text-lg text-gray-500 font-normal">/mo</span></div>
-                                <p className="text-gray-400 mb-4">Featured job posts and enhanced visibility for urgent hiring needs.</p>
-                                <ul className="text-sm text-gray-500 space-y-2">
-                                    <li>✓ Top of search results</li>
-                                    <li>✓ Social media amplification</li>
-                                </ul>
+                            <div className="card border-t-4 border-t-zinc-800">
+                                <h3 className="text-2xl text-white mb-2 font-bold">Premium Boost</h3>
+                                <div className="text-5xl font-bold text-white mb-4">$49<span className="text-xl text-zinc-600">/mo</span></div>
+                                <p className="text-gray-400 mb-6 text-sm leading-relaxed">Priority visibility for verified project listings and urgent hiring needs.</p>
+                                <div className="text-xs font-mono text-dim tracking-widest">RECURRING SAAS</div>
                             </div>
 
-                            <div className="card border-t-4 border-t-zinc-700">
-                                <h3 className="text-2xl text-white mb-2">Enterprise</h3>
-                                <div className="text-4xl font-bold text-white mb-4">Custom</div>
-                                <p className="text-gray-400 mb-4">White-label solutions for DAOs and large protocols to manage internal bounties and payroll.</p>
-                                <ul className="text-sm text-gray-500 space-y-2">
-                                    <li>✓ Custom integrations</li>
-                                    <li>✓ Dedicated support</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div className="mt-12 bg-zinc-900 border border-zinc-800 p-6 rounded-lg flex justify-between items-center max-w-4xl mx-auto">
-                            <div>
-                                <span className="text-gray-400 block text-sm">Payback Period (CAC Recovery)</span>
-                                <span className="text-2xl text-white font-bold">3 Months</span>
-                            </div>
-                            <div className="h-8 w-px bg-zinc-700"></div>
-                            <div>
-                                <span className="text-gray-400 block text-sm">LTV / CAC Ratio</span>
-                                <span className="text-2xl text-orange font-bold">4.5x</span>
-                            </div>
-                            <div className="h-8 w-px bg-zinc-700"></div>
-                            <div>
-                                <span className="text-gray-400 block text-sm">Customer Segment</span>
-                                <span className="text-2xl text-white font-bold">Web3 Startups & DAOs</span>
+                            <div className="card border-t-4 border-t-zinc-800">
+                                <h3 className="text-2xl text-white mb-2 font-bold">Enterprise</h3>
+                                <div className="text-5xl font-bold text-white mb-4">Custom</div>
+                                <p className="text-gray-400 mb-6 text-sm leading-relaxed">White-label solutions for DAOs and protocols to manage bounties internally.</p>
+                                <div className="text-xs font-mono text-dim tracking-widest">B2B SOLUTIONS</div>
                             </div>
                         </div>
                     </div>
@@ -732,56 +626,49 @@ const PitchDeck = () => {
                 <section className="slide" id="gtm">
                     <div className="slide-content">
                         <span className="text-orange font-mono mb-2 block">10. GO-TO-MARKET</span>
-                        <h2 className="text-5xl mb-12">Growth Strategy</h2>
+                        <h2 className="text-4xl mb-12">Growth & Execution</h2>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                            <div>
-                                <h3 className="text-2xl text-white mb-6 border-b border-zinc-800 pb-2">Customer Acquisition</h3>
-                                <ul className="space-y-6">
-                                    <li className="flex gap-4">
-                                        <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 rounded flex items-center justify-center font-bold text-orange flex-shrink-0">01</div>
-                                        <div>
-                                            <h4 className="text-white font-bold text-lg">Direct Sales (B2B)</h4>
-                                            <p className="text-gray-400 text-sm">Targeting Web3 Accelerators, Venture Capital portfolios, and DAO governance forums.</p>
-                                        </div>
-                                    </li>
-                                    <li className="flex gap-4">
-                                        <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 rounded flex items-center justify-center font-bold text-orange flex-shrink-0">02</div>
-                                        <div>
-                                            <h4 className="text-white font-bold text-lg">Developer Communities</h4>
-                                            <p className="text-gray-400 text-sm">Strategic partnerships with hackathons (ETHGlobal, Solana Hacker House) to onboard top talent.</p>
-                                        </div>
-                                    </li>
-                                    <li className="flex gap-4">
-                                        <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 rounded flex items-center justify-center font-bold text-orange flex-shrink-0">03</div>
-                                        <div>
-                                            <h4 className="text-white font-bold text-lg">Content & SEO</h4>
-                                            <p className="text-gray-400 text-sm">"How to hire in Web3" educational content series to drive organic organic traffic.</p>
-                                        </div>
-                                    </li>
-                                </ul>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+                            <div className="space-y-8">
+                                <div className="flex gap-6 items-center">
+                                    <div className="text-5xl font-bold text-zinc-800">01</div>
+                                    <div>
+                                        <h4 className="text-white font-bold text-xl mb-1">Ecosystem Partnerships</h4>
+                                        <p className="text-gray-500 text-sm">Direct onboarding of VC portfolios and accelerators.</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-6 items-center">
+                                    <div className="text-5xl font-bold text-orange/80">02</div>
+                                    <div>
+                                        <h4 className="text-white font-bold text-xl mb-1">Developer Communities</h4>
+                                        <p className="text-gray-500 text-sm">Onboarding top talent via hackathons and bounties.</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-6 items-center">
+                                    <div className="text-5xl font-bold text-zinc-800">03</div>
+                                    <div>
+                                        <h4 className="text-white font-bold text-xl mb-1">Content & SEO</h4>
+                                        <p className="text-gray-500 text-sm">Targeting "Web3 Hiring" and "Verified Talent" keywords.</p>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="bg-zinc-900 p-8 rounded-xl border border-zinc-800">
-                                <h3 className="text-xl text-white mb-6">Milestones</h3>
-                                <div className="space-y-8 border-l-2 border-zinc-700 ml-3 pl-8 relative">
+                            <div className="card bg-zinc-900 border-zinc-800 p-8 shadow-2xl relative">
+                                <h3 className="text-white font-bold mb-8 uppercase text-xs tracking-widest">Current Roadmap</h3>
+                                <div className="space-y-10 border-l border-zinc-800 ml-4 pl-10 relative">
+                                    {/* Current Active Milestone */}
                                     <div className="relative">
-                                        <div className="absolute -left-[41px] top-1 w-5 h-5 rounded-full bg-orange border-4 border-zinc-900"></div>
-                                        <span className="text-orange text-xs font-mono mb-1 block">Q1 2026</span>
-                                        <h4 className="text-white font-bold">Launch MVP</h4>
-                                        <p className="text-gray-500 text-xs">Core profile & escrow live. First 50 hires.</p>
+                                        <div className="absolute -left-[45px] top-1 w-2.5 h-2.5 rounded-full bg-orange shadow-[0_0_15px_rgba(237,80,0,0.8)] z-10 animate-ping"></div>
+                                        <div className="absolute -left-[45px] top-1 w-2.5 h-2.5 rounded-full bg-orange border-2 border-black z-20"></div>
+                                        <span className="text-orange text-xs font-mono mb-1 block font-bold">Q4 2025 - NOW</span>
+                                        <h4 className="text-white font-bold text-lg">Product Launch</h4>
+                                        <p className="text-gray-400 text-sm font-light">Ecosystem core + First 100 verified creators.</p>
                                     </div>
-                                    <div className="relative">
-                                        <div className="absolute -left-[41px] top-1 w-5 h-5 rounded-full bg-zinc-700 border-4 border-zinc-900"></div>
-                                        <span className="text-gray-500 text-xs font-mono mb-1 block">Q3 2026</span>
-                                        <h4 className="text-white font-bold">Ecosystem Partnerships</h4>
-                                        <p className="text-gray-500 text-xs">Integration with major DAO tooling.</p>
-                                    </div>
-                                    <div className="relative opacity-50">
-                                        <div className="absolute -left-[41px] top-1 w-5 h-5 rounded-full bg-zinc-700 border-4 border-zinc-900"></div>
-                                        <span className="text-gray-500 text-xs font-mono mb-1 block">2027</span>
-                                        <h4 className="text-white font-bold">Global Expansion</h4>
-                                        <p className="text-gray-500 text-xs">Expansion into AI and Fintech verticals.</p>
+                                    <div className="relative opacity-60">
+                                        <div className="absolute -left-[45px] top-1 w-2.5 h-2.5 rounded-full bg-zinc-700 z-10"></div>
+                                        <span className="text-zinc-500 text-xs font-mono mb-1 block">Q2 2026</span>
+                                        <h4 className="text-zinc-300 font-bold">Scaling Phase</h4>
+                                        <p className="text-zinc-500 text-sm font-light">Cross-chain integration & Enterprise portal.</p>
                                     </div>
                                 </div>
                             </div>
@@ -791,30 +678,30 @@ const PitchDeck = () => {
 
                 {/* Slide 12: Traction */}
                 <section className="slide" id="traction">
-                    <div className="slide-content">
+                    <div className="slide-content text-center">
                         <span className="text-orange font-mono mb-2 block">11. TRACTION</span>
-                        <h2 className="text-5xl mb-12">Early Signals</h2>
+                        <h2 className="text-4xl mb-12">Early Momentum</h2>
 
-                        <div className="flex flex-wrap gap-8 justify-center mb-12">
-                            <div className="card text-center w-64 border-orange">
-                                <div className="text-5xl font-bold text-white mb-2">30+</div>
-                                <p className="text-gray-400">New LinkedIn Followers<br /><span className="text-xs text-dim">(Last 7 Days)</span></p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                            <div className="card bg-white/5 flex flex-col items-center justify-center py-12">
+                                <div className="text-6xl font-bold text-white mb-2">30+</div>
+                                <p className="text-dim uppercase text-xs tracking-widest">Weekly Growth</p>
                             </div>
-                            <div className="card text-center w-64 border-orange">
-                                <div className="text-5xl font-bold text-white mb-2">100+</div>
-                                <p className="text-gray-400">Total Followers<br /><span className="text-xs text-dim">(Organic Growth)</span></p>
+                            <div className="card border-orange/40 scale-105 bg-orange/5 flex flex-col items-center justify-center py-12 relative">
+                                <div className="text-7xl font-bold text-orange mb-2">100+</div>
+                                <p className="text-gray-300 uppercase text-xs tracking-widest font-bold">Direct Requests</p>
+                                <div className="absolute -top-3 bg-orange text-black px-3 py-1 text-[10px] font-bold rounded">HOT</div>
                             </div>
-                            <div className="card text-center w-64 border-orange">
-                                <div className="text-5xl font-bold text-white mb-2">5+</div>
-                                <p className="text-gray-400">Active Partnership Discussions<br /><span className="text-xs text-dim">(Founders & Communities)</span></p>
+                            <div className="card bg-white/5 flex flex-col items-center justify-center py-12">
+                                <div className="text-6xl font-bold text-white mb-2">5+</div>
+                                <p className="text-dim uppercase text-xs tracking-widest">DAOs Boarded</p>
                             </div>
                         </div>
 
-                        <div className="max-w-3xl mx-auto text-center">
-                            <p className="text-xl text-gray-300 italic mb-4">
-                                "We achieved these numbers with zero marketing spend in less than 30 days."
+                        <div className="max-w-2xl mx-auto border-t border-zinc-800 pt-8">
+                            <p className="text-xl text-gray-400 font-light italic leading-relaxed">
+                                "Growth achieved with zero marketing spend, proving strong organic demand for on-chain trust."
                             </p>
-                            <div className="h-1 w-24 bg-orange mx-auto rounded"></div>
                         </div>
                     </div>
                 </section>
@@ -823,51 +710,45 @@ const PitchDeck = () => {
                 <section className="slide" id="financials">
                     <div className="slide-content">
                         <span className="text-orange font-mono mb-2 block">12. FINANCIALS</span>
-                        <h2 className="text-5xl mb-12">Path to Profitability</h2>
+                        <h2 className="text-4xl mb-12">Unit Economics & Growth</h2>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                            <div>
-                                <p className="text-xl text-gray-400 mb-8">
-                                    Our model focuses on capital efficiency. With high margins and low overhead through automation, we project breaking even by Month 18.
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                            <div className="space-y-8">
+                                <p className="text-xl text-gray-400 leading-relaxed font-light">
+                                    We project capital efficiency through automated fee collection and high-margin SaaS boosts.
                                 </p>
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
-                                        <span className="text-white">Year 1 Revenue goal</span>
-                                        <span className="text-orange font-bold font-mono">$500k ARR</span>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="p-4 bg-zinc-900 border-l-2 border-orange">
+                                        <div className="text-xs text-dim mb-1 font-mono">Gross Margin</div>
+                                        <div className="text-3xl font-bold text-white">85%+</div>
                                     </div>
-                                    <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
-                                        <span className="text-white">Year 3 Projection</span>
-                                        <span className="text-orange font-bold font-mono">$5M+ ARR</span>
-                                    </div>
-                                    <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
-                                        <span className="text-white">Gross Margin</span>
-                                        <span className="text-orange font-bold font-mono">85%+</span>
+                                    <div className="p-4 bg-zinc-900 border-l-2 border-orange">
+                                        <div className="text-xs text-dim mb-1 font-mono">LTV/CAC</div>
+                                        <div className="text-3xl font-bold text-white">4.5x</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800">
-                                {/* Simple Bar Chart Visualization using CSS */}
-                                <div className="flex items-end gap-8 h-64 border-b border-gray-600 pb-4 px-4">
-                                    <div className="w-1/3 bg-zinc-700 h-1/4 rounded-t relative group">
-                                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-gray-400 text-xs">$0.5M</span>
-                                        <div className="absolute bottom-0 w-full bg-orange h-[10%] opacity-50"></div> {/* Cost */}
-                                        <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-white font-bold">Year 1</span>
+                            <div className="bg-zinc-900 p-10 rounded-2xl border border-zinc-800 relative shadow-2xl overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-32 w-32 text-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                                </div>
+                                {/* Simplified Graph */}
+                                <div className="flex items-end gap-10 h-64 border-b border-zinc-800 pb-4 relative z-10">
+                                    <div className="w-1/3 bg-zinc-800 h-[20%] rounded-t relative group">
+                                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-gray-500 text-xs">$0.5M</span>
                                     </div>
-                                    <div className="w-1/3 bg-zinc-700 h-1/2 rounded-t relative group">
-                                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-gray-400 text-xs">$2.2M</span>
-                                        <div className="absolute bottom-0 w-full bg-orange h-[20%] opacity-50"></div>
-                                        <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-white font-bold">Year 2</span>
+                                    <div className="w-1/3 bg-zinc-800 h-[45%] rounded-t relative group">
+                                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-gray-500 text-xs">$2.2M</span>
                                     </div>
-                                    <div className="w-1/3 bg-orange h-full rounded-t relative group shadow-[0_0_20px_rgba(237,80,0,0.3)]">
-                                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-orange font-bold text-sm">$5.1M</span>
-                                        <div className="absolute bottom-0 w-full bg-black/30 h-[30%]"></div>
-                                        <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-white font-bold">Year 3</span>
+                                    <div className="w-1/3 bg-orange h-full rounded-t relative group shadow-[0_0_30px_rgba(237,80,0,0.3)] anim-grow">
+                                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-orange font-bold font-mono">$5.1M</span>
                                     </div>
                                 </div>
-                                <div className="mt-8 flex justify-center gap-6 text-xs">
-                                    <div className="flex items-center gap-2"><div className="w-3 h-3 bg-zinc-700"></div>Revenue</div>
-                                    <div className="flex items-center gap-2"><div className="w-3 h-3 bg-orange"></div>Projected</div>
+                                <div className="mt-8 flex justify-between text-xs font-mono text-dim tracking-widest">
+                                    <span>YEAR 1</span>
+                                    <span>YEAR 2</span>
+                                    <span className="text-orange">YEAR 3</span>
                                 </div>
                             </div>
                         </div>
@@ -876,27 +757,27 @@ const PitchDeck = () => {
 
                 {/* Slide 14: Exit Strategy */}
                 <section className="slide" id="exit">
-                    <div className="slide-content">
+                    <div className="slide-content text-center">
                         <span className="text-orange font-mono mb-2 block">13. EXIT STRATEGY</span>
-                        <h2 className="text-5xl mb-12">Liquidity Opportunities</h2>
+                        <h2 className="text-4xl mb-12">Liquidity Options</h2>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="card hover:bg-zinc-900 cursor-default">
-                                <div className="text-4xl mb-4">🤝</div>
-                                <h3 className="text-2xl text-white mb-2">M&A</h3>
-                                <p className="text-gray-400 text-sm">Acquisition by major HR tech giants (LinkedIn, Indeed) looking to enter Web3, or large crypto exchanges (Coinbase, Binance) needing ecosystem infrastructure.</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div className="card text-left bg-white/5 border-zinc-800">
+                                <div className="text-4xl mb-6">🤝</div>
+                                <h3 className="text-2xl text-white mb-4 font-bold">Strategic M&A</h3>
+                                <p className="text-gray-400 text-sm leading-relaxed">Acquisition by HR Tech leaders (LinkedIn) or Crypto Ecosystems (Coinbase) to secure on-chain talent infrastructure.</p>
                             </div>
 
-                            <div className="card hover:bg-zinc-900 cursor-default">
-                                <div className="text-4xl mb-4">📈</div>
-                                <h3 className="text-2xl text-white mb-2">IPO</h3>
-                                <p className="text-gray-400 text-sm">Listing on public markets as the premier decentralized professional network.</p>
+                            <div className="card text-left border-zinc-800">
+                                <div className="text-4xl mb-6">📈</div>
+                                <h3 className="text-2xl text-white mb-4 font-bold">Public Listing</h3>
+                                <p className="text-gray-400 text-sm leading-relaxed">Becoming the premier decentralized network for professional identity and work history.</p>
                             </div>
 
-                            <div className="card hover:bg-zinc-900 cursor-default">
-                                <div className="text-4xl mb-4">🔄</div>
-                                <h3 className="text-2xl text-white mb-2">Secondary/Token</h3>
-                                <p className="text-gray-400 text-sm">Potential for community ownership transition or secondary market liquidity events for early stakeholders.</p>
+                            <div className="card text-left border-zinc-800">
+                                <div className="text-4xl mb-6">🔄</div>
+                                <h3 className="text-2xl text-white mb-4 font-bold">Community Buyout</h3>
+                                <p className="text-gray-400 text-sm leading-relaxed">Transitioning to a fully autonomous DAO where the network is owned by its proven participants.</p>
                             </div>
                         </div>
                     </div>
@@ -905,102 +786,77 @@ const PitchDeck = () => {
                 {/* Slide 15: The Ask */}
                 <section className="slide" id="ask">
                     <div className="slide-content">
-                        <span className="text-orange font-mono mb-2 block">14. THE ASK</span>
-                        <h2 className="text-5xl mb-12">Join Our Journey</h2>
+                        <div className="flex flex-col items-center text-center mb-16">
+                            <span className="text-orange font-mono mb-2 block">14. THE ASK</span>
+                            <h2 className="text-5xl font-bold">Fueling the Revolution</h2>
+                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-                            <div>
-                                <div className="mb-12">
-                                    <h3 className="text-gray-400 uppercase tracking-widest text-sm mb-2">Raising</h3>
-                                    <div className="text-7xl font-bold text-white mb-4">$1M <span className="text-2xl text-orange font-normal">Pre-Seed</span></div>
-                                    <p className="text-xl text-dim">12-18 Months Runway</p>
-                                </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                            {/* 1. What This Unlocks (Cognitive Order Fix) */}
+                            <div className="card bg-orange/5 border-orange/40 lg:col-span-1 shadow-[0_10px_40px_-10px_rgba(237,80,0,0.15)]">
+                                <h4 className="text-white font-bold mb-6 flex items-center gap-2">
+                                    <span className="w-1.5 h-6 bg-orange rounded-full"></span>
+                                    Strategic Milestones
+                                </h4>
+                                <ul className="space-y-4 text-gray-300">
+                                    <li className="flex gap-3 items-start">
+                                        <span className="text-orange font-bold text-sm">✓</span>
+                                        <span className="text-sm">Mainnet scaling & L2 deployment</span>
+                                    </li>
+                                    <li className="flex gap-3 items-start">
+                                        <span className="text-orange font-bold text-sm">✓</span>
+                                        <span className="text-sm">Onboarding 250+ paidhires</span>
+                                    </li>
+                                    <li className="flex gap-3 items-start">
+                                        <span className="text-orange font-bold text-sm">✓</span>
+                                        <span className="text-sm">15 premium DAO partnerships</span>
+                                    </li>
+                                </ul>
+                            </div>
 
-                                <div className="space-y-6">
-                                    <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-                                        <span className="text-gray-300">Instrument</span>
-                                        <span className="text-white font-bold">SAFE + Token Warrant</span>
-                                    </div>
-                                    <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-                                        <span className="text-gray-300">Target Phase</span>
-                                        <span className="text-white font-bold text-right">MVP &rarr; Early Revenue</span>
-                                    </div>
-                                    <div className="bg-zinc-900 border border-zinc-700 p-4 rounded mt-8">
-                                        <p className="text-gray-300 text-sm leading-relaxed">
-                                            "This round reduces execution risk and unlocks ecosystem validation. We are offering a flexible structure aligned with both Web2 (Equity) and Web3 (Token) value capture."
-                                        </p>
-                                    </div>
+                            {/* 2. Raising $1M (Middle Focal Point) */}
+                            <div className="card border-white/20 scale-105 bg-white/5 relative flex flex-col items-center justify-center text-center">
+                                <h3 className="text-zinc-500 uppercase tracking-widest text-xs mb-3">Seed Round</h3>
+                                <div className="text-7xl font-bold text-white mb-2 leading-none">$1M</div>
+                                <div className="text-orange font-mono text-sm mb-8 tracking-tighter">SAFE + TOKEN WARRANT</div>
+                                <div className="flex gap-4">
+                                    <div className="px-3 py-1 bg-zinc-800 rounded text-[10px] text-zinc-400">18M RUNWAY</div>
+                                    <div className="px-3 py-1 bg-zinc-800 rounded text-[10px] text-zinc-400">20% COMMITTED</div>
                                 </div>
                             </div>
 
-                            <div>
-                                <h3 className="text-xl text-white mb-6">Use of Funds</h3>
-                                <div className="space-y-6">
-                                    {/* Development */}
-                                    <div>
-                                        <div className="flex justify-between text-sm mb-1">
-                                            <span className="text-white font-bold">Product & Engineering</span>
-                                            <span className="text-orange">45%</span>
-                                        </div>
-                                        <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
-                                            <div className="bg-orange h-full rounded-full" style={{ width: '45%' }}></div>
-                                        </div>
+                            {/* 3. Spend Distribution */}
+                            <div className="card border-zinc-800">
+                                <h4 className="text-zinc-400 font-bold mb-6 text-sm">Allocation</h4>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-zinc-500">Core Engineering</span>
+                                        <span className="text-white font-bold">45%</span>
                                     </div>
-
-                                    {/* Team */}
-                                    <div>
-                                        <div className="flex justify-between text-sm mb-1">
-                                            <span className="text-white font-bold">Core Team</span>
-                                            <span className="text-orange">30%</span>
-                                        </div>
-                                        <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
-                                            <div className="bg-orange h-full rounded-full" style={{ width: '30%' }}></div>
-                                        </div>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-zinc-500">Go-To-Market</span>
+                                        <span className="text-white font-bold">30%</span>
                                     </div>
-
-                                    {/* Go to Market */}
-                                    <div>
-                                        <div className="flex justify-between text-sm mb-1">
-                                            <span className="text-white font-bold">Go-To-Market</span>
-                                            <span className="text-orange">20%</span>
-                                        </div>
-                                        <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
-                                            <div className="bg-orange h-full rounded-full" style={{ width: '20%' }}></div>
-                                        </div>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-zinc-500">Operations/Legal</span>
+                                        <span className="text-white font-bold">15%</span>
                                     </div>
-
-                                    {/* Legal/Ops */}
-                                    <div>
-                                        <div className="flex justify-between text-sm mb-1">
-                                            <span className="text-white font-bold">Legal & Ops</span>
-                                            <span className="text-orange">5%</span>
-                                        </div>
-                                        <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
-                                            <div className="bg-orange h-full rounded-full" style={{ width: '5%' }}></div>
-                                        </div>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-zinc-500">Pool/Reserve</span>
+                                        <span className="text-white font-bold">10%</span>
                                     </div>
-                                </div>
-
-                                <div className="mt-12 text-center">
-                                    <a href="mailto:benjamin@hiringplug.xyz" className="inline-block bg-white text-black font-bold py-4 px-12 rounded hover:bg-orange transition-colors">
-                                        Contact Founder
-                                    </a>
+                                    <div className="mt-8">
+                                        <a href="mailto:benjamin@hiringplug.xyz" className="block w-full py-3 bg-orange text-black font-bold text-sm rounded-lg hover:bg-white transition-all text-center">
+                                            REQUEST DATA ROOM
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                {/* Placeholder for remaining slides */}
-                {slides.slice(14).map((slide, i) => (
-                    <section key={slide.id} className="slide" id={slide.id}>
-                        <div className="slide-content">
-                            <span className="text-orange font-mono mb-2 block">1{i + 4}. {slide.title.toUpperCase()}</span>
-                            <h2 className="text-4xl mb-6 text-white">{slide.title}</h2>
-                            <p className="text-xl text-gray-400">Content for {slide.title} coming soon.</p>
-                        </div>
-                    </section>
-                ))}
+
 
             </div>
 
@@ -1010,7 +866,7 @@ const PitchDeck = () => {
             </div>
 
             {/* Navigation Indicators */}
-            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-4 z-50 bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm border border-zinc-800 absolute">
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-4 z-50 bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm border border-zinc-800">
                 <button onClick={() => containerRef.current.scrollBy({ left: -window.innerWidth, behavior: 'smooth' })} className="text-gray-400 hover:text-white">&larr;</button>
                 <span className="text-xs text-gray-500 self-center font-mono">SCROLL TO NAVIGATE</span>
                 <button onClick={() => containerRef.current.scrollBy({ left: window.innerWidth, behavior: 'smooth' })} className="text-gray-400 hover:text-white">&rarr;</button>
