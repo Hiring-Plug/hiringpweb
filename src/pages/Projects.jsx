@@ -71,7 +71,7 @@ const Projects = () => {
                 <p className="subtitle">Curated opportunities from verified ecosystem partners.</p>
 
                 <div className="filter-bar">
-                    {['All', 'DeFi', 'NFT', 'DAO', 'Infrastructure', 'GameFi'].map(category => (
+                    {['All', 'DeFi', 'NFT', 'DAO', 'Infrastructure', 'GameFi', 'Other'].map(category => (
                         <button
                             key={category}
                             className={`filter-btn ${filter === category ? 'active' : ''}`}
