@@ -1,15 +1,14 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
 import { FaPlus, FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { useData } from '../../context/DataContext';
 
 const ManageJobs = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const { deleteDbJob } = useData();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -31,18 +30,6 @@ const ManageJobs = () => {
             console.error('Error fetching jobs:', error);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleDelete = async (jobId) => {
-        if (!window.confirm('Are you sure you want to delete this job post?')) return;
-
-        const result = await deleteDbJob(jobId);
-        if (result.success) {
-            setJobs(jobs.filter(j => j.id !== jobId));
-            alert('Job deleted successfully.');
-        } else {
-            alert('Error deleting job: ' + result.error);
         }
     };
 
@@ -74,10 +61,10 @@ const ManageJobs = () => {
                             </div>
                             <div className="job-actions">
                                 <Button variant="ghost" size="sm" onClick={() => navigate(`/app/jobs/${job.id}`)}>
-                                    <FaEye /> View
+                                    View
                                 </Button>
-                                <Button variant="ghost" size="sm" onClick={() => handleDelete(job.id)} style={{ color: '#e74c3c' }}>
-                                    <FaTrash /> Delete
+                                <Button variant="ghost" size="sm">
+                                    Edit
                                 </Button>
                             </div>
                         </div>

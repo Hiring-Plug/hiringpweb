@@ -236,19 +236,11 @@ export const DataProvider = ({ children }) => {
         setLocalProjects(localProjects.map(p => p.id === id ? { ...updatedProject, id } : p));
     };
 
-    const deleteDbJob = async (id) => {
-        try {
-            const { error: deleteError } = await supabase.from('jobs').delete().eq('id', id);
-            if (deleteError) throw deleteError;
-            if (fetchDbProjects) await fetchDbProjects();
-            return { success: true };
-        } catch (err) {
-            console.error('Error deleting job:', err);
-            return { success: false, error: err.message };
-        }
+    const deleteProject = (id) => {
+        setLocalProjects(localProjects.filter(p => p.id !== id));
     };
 
-    // Helper to get Icon component dynamically (since we store string names in JSON)
+    // Applicant Actions
     const addApplicant = (applicant) => {
         const newApplicant = { ...applicant, id: Date.now(), status: 'New' };
         setApplicants([newApplicant, ...applicants]);
@@ -280,7 +272,6 @@ export const DataProvider = ({ children }) => {
             deleteApplicant,
             getIconComponent,
             refreshData: fetchDbProjects,
-            deleteDbJob,
             loading,
             error
         }}>

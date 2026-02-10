@@ -25,6 +25,7 @@ import JobDetail from './pages/dashboard/JobDetail'
 import Applications from './pages/dashboard/Applications'
 import Settings from './pages/dashboard/Settings'
 import ProtectedRoute from './components/ProtectedRoute'
+import ErrorBoundary from './components/ErrorBoundary'
 import { DataProvider } from './context/DataContext'
 import { AuthProvider } from './context/AuthContext'
 
@@ -36,54 +37,56 @@ function App() {
   }, [pathname]);
 
   return (
-    <AuthProvider>
-      <DataProvider>
-        <div className="app-container">
-          {/* Hide Navbar/Footer for Admin AND Dashboard routes to give full app feel */}
-          {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && pathname !== '/pitchdeck' && <Navbar />}
+    <ErrorBoundary>
+      <AuthProvider>
+        <DataProvider>
+          <div className="app-container">
+            {/* Hide Navbar/Footer for Admin AND Dashboard routes to give full app feel */}
+            {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && pathname !== '/pitchdeck' && <Navbar />}
 
-          <main style={{ minHeight: '80vh' }}>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/solutions" element={<Solutions />} />
-              <Route path="/resources" element={<Resources />} />
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/join" element={<Join />} />
-              <Route path="/communities" element={<Communities />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/litepaper" element={<Litepaper />} />
-              <Route path="/pitchdeck" element={<PitchDeck />} />
+            <main style={{ minHeight: '80vh' }}>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/solutions" element={<Solutions />} />
+                <Route path="/resources" element={<Resources />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/join" element={<Join />} />
+                <Route path="/communities" element={<Communities />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/litepaper" element={<Litepaper />} />
+                <Route path="/pitchdeck" element={<PitchDeck />} />
 
-              {/* Protected App Routes */}
-              <Route path="/app" element={
-                <ProtectedRoute>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }>
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="profile" element={<Profile />} />
-                <Route path="messages" element={<Messages />} />
-                <Route path="freelance" element={<Freelance />} />
-                <Route path="projects" element={<AppProjects />} />
-                <Route path="jobs" element={<Jobs />} />
-                <Route path="jobs/:id" element={<JobDetail />} />
-                <Route path="applications" element={<Applications />} />
-                <Route path="settings" element={<Settings />} />
-                {/* Redirect /app to /app/dashboard */}
-                <Route index element={<Navigate to="dashboard" replace />} />
-              </Route>
+                {/* Protected App Routes */}
+                <Route path="/app" element={
+                  <ProtectedRoute>
+                    <DashboardLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="messages" element={<Messages />} />
+                  <Route path="freelance" element={<Freelance />} />
+                  <Route path="projects" element={<AppProjects />} />
+                  <Route path="jobs" element={<Jobs />} />
+                  <Route path="jobs/:id" element={<JobDetail />} />
+                  <Route path="applications" element={<Applications />} />
+                  <Route path="settings" element={<Settings />} />
+                  {/* Redirect /app to /app/dashboard */}
+                  <Route index element={<Navigate to="dashboard" replace />} />
+                </Route>
 
-              {/* Admin Routes */}
-              <Route path="/admin" element={<Admin />} />
-            </Routes>
-          </main>
-          {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && pathname !== '/litepaper' && pathname !== '/pitchdeck' && <Footer />}
-        </div>
-      </DataProvider>
-    </AuthProvider>
+                {/* Admin Routes */}
+                <Route path="/admin" element={<Admin />} />
+              </Routes>
+            </main>
+            {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && pathname !== '/litepaper' && pathname !== '/pitchdeck' && <Footer />}
+          </div>
+        </DataProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   )
 }
 
