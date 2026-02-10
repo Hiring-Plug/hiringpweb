@@ -94,6 +94,9 @@
     text-decoration: none;
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.2s;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
 }
 
 .doc-btn:hover {
@@ -731,6 +734,24 @@
 }
 
 .footer-link:hover {
+    color: var(--primary-orange);
+    border-color: var(--primary-orange);
+}
+
+.footer-link-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #777;
+    text-decoration: none;
+    transition: color 0.2s;
+    border-bottom: 1px dotted #444;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.footer-link-btn:hover {
     color: var(--primary-orange);
     border-color: var(--primary-orange);
 }

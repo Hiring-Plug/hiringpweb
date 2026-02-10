@@ -1,8 +1,11 @@
 import { FaBook, FaCode, FaGavel, FaUserGraduate, FaBuilding, FaGithub, FaExternalLinkAlt } from 'react-icons/fa';
 import Card from '../components/Card';
 import SEO from '../components/SEO';
+import WhitepaperModal from '../components/WhitepaperModal';
+import { useState } from 'react';
 
 const Resources = () => {
+    const [isWpModalOpen, setIsWpModalOpen] = useState(false);
     const resourceCategories = [
         {
             id: 'talent',
@@ -46,7 +49,7 @@ const Resources = () => {
             icon: <FaCode />,
             description: "Contribute to the ecosystem. Code, governance, and community building.",
             links: [
-                { text: "GitHub Repository", url: "https://github.com", external: true },
+                { text: "GitHub Repository", url: "https://github.com/Hiring-Plug/hiringpweb", external: true },
                 { text: "Governance Forum", url: "#" },
                 { text: "Bug Bounty Program", url: "#" },
                 { text: "API Documentation", url: "#" }
@@ -56,6 +59,7 @@ const Resources = () => {
 
     return (
         <div className="resources-page">
+            <WhitepaperModal isOpen={isWpModalOpen} onClose={() => setIsWpModalOpen(false)} />
             <SEO
                 title="Resources - Web3 Hiring Knowledge Hub | Hiring Plug"
                 description="Access guides, documentation, and tools for navigating the Web3 hiring landscape. The authoritative source for talent and founders."
@@ -90,6 +94,12 @@ const Resources = () => {
                                         className="resource-link"
                                         target={link.external ? "_blank" : "_self"}
                                         rel={link.external ? "noopener noreferrer" : ""}
+                                        onClick={(e) => {
+                                            if (link.url === '/hiring-plug-whitepaper.pdf') {
+                                                e.preventDefault();
+                                                setIsWpModalOpen(true);
+                                            }
+                                        }}
                                     >
                                         {link.text}
                                         {link.external && <FaExternalLinkAlt className="ext-icon" />}

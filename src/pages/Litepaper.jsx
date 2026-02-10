@@ -3,6 +3,7 @@ import { FaLinkedin, FaTwitter, FaTelegram, FaFilePdf, FaExternalLinkAlt, FaUser
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
+import WhitepaperModal from '../components/WhitepaperModal';
 import './Litepaper.css';
 
 const Litepaper = () => {
@@ -11,6 +12,7 @@ const Litepaper = () => {
     const [activeIndex, setActiveIndex] = useState(0);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
+    const [isWpModalOpen, setIsWpModalOpen] = useState(false);
 
     const handleScroll = () => {
         if (!roadmapRef.current) return;
@@ -109,6 +111,7 @@ const Litepaper = () => {
 
     return (
         <div className="litepaper-wrapper">
+            <WhitepaperModal isOpen={isWpModalOpen} onClose={() => setIsWpModalOpen(false)} />
             <SEO
                 title="Litepaper | Hiring Plug"
                 description="Hiring Plug: The talent infrastructure for Web3. Read our litepaper on decentralized hiring, verified credentials, and the HPLUG token."
@@ -128,7 +131,7 @@ const Litepaper = () => {
                     </div>
 
                     <div className="doc-logo-grid">
-                        <a href="/hiring-plug-whitepaper.pdf" target="_blank" className="doc-btn"><FaFilePdf /> Full Whitepaper (PDF)</a>
+                        <button onClick={() => setIsWpModalOpen(true)} className="doc-btn"><FaFilePdf /> Full Whitepaper</button>
                         <a href="https://x.com/hiring_plug" target="_blank" rel="noreferrer" className="doc-btn"><FaTwitter /> Twitter</a>
                         <a href="https://t.me/hiring_plug" target="_blank" rel="noreferrer" className="doc-btn"><FaTelegram /> Telegram</a>
                         <a href="https://www.linkedin.com/company/hiring-plug" target="_blank" rel="noreferrer" className="doc-btn"><FaLinkedin /> LinkedIn</a>
@@ -308,7 +311,7 @@ const Litepaper = () => {
                 </section>
 
                 <footer className="litepaper-footer">
-                    <p>&copy; 2026 Hiring Plug&trade;. All rights reserved. <span className="footer-divider">|</span> <a href="/hiring-plug-whitepaper.pdf" target="_blank" className="footer-link">Full Whitepaper (PDF)</a></p>
+                    <p>&copy; 2026 Hiring Plug&trade;. All rights reserved. <span className="footer-divider">|</span> <button onClick={() => setIsWpModalOpen(true)} className="footer-link-btn">Full Whitepaper</button></p>
                 </footer>
             </article>
         </div>

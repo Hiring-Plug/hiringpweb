@@ -1,8 +1,13 @@
+import { useState } from 'react';
 import { FaTwitter, FaDiscord, FaGithub, FaLinkedin, FaTelegram } from 'react-icons/fa';
+import WhitepaperModal from './WhitepaperModal';
 
 const Footer = () => {
+    const [isWpModalOpen, setIsWpModalOpen] = useState(false);
+
     return (
         <footer className="footer">
+            <WhitepaperModal isOpen={isWpModalOpen} onClose={() => setIsWpModalOpen(false)} />
             <div className="footer-top">
                 <div className="footer-container">
                     <div className="stay-connected">
@@ -37,7 +42,7 @@ const Footer = () => {
                         <ul>
                             <li><a href="/">Guides</a></li>
                             <li><a href="/litepaper">Litepaper</a></li>
-                            <li><a href="/hiring-plug-whitepaper.pdf" target="_blank" rel="noreferrer">Whitepaper (PDF)</a></li>
+                            <li><a href="#" onClick={(e) => { e.preventDefault(); setIsWpModalOpen(true); }}>Whitepaper</a></li>
                             <li><a href="/">Community</a></li>
                             <li><a href="/">Events</a></li>
                         </ul>
