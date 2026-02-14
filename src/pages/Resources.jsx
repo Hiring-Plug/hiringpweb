@@ -39,7 +39,7 @@ const Resources = () => {
             links: [
                 { text: "Hiring Plug Whitepaper v1.0", url: "/hiring-plug-whitepaper.pdf", external: true },
                 { text: "Tokenomics & Fee Structure", url: "#" },
-                { text: "Security Audits", url: "#" },
+                { text: "Data Room", url: "#" },
                 { text: "Terms of Service", url: "#" }
             ]
         },

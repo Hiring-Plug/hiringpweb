@@ -4,7 +4,7 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import { FaNetworkWired, FaRocket, FaHandshake } from 'react-icons/fa';
 
-import heroBg from '../assets/12.jpg'; // High-impact hero
+import heroBg from '../assets/10.png'; // High-impact hero
 import featureBg from '../assets/1.jpg'; // Feature background
 import SEO from '../components/SEO';
 
