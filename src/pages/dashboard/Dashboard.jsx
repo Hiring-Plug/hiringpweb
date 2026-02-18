@@ -202,11 +202,11 @@ const Dashboard = () => {
                     background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
                     border: 1px solid #333;
                     border-radius: 12px;
-                    padding: 2.5rem;
+                    padding: 2rem;
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    margin-bottom: 2.5rem;
+                    margin-bottom: 2rem;
                     flex-wrap: wrap;
                     gap: 2rem;
                     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -258,8 +258,31 @@ const Dashboard = () => {
 
                 @media (max-width: 900px) {
                     .dashboard-grid { grid-template-columns: 1fr; }
-                    .stats-row { width: 100%; justify-content: space-around; }
-                    .welcome-card { flex-direction: column; align-items: flex-start; }
+                    .stats-row { 
+                        width: 100%; 
+                        justify-content: space-between;
+                        gap: 1rem;
+                    }
+                    .welcome-card { 
+                        flex-direction: column; 
+                        align-items: flex-start; 
+                        padding: 1.5rem;
+                        text-align: center;
+                    }
+                    .welcome-card h1 { font-size: 1.5rem; width: 100%; }
+                    .welcome-card p { width: 100%; font-size: 0.9rem; }
+                    .welcome-card > div:first-child { width: 100%; }
+                }
+
+                @media (max-width: 480px) {
+                    .stats-row {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        width: 100%;
+                        gap: 1.5rem;
+                    }
+                    .stat-value { font-size: 1.5rem; }
+                    .stat-label { font-size: 0.7rem; }
                 }
             `}</style>
         </div>

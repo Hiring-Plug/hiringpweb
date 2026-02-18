@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabaseClient';
-import { FaCamera, FaMapMarkerAlt, FaLink, FaTwitter, FaGithub, FaLinkedin, FaPen, FaBriefcase, FaHeart, FaGlobe, FaStar, FaCheckCircle, FaBuilding } from 'react-icons/fa';
+import { FaCamera, FaMapMarkerAlt, FaLink, FaTwitter, FaGithub, FaLinkedin, FaPen, FaBriefcase, FaHeart, FaGlobe, FaStar, FaCheckCircle, FaBuilding, FaDiscord } from 'react-icons/fa';
 import Button from '../../components/Button';
 import profileCover from '../../assets/7.jpg'; // Default fallback
 import { useNavigate } from 'react-router-dom';
@@ -99,66 +99,14 @@ const Profile = () => {
             <div className="profile-content">
                 {/* Header */}
                 <div className="profile-header">
-                    <div className="avatar-section">
+                    <div className="profile-header-top">
                         <div className="profile-avatar">
-                            {/* Logo / Avatar Logic */}
                             {profile.avatar_url ? (
                                 <img src={profile.avatar_url} alt="Profile" className="avatar-img" />
                             ) : (
                                 isProject ? <FaBuilding /> : (profile.username?.charAt(0).toUpperCase() || 'U')
                             )}
                         </div>
-                    </div>
-
-                    <div className="header-info">
-                        <div className="info-main">
-                            {/* Project Layout: Username below Logo, Verified Badge */}
-                            <div className="name-block">
-                                <h1>{profile.username || 'Anonymous'}</h1>
-                                <span className="verified-badge">
-                                    {isProject ? <FaCheckCircle /> : <FaStar />} {isProject ? 'VERIFIED PROJECT' : 'VERIFIED'}
-                                </span>
-                            </div>
-
-                            <p className="role-line">
-                                {profile.role} • {profile.location}
-                                {!isProject && <span className="role-tag"> • {roleLabel}</span>}
-                            </p>
-
-                            {/* Socials */}
-                            <div className="social-links">
-                                {profile.social_links?.twitter && (
-                                    <a href={profile.social_links.twitter} target="_blank" rel="noreferrer" className="social-link"><FaTwitter /></a>
-                                )}
-                                {profile.social_links?.linkedin && (
-                                    <a href={profile.social_links.linkedin} target="_blank" rel="noreferrer" className="social-link"><FaLinkedin /></a>
-                                )}
-                                {profile.social_links?.telegram && (
-                                    <a href={profile.social_links.telegram} target="_blank" rel="noreferrer" className="social-link"><FaGlobe /></a>
-                                )}
-                                {profile.social_links?.discord && (
-                                    <a href={profile.social_links.discord} target="_blank" rel="noreferrer" className="social-link"><FaGlobe /></a> // Use specific icon if available
-                                )}
-                                {!isProject && !profile.social_links?.linkedin && <a href="#" className="social-link"><FaLinkedin /></a>}
-                                {profile.website && (
-                                    <a href={profile.website} target="_blank" rel="noreferrer" className="website-link">
-                                        <FaLink /> {profile.website.replace(/^https?:\/\//, '')}
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Stats */}
-                        <div className="header-stats">
-                            {stats.map((stat, i) => (
-                                <div key={i} className="stat-box">
-                                    <span className="stat-value">{stat.value}</span>
-                                    <span className="stat-label">{stat.label}</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Actions */}
                         <div className="header-actions">
                             {isProject ? (
                                 <>
@@ -171,6 +119,50 @@ const Profile = () => {
                                     <Button variant="outline" onClick={handleEdit}><FaPen /> Edit Profile</Button>
                                 </>
                             )}
+                        </div>
+                    </div>
+
+                    <div className="header-info">
+                        <div className="name-block">
+                            <h1>{profile.username || 'Anonymous'}</h1>
+                            <span className="verified-badge">
+                                {isProject ? <FaCheckCircle /> : <FaStar />} {isProject ? 'VERIFIED PROJECT' : 'VERIFIED'}
+                            </span>
+                        </div>
+
+                        <p className="role-line">
+                            {profile.role} • {profile.location}
+                            {!isProject && <span className="role-tag"> • {roleLabel}</span>}
+                        </p>
+
+                        <div className="social-links">
+                            {profile.social_links?.twitter && (
+                                <a href={profile.social_links.twitter} target="_blank" rel="noreferrer" className="social-link"><FaTwitter /></a>
+                            )}
+                            {profile.social_links?.linkedin && (
+                                <a href={profile.social_links.linkedin} target="_blank" rel="noreferrer" className="social-link"><FaLinkedin /></a>
+                            )}
+                            {profile.social_links?.telegram && (
+                                <a href={profile.social_links.telegram} target="_blank" rel="noreferrer" className="social-link"><FaGlobe /></a>
+                            )}
+                            {profile.social_links?.discord && (
+                                <a href={profile.social_links.discord} target="_blank" rel="noreferrer" className="social-link"><FaDiscord /></a>
+                            )}
+                            {!isProject && !profile.social_links?.linkedin && <a href="#" className="social-link"><FaLinkedin /></a>}
+                            {profile.website && (
+                                <a href={profile.website} target="_blank" rel="noreferrer" className="website-link">
+                                    <FaLink /> {profile.website.replace(/^https?:\/\//, '')}
+                                </a>
+                            )}
+                        </div>
+
+                        <div className="header-stats">
+                            {stats.map((stat, i) => (
+                                <div key={i} className="stat-box">
+                                    <span className="stat-value">{stat.value}</span>
+                                    <span className="stat-label">{stat.label}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -297,7 +289,7 @@ const Profile = () => {
 
                 /* Banner & Header */
                 .profile-banner {
-                    height: 240px;
+                    height: 200px;
                     background: #111;
                     position: relative;
                 }
@@ -313,63 +305,138 @@ const Profile = () => {
                 }
 
                 /* Header Layout */
-                .profile-content { max-width: 1100px; margin: 0 auto; padding: 0 2rem; position: relative; margin-top: -80px; }
+                .profile-content { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; position: relative; }
                 
                 .profile-header {
-                    display: flex; align-items: flex-end; gap: 2rem; margin-bottom: 3rem; flex-wrap: wrap;
+                    margin-bottom: 2rem;
+                }
+
+                .profile-header-top {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-end;
+                    margin-bottom: 1rem;
                 }
 
                 .profile-avatar {
-                    width: 150px; height: 150px;
-                    background: #111; border: 4px solid #0a0a0a;
-                    border-radius: 24px; /* Squircle for Projects */
+                    width: 140px; height: 140px;
+                    background: #000; border: 4px solid #000;
+                    border-radius: 50%;
                     display: flex; align-items: center; justify-content: center;
                     font-size: 3rem; color: var(--accent);
                     overflow: hidden;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                    box-shadow: 0 0 0 1px #333; /* Subtle outer ring like X */
+                    background-color: #000;
+                    z-index: 2;
+                    margin-top: -70px; /* Overlap halfway */
                 }
+                .project-mode .profile-avatar { border-radius: 20%; }
                 .avatar-img { width: 100%; height: 100%; object-fit: cover; }
 
-                .header-info { flex: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; padding-bottom: 10px; flex-wrap: wrap; }
+                .header-actions { 
+                    display: flex; 
+                    gap: 12px; 
+                    margin-bottom: 20px; 
+                }
+                .header-actions button {
+                    border-radius: 999px !important; /* Force pill shape */
+                    font-weight: 700;
+                    padding: 8px 20px;
+                    font-size: 0.95rem;
+                    height: 40px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                /* Targeting variants if they use classes */
+                .header-actions .primary, .header-actions button[class*="primary"] {
+                    background: var(--accent) !important;
+                    color: #000 !important;
+                    border: none !important;
+                }
+                .header-actions .outline, .header-actions button[class*="outline"] {
+                    background: transparent !important;
+                    border: 1px solid #333 !important;
+                    color: #fff !important;
+                }
+                .header-actions button:hover {
+                    opacity: 0.9;
+                    transform: scale(1.02);
+                }
+
+                .header-info { display: flex; flex-direction: column; gap: 0.5rem; }
                 
-                .name-block { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-                .name-block h1 { margin: 0; font-size: 2.2rem; line-height: 1; }
+                .name-block { display: flex; align-items: center; gap: 10px; }
+                .name-block h1 { margin: 0; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.02em; color: #fff; }
                 
                 .verified-badge {
-                    background: rgba(76, 209, 55, 0.1); color: #4cd137; border: 1px solid rgba(76, 209, 55, 0.2);
-                    font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 4px;
+                    background: rgba(237, 80, 0, 0.1); color: var(--accent); border: 1px solid rgba(237, 80, 0, 0.2);
+                    font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;
                     display: flex; align-items: center; gap: 5px;
                 }
-                /* Talent Badge Override */
                 .profile-container:not(.project-mode) .verified-badge {
                      background: rgba(241, 196, 15, 0.1); color: #f1c40f; border-color: rgba(241, 196, 15, 0.2);
                 }
 
-                .role-line { color: #888; font-size: 1rem; margin-bottom: 1rem; }
+                .role-line { color: #888; font-size: 0.9rem; margin: 0; font-weight: 500; }
                 
-                .social-links { display: flex; gap: 1rem; font-size: 1.2rem; color: #666; }
-                .social-link:hover { color: var(--accent); }
-                .website-link { font-size: 0.9rem; text-decoration: none; display: flex; align-items: center; gap: 6px; color: var(--accent); }
+                .social-links { display: flex; flex-wrap: wrap; gap: 1.2rem; font-size: 1rem; color: #666; margin: 0.5rem 0; }
+                .social-link { display: flex; align-items: center; gap: 6px; text-decoration: none; color: #666; transition: color 0.2s; }
+                .social-link:hover { color: #fff; }
+                .website-link { text-decoration: none; display: flex; align-items: center; gap: 6px; color: var(--accent); font-weight: 500; }
 
-                .header-stats { display: flex; gap: 2rem; }
-                .stat-box { text-align: center; }
-                .stat-value { display: block; font-size: 1.3rem; font-weight: 700; color: #fff; }
-                .stat-label { font-size: 0.75rem; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
+                .header-stats { display: flex; gap: 1.5rem; margin-top: 0.5rem; }
+                .stat-box { display: flex; align-items: center; gap: 6px; }
+                .stat-value { font-size: 1rem; font-weight: 700; color: #fff; }
+                .stat-label { font-size: 0.9rem; color: #666; }
 
-                .header-actions { display: flex; gap: 10px; }
+                /* Grid Layout: About/Skills Left, Experience/Projects Right */
+                .profile-grid { display: grid; grid-template-columns: 340px 1fr; gap: 2rem; margin-top: 2rem; }
+                .grid-sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
+                .grid-main { display: flex; flex-direction: column; gap: 1.5rem; }
 
-                /* Grid */
-                .profile-grid { display: grid; grid-template-columns: 320px 1fr; gap: 2.5rem; }
-                .card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
-                .card h3 { margin-top: 0; font-size: 1.1rem; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 1rem; }
+                .card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 12px; padding: 1.5rem; transition: border-color 0.2s; }
+                .card:hover { border-color: #222; }
+                .card h3 { margin-top: 0; font-size: 1.1rem; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px; margin-bottom: 1rem; color: #fff; }
                 
                 .bio-text { color: #ccc; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap; }
                 
-                .meta-list { display: flex; flex-direction: column; gap: 10px; margin-top: 1.5rem; }
+                .meta-list { display: flex; flex-direction: column; gap: 8px; margin-top: 1rem; }
                 .meta-item { display: flex; align-items: center; gap: 10px; color: #888; font-size: 0.9rem; }
                 
-                .skills-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-                .skill-tag { background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; border: 1px solid #333; }
+                .skills-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+                .skill-tag { 
+                    background: rgba(255,255,255,0.03); 
+                    padding: 4px 10px; 
+                    border-radius: 99px; 
+                    font-size: 0.8rem; 
+                    border: 1px solid #1a1a1a;
+                    color: #aaa;
+                    font-weight: 500;
+                }
+
+                /* Certification & Empty Portfolio Refinements */
+                .certification-card {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    gap: 1.5rem;
+                    background: linear-gradient(135deg, #0a0a0a 0%, #050505 100%);
+                }
+                .certification-card h3 { border: none; padding: 0; margin-bottom: 0.5rem; }
+                .certification-card p { font-size: 0.85rem; color: #888; margin: 0; }
+                .certification-card button { border-radius: 99px !important; white-space: nowrap; }
+
+                .empty-portfolio {
+                    text-align: center; 
+                    padding: 2rem; 
+                    color: #666; 
+                    border: 1px dashed #1a1a1a; 
+                    border-radius: 12px;
+                    background: rgba(255,255,255,0.01);
+                }
+                .empty-portfolio p { font-size: 0.9rem; margin-bottom: 1rem; }
+                .empty-portfolio button { border-radius: 99px !important; }
 
                 /* Project Jobs List */
                 .project-jobs-section { background: #111; border: 1px solid #222; border-radius: 12px; padding: 1.5rem; }
@@ -387,10 +454,71 @@ const Profile = () => {
                 .empty-jobs { text-align: center; padding: 2rem; color: #666; }
 
                 @media (max-width: 900px) {
-                    .profile-header { flex-direction: column; align-items: center; text-align: center; }
-                    .header-info { width: 100%; justify-content: center; }
-                    .profile-grid { grid-template-columns: 1fr; }
-                    .name-block { justify-content: center; }
+                    .profile-grid { 
+                        grid-template-columns: 35% 1fr; /* Two columns on mobile */
+                        gap: 1rem; 
+                        margin-top: 1.25rem; 
+                    }
+                    .profile-avatar { 
+                        width: 100px; height: 100px; font-size: 2.2rem; 
+                        margin-top: -50px; /* Overlap halfway */
+                        border-width: 3px; 
+                    }
+                    .profile-header-top { margin-top: 0; } /* Clear negative margin so buttons stay below */
+                    
+                    .role-line { font-size: 0.8rem !important; opacity: 0.8; }
+                    
+                    /* Small, professional action buttons */
+                    .header-actions { margin-bottom: 0px; gap: 6px; }
+                    .header-actions button { 
+                        padding: 2px 12px !important; 
+                        font-size: 0.75rem !important; 
+                        height: 30px !important; 
+                        min-width: 75px;
+                    }
+                    
+                    .card { padding: 1rem; }
+                    .card h3 { font-size: 0.85rem; margin-bottom: 0.5rem; }
+                    .bio-text { font-size: 0.8rem; }
+                    .skill-tag { font-size: 0.72rem; padding: 3px 8px; }
+                    .name-block h1 { font-size: 1.3rem; }
+                    .header-stats { gap: 1rem; margin-top: 0.25rem; }
+                    .stat-value { font-size: 0.85rem; }
+                    .stat-label { font-size: 0.7rem; }
+                    .meta-item { font-size: 0.75rem; }
+                    
+                    /* Secondary Buttons Professional Sizing */
+                    .certification-card { flex-direction: column; align-items: flex-start; gap: 1rem; }
+                    .certification-card button { width: 100%; height: 34px !important; font-size: 0.8rem !important; }
+                    .empty-portfolio { padding: 1.5rem; }
+                    .empty-portfolio button { height: 32px !important; font-size: 0.8rem !important; padding: 0 15px !important; }
+
+                    /* Refined mobile list font sizes */
+                    .experience-item-display h4 { font-size: 0.9rem !important; }
+                    .experience-item-display div { font-size: 0.75rem !important; }
+                    .experience-item-display p { font-size: 0.8rem !important; }
+                }
+
+                @media (max-width: 480px) {
+                    .profile-banner { height: 120px; }
+                    .profile-grid { 
+                         grid-template-columns: 110px 1fr; /* Fixed left-column for consistency at 375px */
+                         gap: 0.75rem;
+                    }
+                    .profile-avatar { 
+                        width: 80px; height: 80px; 
+                        margin-top: -40px; /* Overlap halfway */
+                        font-size: 1.8rem; 
+                    }
+                    .profile-header-top { margin-top: 0; }
+                    .profile-content { padding: 0 1rem; }
+                    .header-actions button { 
+                        padding: 2px 8px !important; 
+                        font-size: 0.7rem !important; 
+                        height: 28px !important; 
+                        min-width: 65px;
+                    }
+                    .name-block h1 { font-size: 1.15rem; }
                 }
             `}</style>
         </div>

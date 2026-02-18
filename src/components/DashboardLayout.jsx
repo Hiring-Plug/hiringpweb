@@ -61,6 +61,7 @@ const DashboardLayout = () => {
                             key={item.path}
                             to={item.path}
                             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                            onClick={() => setIsSidebarOpen(false)}
                         >
                             <span className="icon">{item.icon}</span>
                             <span className="label">{item.label}</span>
@@ -69,12 +70,12 @@ const DashboardLayout = () => {
                 </nav>
 
                 <div className="sidebar-footer">
-                    <button onClick={() => navigate('/')} className="nav-item back-home-btn">
+                    <button onClick={() => { setIsSidebarOpen(false); navigate('/'); }} className="nav-item back-home-btn">
                         <span className="icon"><FaArrowLeft /></span>
                         <span className="label">Back to Website</span>
                     </button>
                     <div className="footer-divider"></div>
-                    <button onClick={handleSignOut} className="nav-item logout-btn">
+                    <button onClick={() => { setIsSidebarOpen(false); handleSignOut(); }} className="nav-item logout-btn">
                         <span className="icon"><FaSignOutAlt /></span>
                         <span className="label">Sign Out</span>
                     </button>
@@ -252,7 +253,7 @@ const DashboardLayout = () => {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    padding: 0 2rem;
+                    padding: 0 1.5rem;
                     border-bottom: 1px solid #1a1a1a;
                     background: #0a0a0a;
                 }
@@ -313,20 +314,32 @@ const DashboardLayout = () => {
                 /* Page Content */
                 .content-scrollable {
                     flex: 1;
-                    padding: 2rem;
+                    padding: 1.5rem;
                     overflow-y: auto;
                 }
 
                 @media (max-width: 768px) {
                     .sidebar {
                         position: fixed;
-                        z-index: 1000;
+                        z-index: 1100;
                         height: 100%;
                         width: 260px;
                         transform: translateX(-100%);
                     }
                     .sidebar.open {
                         transform: translateX(0);
+                    }
+                    .topbar {
+                        padding: 0 1rem;
+                    }
+                    .content-scrollable {
+                        padding: 1rem;
+                    }
+                    .breadcrumbs {
+                        display: none;
+                    }
+                    .env-badge {
+                        display: none;
                     }
                 }
             `}</style>

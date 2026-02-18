@@ -43,7 +43,7 @@ const Signup = () => {
             if (data?.user && !data?.session) {
                 setSuccessMsg('Registration successful! Please check your email to verify your account.');
             } else {
-                navigate('/app/dashboard');
+                navigate('/app/settings');
             }
         } catch (err) {
             setError(err.message);
