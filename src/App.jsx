@@ -5,7 +5,6 @@ import Footer from './components/Footer'
 import Home from './pages/Home'
 import About from './pages/About'
 import Projects from './pages/Projects'
-import Join from './pages/Join'
 import Solutions from './pages/Solutions'
 import Resources from './pages/Resources'
 import Admin from './pages/Admin'
@@ -13,7 +12,6 @@ import Communities from './pages/Communities'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Litepaper from './pages/Litepaper'
-import PitchDeck from './pages/PitchDeck'
 import DashboardLayout from './components/DashboardLayout'
 import Dashboard from './pages/dashboard/Dashboard'
 import Profile from './pages/dashboard/Profile'
@@ -42,7 +40,7 @@ function App() {
         <DataProvider>
           <div className="app-container">
             {/* Hide Navbar/Footer for Admin AND Dashboard routes to give full app feel */}
-            {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && pathname !== '/pitchdeck' && <Navbar />}
+            {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && <Navbar />}
 
             <main style={{ minHeight: '80vh' }}>
               <Routes>
@@ -52,12 +50,11 @@ function App() {
                 <Route path="/solutions" element={<Solutions />} />
                 <Route path="/resources" element={<Resources />} />
                 <Route path="/projects" element={<Projects />} />
-                <Route path="/join" element={<Join />} />
+
                 <Route path="/communities" element={<Communities />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/litepaper" element={<Litepaper />} />
-                <Route path="/pitchdeck" element={<PitchDeck />} />
 
                 {/* Protected App Routes */}
                 <Route path="/app" element={
@@ -82,7 +79,7 @@ function App() {
                 <Route path="/admin" element={<Admin />} />
               </Routes>
             </main>
-            {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && pathname !== '/litepaper' && pathname !== '/pitchdeck' && <Footer />}
+            {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && pathname !== '/litepaper' && <Footer />}
           </div>
         </DataProvider>
       </AuthProvider>

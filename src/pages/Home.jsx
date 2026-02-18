@@ -125,7 +125,7 @@ const Home = () => {
           Transform your career journey with Web3 opportunities that matter.
         </p>
         <div className="cta-buttons">
-          <Button onClick={() => navigate('/join')} variant="primary">Get started</Button>
+          <Button onClick={() => navigate('/signup')} variant="primary">Get started</Button>
           <Button onClick={() => navigate('/about')} variant="secondary" className="btn-learn-more">Learn more</Button>
         </div>
       </section>

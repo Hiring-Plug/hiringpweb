@@ -20,7 +20,7 @@ const Solutions = () => {
             icon: <FaGlobe />,
             title: "Decentralized Talent Pool",
             description: "Access a borderless network of pre-vetted Web3 professionals ready to deploy.",
-            link: "/join"
+            link: "/signup"
         },
         {
             id: 3,
@@ -55,7 +55,7 @@ const Solutions = () => {
                         and a trustless environment for talent and founders.
                     </p>
                     <div className="hero-actions">
-                        <Button variant="primary" onClick={() => navigate('/join')}>Get Started</Button>
+                        <Button variant="primary" onClick={() => navigate('/signup')}>Get Started</Button>
                         <Button variant="secondary" onClick={() => navigate('/about')}>Learn More</Button>
                     </div>
                 </div>
@@ -158,7 +158,7 @@ const Solutions = () => {
                 <h2>Ready to Deploy?</h2>
                 <p>Join the ecosystem that's redefining how the world works together.</p>
                 <div className="cta-buttons">
-                    <Button variant="primary" onClick={() => navigate('/join')}>Join the Network</Button>
+                    <Button variant="primary" onClick={() => navigate('/signup')}>Join the Network</Button>
                     <Button variant="secondary" onClick={() => navigate('/projects')}>Explore Projects</Button>
                 </div>
             </section>

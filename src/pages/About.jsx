@@ -223,7 +223,7 @@ const About = () => {
             <section className="section-container cta-section">
                 <h2>Ready to Be Part of the Future of Work?</h2>
                 <div className="cta-actions">
-                    <Button onClick={() => navigate('/join')} variant="primary">Join Hiring Plug</Button>
+                    <Button onClick={() => navigate('/signup')} variant="primary">Join Hiring Plug</Button>
                     <Button onClick={() => navigate('/projects')} variant="secondary">Explore Projects</Button>
                 </div>
             </section>

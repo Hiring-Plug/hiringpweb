@@ -103,7 +103,7 @@ const Navbar = () => {
             <Link to="/" className="mobile-nav-link" onClick={toggleMenu}>Log in</Link>
           </li>
           <li className="mobile-nav-item">
-            <Link to="/join" className="mobile-btn-signup" onClick={toggleMenu}>Sign up</Link>
+            <Link to="/signup" className="mobile-btn-signup" onClick={toggleMenu}>Sign up</Link>
           </li>
         </ul>
       </div>
