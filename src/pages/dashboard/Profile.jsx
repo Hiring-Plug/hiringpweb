@@ -570,6 +570,13 @@ const Profile = () => {
                     .experience-item-display h4 { font-size: 0.9rem !important; }
                     .experience-item-display div { font-size: 0.75rem !important; }
                     .experience-item-display p { font-size: 0.8rem !important; }
+
+                    /* Project Jobs List Mobile Refinements */
+                    .project-jobs-section { padding: 1rem; }
+                    .job-card-row { padding: 0.75rem; gap: 0.75rem; }
+                    .job-info h4 { font-size: 0.9rem !important; }
+                    .job-type { font-size: 0.75rem !important; }
+                    .project-jobs-section .section-header h3 { font-size: 0.9rem; }
                 }
 
                 @media (max-width: 480px) {
@@ -598,6 +605,13 @@ const Profile = () => {
                     .stat-box { gap: 4px; }
                     .stat-value { font-size: 0.8rem; }
                     .stat-label { font-size: 0.65rem; }
+
+                    /* Narrow screen Project Roles scaling */
+                    .job-card-row { padding: 0.6rem; }
+                    .job-info h4 { font-size: 0.85rem !important; }
+                    .job-type { font-size: 0.7rem !important; }
+                    .project-jobs-section .section-header h3 { font-size: 0.85rem; }
+                    .count-badge { font-size: 0.7rem; padding: 1px 6px; }
                 }
             `}</style>
         </div>
