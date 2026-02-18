@@ -8,7 +8,7 @@ const DashboardLayout = () => {
     const { user, signOut } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const role = user?.user_metadata?.role || 'talent'; // Default to talent if undefined
 
     const handleSignOut = async () => {
