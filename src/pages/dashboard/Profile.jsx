@@ -6,11 +6,12 @@ import { FaCamera, FaMapMarkerAlt, FaLink, FaTwitter, FaGithub, FaLinkedin, FaPe
 import Button from '../../components/Button';
 import profileCover from '../../assets/7.jpg'; // Default fallback
 import { useNavigate } from 'react-router-dom';
+import Skeleton from '../../components/Skeleton';
 
 const Profile = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [jobs, setJobs] = useState([]);
 
     // Profile State
@@ -63,12 +64,18 @@ const Profile = () => {
             }
         } catch (error) {
             console.error('Error fetching profile:', error);
+        } finally {
+            if (!isProject) setLoading(false);
         }
     };
 
     const fetchJobs = async () => {
-        const { data } = await supabase.from('jobs').select('*').eq('project_id', user.id).eq('status', 'open');
-        setJobs(data || []);
+        try {
+            const { data } = await supabase.from('jobs').select('*').eq('project_id', user.id).eq('status', 'open');
+            setJobs(data || []);
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Stats Logic
@@ -93,7 +100,6 @@ const Profile = () => {
                 backgroundPosition: 'center'
             }}>
                 <div className="banner-gradient"></div>
-                <button className="cover-edit-btn" onClick={handleEdit}><FaCamera /> Edit Cover</button>
             </div>
 
             <div className="profile-content">
@@ -101,14 +107,21 @@ const Profile = () => {
                 <div className="profile-header">
                     <div className="profile-header-top">
                         <div className="profile-avatar">
-                            {profile.avatar_url ? (
+                            {loading ? (
+                                <Skeleton width="100%" height="100%" circle />
+                            ) : profile.avatar_url ? (
                                 <img src={profile.avatar_url} alt="Profile" className="avatar-img" />
                             ) : (
                                 isProject ? <FaBuilding /> : (profile.username?.charAt(0).toUpperCase() || 'U')
                             )}
                         </div>
                         <div className="header-actions">
-                            {isProject ? (
+                            {loading ? (
+                                <>
+                                    <Skeleton width="100px" height="36px" borderRadius="99px" />
+                                    <Skeleton width="100px" height="36px" borderRadius="99px" />
+                                </>
+                            ) : isProject ? (
                                 <>
                                     <Button variant="primary" onClick={() => window.open(profile.website, '_blank')}>Visit Website</Button>
                                     <Button variant="outline" onClick={handleEdit}><FaPen /> Settings</Button>
@@ -124,45 +137,72 @@ const Profile = () => {
 
                     <div className="header-info">
                         <div className="name-block">
-                            <h1>{profile.username || 'Anonymous'}</h1>
-                            <span className="verified-badge">
-                                {isProject ? <FaCheckCircle /> : <FaStar />} {isProject ? 'VERIFIED PROJECT' : 'VERIFIED'}
-                            </span>
+                            {loading ? (
+                                <Skeleton width="200px" height="2rem" />
+                            ) : (
+                                <>
+                                    <h1>{profile.username || 'Anonymous'}</h1>
+                                    <span className="verified-badge">
+                                        {isProject ? <FaCheckCircle /> : <FaStar />} {isProject ? 'VERIFIED PROJECT' : 'VERIFIED'}
+                                    </span>
+                                </>
+                            )}
                         </div>
 
                         <p className="role-line">
-                            {profile.role} • {profile.location}
-                            {!isProject && <span className="role-tag"> • {roleLabel}</span>}
+                            {loading ? (
+                                <Skeleton width="150px" height="1rem" />
+                            ) : (
+                                <>
+                                    {profile.role} • {profile.location}
+                                    {!isProject && <span className="role-tag"> • {roleLabel}</span>}
+                                </>
+                            )}
                         </p>
 
                         <div className="social-links">
-                            {profile.social_links?.twitter && (
-                                <a href={profile.social_links.twitter} target="_blank" rel="noreferrer" className="social-link"><FaTwitter /></a>
-                            )}
-                            {profile.social_links?.linkedin && (
-                                <a href={profile.social_links.linkedin} target="_blank" rel="noreferrer" className="social-link"><FaLinkedin /></a>
-                            )}
-                            {profile.social_links?.telegram && (
-                                <a href={profile.social_links.telegram} target="_blank" rel="noreferrer" className="social-link"><FaGlobe /></a>
-                            )}
-                            {profile.social_links?.discord && (
-                                <a href={profile.social_links.discord} target="_blank" rel="noreferrer" className="social-link"><FaDiscord /></a>
-                            )}
-                            {!isProject && !profile.social_links?.linkedin && <a href="#" className="social-link"><FaLinkedin /></a>}
-                            {profile.website && (
-                                <a href={profile.website} target="_blank" rel="noreferrer" className="website-link">
-                                    <FaLink /> {profile.website.replace(/^https?:\/\//, '')}
-                                </a>
+                            {loading ? (
+                                [1, 2, 3, 4].map(i => <Skeleton key={i} width="30px" height="30px" circle />)
+                            ) : (
+                                <>
+                                    {profile.social_links?.twitter && (
+                                        <a href={profile.social_links.twitter} target="_blank" rel="noreferrer" className="social-link"><FaTwitter /></a>
+                                    )}
+                                    {profile.social_links?.linkedin && (
+                                        <a href={profile.social_links.linkedin} target="_blank" rel="noreferrer" className="social-link"><FaLinkedin /></a>
+                                    )}
+                                    {profile.social_links?.telegram && (
+                                        <a href={profile.social_links.telegram} target="_blank" rel="noreferrer" className="social-link"><FaGlobe /></a>
+                                    )}
+                                    {profile.social_links?.discord && (
+                                        <a href={profile.social_links.discord} target="_blank" rel="noreferrer" className="social-link"><FaDiscord /></a>
+                                    )}
+                                    {!isProject && !profile.social_links?.linkedin && <a href="#" className="social-link"><FaLinkedin /></a>}
+                                    {profile.website && (
+                                        <a href={profile.website} target="_blank" rel="noreferrer" className="website-link">
+                                            <FaLink /> {profile.website.replace(/^https?:\/\//, '')}
+                                        </a>
+                                    )}
+                                </>
                             )}
                         </div>
 
                         <div className="header-stats">
-                            {stats.map((stat, i) => (
-                                <div key={i} className="stat-box">
-                                    <span className="stat-value">{stat.value}</span>
-                                    <span className="stat-label">{stat.label}</span>
-                                </div>
-                            ))}
+                            {loading ? (
+                                [1, 2, 3].map(i => (
+                                    <div key={i} className="stat-box">
+                                        <Skeleton width="40px" height="1.5rem" style={{ marginBottom: '4px' }} />
+                                        <Skeleton width="100%" height="0.6rem" />
+                                    </div>
+                                ))
+                            ) : (
+                                stats.map((stat, i) => (
+                                    <div key={i} className="stat-box">
+                                        <span className="stat-value">{stat.value}</span>
+                                        <span className="stat-label">{stat.label}</span>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>
@@ -173,28 +213,44 @@ const Profile = () => {
                     <div className="grid-sidebar">
                         <div className="card info-card">
                             <h3>{isProject ? 'About Project' : 'About'}</h3>
-                            <p className="bio-text">
-                                {profile.bio || (isProject ? "Introduce your project to the world." : "Tell your story...")}
-                            </p>
-
-                            <div className="meta-list">
-                                <div className="meta-item">
-                                    <FaMapMarkerAlt />
-                                    <span>{profile.location}</span>
-                                </div>
-                                {isProject && (
-                                    <div className="meta-item">
-                                        <FaGlobe />
-                                        <span>Blockchain Services</span>
+                            {loading ? (
+                                <>
+                                    <Skeleton width="100%" height="0.8rem" style={{ marginBottom: '0.5rem' }} />
+                                    <Skeleton width="90%" height="0.8rem" style={{ marginBottom: '0.5rem' }} />
+                                    <Skeleton width="80%" height="0.8rem" style={{ marginBottom: '1rem' }} />
+                                    <div className="meta-list" style={{ marginTop: '1rem' }}>
+                                        <Skeleton width="60%" height="0.9rem" />
+                                        <Skeleton width="50%" height="0.9rem" />
                                     </div>
-                                )}
-                            </div>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="bio-text">
+                                        {profile.bio || (isProject ? "Introduce your project to the world." : "Tell your story...")}
+                                    </p>
+
+                                    <div className="meta-list">
+                                        <div className="meta-item">
+                                            <FaMapMarkerAlt />
+                                            <span>{profile.location}</span>
+                                        </div>
+                                        {isProject && (
+                                            <div className="meta-item">
+                                                <FaGlobe />
+                                                <span>Blockchain Services</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            )}
                         </div>
 
                         <div className="card skills-card">
                             <h3>{isProject ? 'Services' : 'Skills'}</h3>
                             <div className="skills-tags">
-                                {isProject ? (
+                                {loading ? (
+                                    [1, 2, 3, 4, 5].map(i => <Skeleton key={i} width="60px" height="1.5rem" borderRadius="20px" />)
+                                ) : isProject ? (
                                     // Project Services
                                     (profile.services ? profile.services.split(',') : ['DeFi', 'NFTs', 'Smart Contracts']).map(s => <span key={s} className="skill-tag">{s.trim()}</span>)
                                 ) : (
@@ -213,7 +269,16 @@ const Profile = () => {
                                 {/* Experience Section */}
                                 <div className="card experience-section" style={{ marginBottom: '2rem' }}>
                                     <h3>Experience</h3>
-                                    {profile.experience && profile.experience.length > 0 ? (
+                                    {loading ? (
+                                        [1, 2].map(i => (
+                                            <div key={i} style={{ marginBottom: '1.5rem', paddingLeft: '1rem', borderLeft: '2px solid #222' }}>
+                                                <Skeleton width="40%" height="1.1rem" style={{ marginBottom: '0.4rem' }} />
+                                                <Skeleton width="30%" height="0.8rem" style={{ marginBottom: '0.8rem' }} />
+                                                <Skeleton width="100%" height="0.8rem" style={{ marginBottom: '0.3rem' }} />
+                                                <Skeleton width="90%" height="0.8rem" />
+                                            </div>
+                                        ))
+                                    ) : profile.experience && profile.experience.length > 0 ? (
                                         <div className="experience-list">
                                             {profile.experience.map((exp, i) => (
                                                 <div key={i} className="experience-item-display" style={{ marginBottom: '1.5rem', borderLeft: '2px solid #333', paddingLeft: '1rem' }}>
@@ -242,11 +307,19 @@ const Profile = () => {
                                     <button className="tab">Services</button>
                                 </div>
                                 <div className="portfolio-grid">
-                                    {/* Empty State for Portfolio */}
-                                    <div className="empty-portfolio" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: '#666', border: '1px dashed #333', borderRadius: '12px' }}>
-                                        <p>No projects added to portfolio yet.</p>
-                                        <Button size="sm" variant="outline">Add Project</Button>
-                                    </div>
+                                    {loading ? (
+                                        [1, 2].map(i => (
+                                            <div key={i} className="card" style={{ height: '150px' }}>
+                                                <Skeleton width="100%" height="100%" />
+                                            </div>
+                                        ))
+                                    ) : (
+                                        /* Empty State for Portfolio */
+                                        <div className="empty-portfolio" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: '#666', border: '1px dashed #333', borderRadius: '12px' }}>
+                                            <p>No projects added to portfolio yet.</p>
+                                            <Button size="sm" variant="outline">Add Project</Button>
+                                        </div>
+                                    )}
                                 </div>
                             </>
                         ) : (
@@ -502,23 +575,29 @@ const Profile = () => {
                 @media (max-width: 480px) {
                     .profile-banner { height: 120px; }
                     .profile-grid { 
-                         grid-template-columns: 110px 1fr; /* Fixed left-column for consistency at 375px */
-                         gap: 0.75rem;
+                         grid-template-columns: 100px 1fr; /* Slightly smaller left column for 360px support */
+                         gap: 0.6rem;
                     }
                     .profile-avatar { 
-                        width: 80px; height: 80px; 
-                        margin-top: -40px; /* Overlap halfway */
-                        font-size: 1.8rem; 
+                        width: 75px; height: 75px; 
+                        margin-top: -37.5px; /* Overlap halfway */
+                        font-size: 1.6rem; 
                     }
                     .profile-header-top { margin-top: 0; }
-                    .profile-content { padding: 0 1rem; }
+                    .profile-content { padding: 0 0.75rem; } /* Reduced padding for 360px */
                     .header-actions button { 
-                        padding: 2px 8px !important; 
+                        padding: 2px 6px !important; 
                         font-size: 0.7rem !important; 
-                        height: 28px !important; 
-                        min-width: 65px;
+                        height: 26px !important; 
+                        min-width: 60px;
                     }
-                    .name-block h1 { font-size: 1.15rem; }
+                    .name-block h1 { font-size: 1.1rem; }
+                    .verified-badge { font-size: 0.65rem; padding: 1px 6px; }
+                    .role-line { font-size: 0.75rem !important; }
+                    .header-stats { gap: 0.8rem; }
+                    .stat-box { gap: 4px; }
+                    .stat-value { font-size: 0.8rem; }
+                    .stat-label { font-size: 0.65rem; }
                 }
             `}</style>
         </div>

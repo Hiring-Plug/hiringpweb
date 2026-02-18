@@ -68,3 +68,36 @@ h6 {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-orange);
 }
+
+/* Skeleton Loader Styles */
+.skeleton {
+  background: #111;
+  background: linear-gradient(
+    90deg,
+    #111 25%,
+    #1a1a1a 50%,
+    #111 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-text {
+  height: 1rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}

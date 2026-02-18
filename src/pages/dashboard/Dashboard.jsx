@@ -6,12 +6,14 @@ import { supabase } from '../../supabaseClient';
 import { FaBolt, FaUserEdit, FaFolderOpen, FaChartLine, FaPlusCircle, FaUsers, FaEye, FaBriefcase } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
+import Skeleton from '../../components/Skeleton';
 import ManageJobs from './ManageJobs';
 
 const Dashboard = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const role = user?.user_metadata?.role || 'talent';
+    const [loading, setLoading] = useState(true);
 
     // Stats State
     const [stats, setStats] = useState([
@@ -60,6 +62,8 @@ const Dashboard = () => {
             }
         } catch (error) {
             console.error('Stats fetch error:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -137,12 +141,21 @@ const Dashboard = () => {
                     </p>
                 </div>
                 <div className="stats-row">
-                    {stats.map((stat, i) => (
-                        <div key={i} className="stat-item">
-                            <span className="stat-value" style={{ color: stat.color }}>{stat.value}</span>
-                            <span className="stat-label">{stat.label}</span>
-                        </div>
-                    ))}
+                    {loading ? (
+                        [1, 2, 3].map(i => (
+                            <div key={i} className="stat-item">
+                                <Skeleton width="80px" height="2rem" style={{ marginBottom: '5px' }} />
+                                <Skeleton width="60px" height="0.8rem" />
+                            </div>
+                        ))
+                    ) : (
+                        stats.map((stat, i) => (
+                            <div key={i} className="stat-item">
+                                <span className="stat-value" style={{ color: stat.color }}>{stat.value}</span>
+                                <span className="stat-label">{stat.label}</span>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
 
@@ -155,7 +168,7 @@ const Dashboard = () => {
                         </div>
                     )}
 
-                    {/* For Talent: Maybe a different view (e.g. Recommended Jobs) - Keeping simple for now */}
+                    {/* For Talent: Maybe a different view (e.g. Recommended Jobs) */}
                     {role === 'talent' && (
                         <div className="activity-feed">
                             <div className="section-header">
@@ -172,22 +185,30 @@ const Dashboard = () => {
                 <div className="side-col">
                     <h2 className="section-title">Quick Actions</h2>
                     <div className="actions-list">
-                        {actions.map((action, index) => (
-                            <div key={index} className="action-card-mini">
-                                <div className="card-icon">{action.icon}</div>
-                                <div className="action-info">
+                        {loading ? (
+                            [1, 2, 3].map(i => (
+                                <div key={i} className="action-card">
+                                    <Skeleton width="40px" height="40px" circle style={{ marginBottom: '1rem' }} />
+                                    <Skeleton width="70%" height="1.2rem" style={{ marginBottom: '0.8rem' }} />
+                                    <Skeleton width="90%" height="0.8rem" style={{ marginBottom: '1.5rem' }} />
+                                    <Skeleton width="100px" height="36px" borderRadius="20px" />
+                                </div>
+                            ))
+                        ) : (
+                            getActions().map((action, idx) => (
+                                <div key={idx} className={`action-card ${action.variant}`}>
+                                    <div className="action-icon">{action.icon}</div>
                                     <h3>{action.title}</h3>
                                     <p>{action.desc}</p>
+                                    <Button
+                                        variant={action.variant === 'glow' ? 'glow' : 'primary'}
+                                        onClick={() => navigate(action.link)}
+                                    >
+                                        {action.cta}
+                                    </Button>
                                 </div>
-                                <Button
-                                    size="sm"
-                                    variant={action.variant || 'outline'}
-                                    onClick={() => navigate(action.link)}
-                                >
-                                    {action.cta}
-                                </Button>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </div>
             </div>
@@ -275,14 +296,22 @@ const Dashboard = () => {
                 }
 
                 @media (max-width: 480px) {
+                    .dashboard-home { padding: 0.5rem; }
                     .stats-row {
                         display: grid;
                         grid-template-columns: 1fr 1fr;
                         width: 100%;
-                        gap: 1.5rem;
+                        gap: 1rem;
                     }
-                    .stat-value { font-size: 1.5rem; }
-                    .stat-label { font-size: 0.7rem; }
+                    .welcome-card { padding: 1.25rem; }
+                    .welcome-card h1 { font-size: 1.3rem; }
+                    .welcome-card p { font-size: 0.8rem; }
+                    .stat-value { font-size: 1.3rem; }
+                    .stat-label { font-size: 0.6rem; }
+                    
+                    .dashboard-grid { gap: 1rem; }
+                    .activity-feed { padding: 1.25rem; }
+                    .section-title { font-size: 1rem; }
                 }
             `}</style>
         </div>
