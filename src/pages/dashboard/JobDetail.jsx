@@ -77,6 +77,8 @@ const JobDetail = () => {
             const { error } = await supabase.from('applications').insert([{
                 job_id: id,
                 applicant_id: user.id,
+                project_id: job.project_id,
+                job_title: job.title, // Critical fix: store job title on the record
                 cover_letter: coverLetter,
                 job_type: 'job',
                 status: 'pending'
@@ -86,6 +88,7 @@ const JobDetail = () => {
 
             // Trigger Notification for Job Owner
             if (job.project_id) {
+                // 1. In-App Notification
                 await supabase.from('notifications').insert([{
                     user_id: job.project_id,
                     type: 'application',
@@ -94,12 +97,50 @@ const JobDetail = () => {
                     is_read: false
                 }]);
 
-                // Trigger Email
-                const template = EMAIL_TEMPLATES.NEW_APPLICATION(job.title, user.user_metadata?.username || 'A Candidate');
+                // 2. Email Notification
+                const applicantName = user.user_metadata?.username || user.email?.split('@')[0] || 'A Candidate';
+                const template = EMAIL_TEMPLATES.NEW_APPLICATION(job.title, applicantName);
+
                 sendEmailNotification({
                     recipientUserId: job.project_id,
                     ...template
+                }).then(res => {
+                    if (!res) console.log("Email notification skipped or failed (Silent fallback)");
                 });
+
+                // 3. Automated Message (Start Conversation)
+                // Check if conversation exists
+                const { data: existingConv } = await supabase
+                    .from('conversations')
+                    .select('id')
+                    .or(`and(participant1_id.eq.${user.id},participant2_id.eq.${job.project_id}),and(participant1_id.eq.${job.project_id},participant2_id.eq.${user.id})`)
+                    .single();
+
+                let conversationId = existingConv?.id;
+
+                if (!conversationId) {
+                    const { data: newConv, error: convError } = await supabase
+                        .from('conversations')
+                        .insert([{
+                            participant1_id: user.id,
+                            participant2_id: job.project_id,
+                            last_message: coverLetter || `New application for ${job.title}`,
+                            updated_at: new Date()
+                        }])
+                        .select()
+                        .maybeSingle();
+
+                    if (!convError && newConv) conversationId = newConv.id;
+                }
+
+                if (conversationId) {
+                    await supabase.from('messages').insert([{
+                        conversation_id: conversationId,
+                        sender_id: user.id,
+                        receiver_id: job.project_id,
+                        content: coverLetter || `Hi, I'm interested in the ${job.title} role.`
+                    }]);
+                }
             }
 
             setHasApplied(true);

@@ -35,10 +35,21 @@ const Signup = () => {
             const { error, data } = await signUp(formData.email, formData.password, {
                 username: formData.username,
                 role: formData.role,
-                primarySkill: formData.primarySkill
+                primary_skill: formData.primarySkill
             });
 
             if (error) throw error;
+
+            // Auto-create profile record to ensure joins work later
+            if (data?.user) {
+                await supabase.from('profiles').insert([{
+                    id: data.user.id,
+                    username: formData.username,
+                    role: formData.role, // Critical fix: store role in profiles
+                    primary_skill: formData.primarySkill,
+                    updated_at: new Date()
+                }]);
+            }
 
             if (data?.user && !data?.session) {
                 setSuccessMsg('Registration successful! Please check your email to verify your account.');

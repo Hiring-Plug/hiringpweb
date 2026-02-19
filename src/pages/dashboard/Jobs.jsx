@@ -5,7 +5,19 @@ import { supabase } from '../../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
-import { FaBriefcase, FaMoneyBillWave, FaMapMarkerAlt, FaPlus, FaBuilding } from 'react-icons/fa';
+import RichTextEditor from '../../components/RichTextEditor';
+import { FaBriefcase, FaMoneyBillWave, FaMapMarkerAlt, FaPlus, FaBuilding, FaTimes } from 'react-icons/fa';
+
+const JOB_TITLE_SUGGESTIONS = [
+    "Full Stack Developer", "Frontend Engineer", "Backend Developer",
+    "Solidity Developer", "Smart Contract Auditor", "Product Manager",
+    "UX/UI Designer", "DevOps Engineer", "Marketing Lead", "Community Manager"
+];
+
+const TAG_SUGGESTIONS = [
+    "React", "Solidity", "Rust", "TypeScript", "Node.js", "Web3.js",
+    "Ethers.js", "Hardhat", "Foundry", "TailwindCSS", "Next.js", "Python"
+];
 
 const Jobs = () => {
     const { user } = useAuth();
@@ -26,6 +38,9 @@ const Jobs = () => {
         logo_url: '' // Specific job/project logo
     });
 
+    const [titleSuggestions, setTitleSuggestions] = useState([]);
+    const [tagSuggestions, setTagSuggestions] = useState([]);
+
     const isProject = user?.user_metadata?.role === 'project';
 
     const handlePostJob = async (e) => {
@@ -35,7 +50,9 @@ const Jobs = () => {
                 ...newJob,
                 project_id: user.id,
                 status: 'open',
-                tags: newJob.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '')
+                tags: typeof newJob.tags === 'string'
+                    ? newJob.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '')
+                    : newJob.tags
             };
 
             const { error: insertError } = await supabase.from('jobs').insert([jobData]);
@@ -66,6 +83,39 @@ const Jobs = () => {
         }
     };
 
+    const handleTitleChange = (val) => {
+        setNewJob({ ...newJob, title: val });
+        if (val.length > 1) {
+            const filtered = JOB_TITLE_SUGGESTIONS.filter(s =>
+                s.toLowerCase().includes(val.toLowerCase())
+            );
+            setTitleSuggestions(filtered);
+        } else {
+            setTitleSuggestions([]);
+        }
+    };
+
+    const handleTagChange = (val) => {
+        setNewJob({ ...newJob, tags: val });
+        const lastTag = val.split(',').pop().trim();
+        if (lastTag.length > 0) {
+            const filtered = TAG_SUGGESTIONS.filter(s =>
+                s.toLowerCase().includes(lastTag.toLowerCase())
+            );
+            setTagSuggestions(filtered);
+        } else {
+            setTagSuggestions([]);
+        }
+    };
+
+    const selectTag = (tag) => {
+        const parts = newJob.tags.split(',');
+        parts.pop();
+        const newVal = [...parts.map(p => p.trim()), tag].join(', ') + ', ';
+        setNewJob({ ...newJob, tags: newVal });
+        setTagSuggestions([]);
+    };
+
     // Filter to show only Live jobs (exclude mocks starting with 'mock-')
     const liveJobs = projects.filter(p => !String(p.id).startsWith('mock-'));
 
@@ -73,12 +123,12 @@ const Jobs = () => {
         <div className="jobs-page">
             <div className="page-header">
                 <div>
-                    <h1>Explore Opportunities</h1>
-                    <p>Live roles from the ecosystem.</p>
+                    <h1>{isProject ? 'Job Management Console' : 'Explore Opportunities'}</h1>
+                    <p>{isProject ? 'Create and manage your project roles.' : 'Live roles from the ecosystem.'}</p>
                 </div>
                 {isProject && (
                     <Button variant="primary" onClick={() => setIsPosting(true)}>
-                        <FaPlus /> Post a Job
+                        <FaPlus /> Create New Role
                     </Button>
                 )}
             </div>
@@ -93,32 +143,31 @@ const Jobs = () => {
 
                 {loading ? (
                     <p>Loading opportunities...</p>
-                ) : liveJobs.length > 0 ? (
-                    liveJobs.map(job => (
-                        <div key={job.id} className="job-row" onClick={() => navigate(`/app/jobs/${job.id}`)}>
-                            <div className="job-main">
-                                <div className="company-logo">
-                                    {job.logo_url ? (
-                                        <img src={job.logo_url} alt={job.company} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    ) : (
-                                        <FaBuilding />
-                                    )}
-                                </div>
-                                <div className="job-info">
-                                    <h3>{job.role}</h3>
-                                    <p className="company-name">{job.company}</p>
-                                </div>
+                ) : liveJobs.length > 0 ? (liveJobs.map(job => (
+                    <div key={job.id} className="job-row" onClick={() => navigate(`/app/jobs/${job.id}`)}>
+                        <div className="job-main">
+                            <div className="company-logo">
+                                {job.logo_url ? (
+                                    <img src={job.logo_url} alt={job.company} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                    <FaBuilding />
+                                )}
                             </div>
-                            <div className="job-meta">
-                                <span className="tag type">{job.type}</span>
-                                <span className="meta-item"><FaMapMarkerAlt /> {job.location}</span>
-                                <span className="meta-item"><FaMoneyBillWave /> {job.salary}</span>
-                            </div>
-                            <div className="job-action">
-                                <Button variant="outline" size="sm">View</Button>
+                            <div className="job-info">
+                                <h3>{job.role}</h3>
+                                <p className="company-name">{job.company}</p>
                             </div>
                         </div>
-                    ))
+                        <div className="job-meta">
+                            <span className="tag type">{job.type}</span>
+                            <span className="meta-item"><FaMapMarkerAlt /> {job.location}</span>
+                            <span className="meta-item"><FaMoneyBillWave /> {job.salary}</span>
+                        </div>
+                        <div className="job-action">
+                            <Button variant="outline" size="sm">View</Button>
+                        </div>
+                    </div>
+                ))
                 ) : (
                     <div className="empty-state-card">
                         <FaBriefcase style={{ fontSize: '3rem', opacity: 0.2, marginBottom: '1rem' }} />
@@ -129,66 +178,109 @@ const Jobs = () => {
 
             {/* Post Job Modal */}
             {isPosting && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h2>Post a New Opportunity</h2>
-                        <form onSubmit={handlePostJob}>
-                            <div className="form-group">
-                                <label>Job Title</label>
-                                <input required value={newJob.title} onChange={e => setNewJob({ ...newJob, title: e.target.value })} placeholder="e.g. Smart Contract Auditor" />
-                            </div>
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>Type</label>
-                                    <select value={newJob.type} onChange={e => setNewJob({ ...newJob, type: e.target.value })}>
-                                        <option value="full-time">Full-time</option>
-                                        <option value="contract">Contract</option>
-                                        <option value="freelance">Freelance</option>
-                                        <option value="dao">DAO Contributor</option>
-                                    </select>
+                <div className="modal-overlay" onClick={() => setIsPosting(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Define New Role</h2>
+                            <button className="close-btn" onClick={() => setIsPosting(false)}><FaTimes /></button>
+                        </div>
+                        <div className="modal-body">
+                            <form onSubmit={handlePostJob}>
+                                <div className="form-group relative">
+                                    <label>Job Title</label>
+                                    <input
+                                        required
+                                        value={newJob.title}
+                                        onChange={e => handleTitleChange(e.target.value)}
+                                        placeholder="e.g. Smart Contract Auditor"
+                                        autoComplete="off"
+                                    />
+                                    {titleSuggestions.length > 0 && (
+                                        <div className="suggestions-dropdown">
+                                            {titleSuggestions.map(s => (
+                                                <div key={s} className="suggestion-item" onClick={() => {
+                                                    setNewJob({ ...newJob, title: s });
+                                                    setTitleSuggestions([]);
+                                                }}>{s}</div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Type</label>
+                                        <select value={newJob.type} onChange={e => setNewJob({ ...newJob, type: e.target.value })}>
+                                            <option value="full-time">Full-time</option>
+                                            <option value="contract">Contract</option>
+                                            <option value="freelance">Freelance</option>
+                                            <option value="dao">DAO Contributor</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Category</label>
+                                        <select value={newJob.category} onChange={e => setNewJob({ ...newJob, category: e.target.value })}>
+                                            <option value="DeFi">DeFi</option>
+                                            <option value="NFT">NFT</option>
+                                            <option value="DAO">DAO</option>
+                                            <option value="Infrastructure">Infrastructure</option>
+                                            <option value="GameFi">GameFi</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div className="form-group">
-                                    <label>Category</label>
-                                    <select value={newJob.category} onChange={e => setNewJob({ ...newJob, category: e.target.value })}>
-                                        <option value="DeFi">DeFi</option>
-                                        <option value="NFT">NFT</option>
-                                        <option value="DAO">DAO</option>
-                                        <option value="Infrastructure">Infrastructure</option>
-                                        <option value="GameFi">GameFi</option>
-                                        <option value="Other">Other</option>
-                                    </select>
+                                    <label>Location</label>
+                                    <input required value={newJob.location} onChange={e => setNewJob({ ...newJob, location: e.target.value })} placeholder="e.g. Remote / London" />
                                 </div>
-                            </div>
-                            <div className="form-group">
-                                <label>Location</label>
-                                <input required value={newJob.location} onChange={e => setNewJob({ ...newJob, location: e.target.value })} placeholder="e.g. Remote / London" />
-                            </div>
-                            <div className="form-group">
-                                <label>Salary / Compensation</label>
-                                <input required value={newJob.salary_range} onChange={e => setNewJob({ ...newJob, salary_range: e.target.value })} placeholder="$100k - $150k or $100/hr" />
-                            </div>
-                            <div className="form-group">
-                                <label>Project Logo URL (Optional)</label>
-                                <input value={newJob.logo_url} onChange={e => setNewJob({ ...newJob, logo_url: e.target.value })} placeholder="https://..." />
-                                <small style={{ color: '#666' }}>Link to your project icon for branding.</small>
-                            </div>
-                            <div className="form-group">
-                                <label>Description (Tip: use **text** for bold headings)</label>
-                                <textarea required rows="4" value={newJob.description} onChange={e => setNewJob({ ...newJob, description: e.target.value })} placeholder="What's the role about? Use **bold** for headings." />
-                            </div>
-                            <div className="form-group">
-                                <label>Tags (comma separated)</label>
-                                <input value={newJob.tags} onChange={e => setNewJob({ ...newJob, tags: e.target.value })} placeholder="React, Solidity, Rust..." />
-                            </div>
-                            <div className="form-group">
-                                <label>Requirements</label>
-                                <textarea required rows="3" value={newJob.requirements} onChange={e => setNewJob({ ...newJob, requirements: e.target.value })} placeholder="Key skills needed..." />
-                            </div>
-                            <div className="modal-actions">
-                                <Button type="button" variant="outline" onClick={() => setIsPosting(false)}>Cancel</Button>
-                                <Button type="submit" variant="primary">Post Job</Button>
-                            </div>
-                        </form>
+                                <div className="form-group">
+                                    <label>Salary / Compensation</label>
+                                    <input required value={newJob.salary_range} onChange={e => setNewJob({ ...newJob, salary_range: e.target.value })} placeholder="$100k - $150k or $100/hr" />
+                                </div>
+                                <div className="form-group">
+                                    <label>Project Logo URL (Optional)</label>
+                                    <input value={newJob.logo_url} onChange={e => setNewJob({ ...newJob, logo_url: e.target.value })} placeholder="https://..." />
+                                    <small style={{ color: '#666' }}>Link to your project icon for branding.</small>
+                                </div>
+                                <div className="form-group">
+                                    <RichTextEditor
+                                        label="Role Description"
+                                        required
+                                        value={newJob.description}
+                                        onChange={val => setNewJob({ ...newJob, description: val })}
+                                        placeholder="What's the role about? Use the toolbar to format."
+                                    />
+                                </div>
+                                <div className="form-group relative">
+                                    <label>Tags (comma separated)</label>
+                                    <input
+                                        value={newJob.tags}
+                                        onChange={e => handleTagChange(e.target.value)}
+                                        placeholder="React, Solidity, Rust..."
+                                        autoComplete="off"
+                                    />
+                                    {tagSuggestions.length > 0 && (
+                                        <div className="suggestions-dropdown">
+                                            {tagSuggestions.map(s => (
+                                                <div key={s} className="suggestion-item" onClick={() => selectTag(s)}>{s}</div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="form-group">
+                                    <RichTextEditor
+                                        label="Requirements"
+                                        required
+                                        value={newJob.requirements}
+                                        onChange={val => setNewJob({ ...newJob, requirements: val })}
+                                        placeholder="Key skills needed..."
+                                    />
+                                </div>
+                                <div className="modal-actions">
+                                    <Button type="button" variant="outline" onClick={() => setIsPosting(false)}>Cancel</Button>
+                                    <Button type="submit" variant="primary">Publish Role</Button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}
@@ -261,39 +353,116 @@ const Jobs = () => {
                 }
                 .tag.type { background: rgba(52, 152, 219, 0.1); color: #3498db; }
 
-                /* Modal */
+                /* Modal Improvements */
                 .modal-overlay {
                     position: fixed;
                     inset: 0;
-                    background: rgba(0,0,0,0.8);
+                    background: rgba(0,0,0,0.85);
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     z-index: 2000;
-                    backdrop-filter: blur(5px);
+                    backdrop-filter: blur(8px);
+                    padding: 1rem;
                 }
                 .modal-content {
-                    background: #111;
+                    background: #0a0a0a;
                     border: 1px solid #333;
-                    border-radius: 12px;
-                    padding: 2rem;
+                    border-radius: 20px;
                     width: 100%;
-                    max-width: 600px;
+                    max-width: 650px;
+                    max-height: 90vh;
+                    display: flex;
+                    flex-direction: column;
+                    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+                    overflow: hidden;
+                    animation: modalSlideUp 0.3s ease-out;
                 }
-                .modal-content h2 { margin-bottom: 1.5rem; color: #fff; }
-                .form-group { margin-bottom: 1rem; }
-                .form-group label { display: block; margin-bottom: 0.5rem; color: #ccc; }
-                .form-group input, .form-group select, .form-group textarea {
+                @keyframes modalSlideUp {
+                    from { transform: translateY(20px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                .modal-header {
+                    padding: 1.5rem 2rem;
+                    border-bottom: 1px solid #1a1a1a;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                .modal-header h2 { margin: 0; font-size: 1.5rem; color: #fff; }
+                .close-btn {
+                    background: transparent;
+                    border: none;
+                    color: #666;
+                    font-size: 1.2rem;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    transition: all 0.2s;
+                }
+                .close-btn:hover { background: #222; color: #fff; }
+
+                .modal-body {
+                    padding: 2rem;
+                    overflow-y: auto;
+                    flex: 1;
+                }
+                
+                .form-group { margin-bottom: 1.5rem; }
+                .form-group label { display: block; margin-bottom: 0.6rem; color: #888; font-size: 0.9rem; font-weight: 500; }
+                .form-group input, .form-group select {
                     width: 100%;
                     background: #050505;
-                    border: 1px solid #333;
-                    padding: 0.8rem;
-                    border-radius: 6px;
+                    border: 1px solid #222;
+                    padding: 0.9rem;
+                    border-radius: 10px;
                     color: white;
+                    font-size: 1rem;
+                    transition: all 0.2s;
+                }
+                .form-group input:focus, .form-group select:focus {
+                    border-color: var(--primary-orange);
+                    background: #000;
+                    outline: none;
                 }
                 .form-row { display: flex; gap: 1rem; }
                 .form-row .form-group { flex: 1; }
-                .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
+                
+                .relative { position: relative; }
+                .suggestions-dropdown {
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    right: 0;
+                    background: #111;
+                    border: 1px solid #333;
+                    border-radius: 10px;
+                    margin-top: 5px;
+                    z-index: 10;
+                    max-height: 200px;
+                    overflow-y: auto;
+                    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+                }
+                .suggestion-item {
+                    padding: 10px 15px;
+                    cursor: pointer;
+                    color: #bbb;
+                    transition: all 0.2s;
+                }
+                .suggestion-item:hover { background: #222; color: var(--primary-orange); }
+
+                .modal-actions { 
+                    display: flex; 
+                    justify-content: flex-end; 
+                    gap: 1rem; 
+                    margin-top: 1rem;
+                    padding-top: 1.5rem;
+                    border-top: 1px solid #1a1a1a;
+                }
 
                 .error-alert {
                     background: rgba(231, 76, 60, 0.1);
@@ -311,6 +480,9 @@ const Jobs = () => {
                     .job-row { flex-direction: column; align-items: flex-start; gap: 1rem; }
                     .job-meta { flex-wrap: wrap; gap: 1rem; }
                     .job-action { align-self: flex-end; }
+                    .modal-content { max-height: 95vh; border-radius: 15px; }
+                    .modal-body { padding: 1.25rem; }
+                    .form-row { flex-direction: column; gap: 0; }
                 }
 
                 .empty-state-card {

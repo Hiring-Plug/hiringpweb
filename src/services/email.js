@@ -8,9 +8,10 @@ export const sendEmailNotification = async ({ recipientUserId, subject, html, te
         });
 
         if (error) throw error;
+        console.log('Email sent successfully:', data);
         return data;
     } catch (error) {
-        console.error('Email service error:', error);
+        console.error('Email service error details:', error);
         // Don't block UI flow if email fails
         return null;
     }
