@@ -17,6 +17,7 @@ const JobDetail = () => {
     const [applying, setApplying] = useState(false);
     const [hasApplied, setHasApplied] = useState(false);
     const [coverLetter, setCoverLetter] = useState('');
+    const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
         fetchJob();
@@ -78,7 +79,6 @@ const JobDetail = () => {
                 applicant_id: user.id,
                 cover_letter: coverLetter,
                 job_type: 'job',
-                job_type: 'job',
                 status: 'pending'
             }]);
 
@@ -103,10 +103,11 @@ const JobDetail = () => {
             }
 
             setHasApplied(true);
-            alert('Application submitted successfully!');
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 5000);
         } catch (error) {
             console.error('Application error:', error);
-            alert('Error applying: ' + error.message);
+            // In a real app we'd use a toast component
         } finally {
             setApplying(false);
         }
@@ -164,11 +165,11 @@ const JobDetail = () => {
                             <FaCheckCircle /> Applied
                         </div>
                     ) : isOwner ? (
-                        <Button variant="outline">Edit Job</Button>
+                        <Button variant="outline" onClick={() => navigate('/app/jobs')}>Manage Job</Button>
                     ) : (
-                        <div className="apply-box">
+                        <div className="apply-desktop-btn">
                             {user ? (
-                                <Button variant="primary" onClick={() => document.getElementById('apply-section').scrollIntoView({ behavior: 'smooth' })}>
+                                <Button variant="primary" onClick={() => document.getElementById('apply-section')?.scrollIntoView({ behavior: 'smooth' })}>
                                     Apply Now
                                 </Button>
                             ) : (
@@ -178,6 +179,12 @@ const JobDetail = () => {
                     )}
                 </div>
             </div>
+
+            {showSuccess && (
+                <div className="success-toast">
+                    <FaCheckCircle /> Application submitted successfully!
+                </div>
+            )}
 
             <div className="job-layout">
                 <div className="job-content">
@@ -224,8 +231,8 @@ const JobDetail = () => {
                 </div>
 
                 <div className="job-sidebar">
-                    <div className="sidebar-card">
-                        <h4>About the Company</h4>
+                    <div className="sidebar-card company-card">
+                        <h4>Company</h4>
                         <div className="company-mini-profile">
                             <div className="company-avatar">
                                 {job.logo_url || job.profiles?.avatar_url ? (
@@ -234,13 +241,14 @@ const JobDetail = () => {
                                     <FaBuilding />
                                 )}
                             </div>
-                            <div>
+                            <div className="company-info-text">
                                 <strong>{job.profiles?.username}</strong>
                                 {job.profiles?.website && (
                                     <a href={job.profiles.website} target="_blank" rel="noreferrer" className="website-link">Visit Website</a>
                                 )}
                             </div>
                         </div>
+                        <div className="divider"></div>
                         <div className="safety-badge">
                             <FaLock /> Verified Payment
                         </div>
@@ -248,120 +256,150 @@ const JobDetail = () => {
                 </div>
             </div>
 
+            {/* Sticky Mobile CTA */}
+            {!hasApplied && !isOwner && !loading && (
+                <div className="mobile-sticky-cta">
+                    {user ? (
+                        <Button variant="primary" onClick={() => document.getElementById('apply-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                            Apply to {job.profiles?.username}
+                        </Button>
+                    ) : (
+                        <Button variant="primary" onClick={() => navigate('/login')}>Login to Apply</Button>
+                    )}
+                </div>
+            )}
+
             <style>{`
                 .job-detail-page {
                     max-width: 1000px;
                     margin: 0 auto;
-                    padding-bottom: 4rem;
+                    padding: 1.5rem 1.5rem 6rem 1.5rem;
                 }
                 .back-btn {
                     background: none;
                     border: none;
-                    color: #888;
+                    color: #666;
                     display: flex;
                     align-items: center;
                     gap: 8px;
                     cursor: pointer;
                     margin-bottom: 2rem;
-                    font-size: 0.9rem;
+                    font-size: 0.95rem;
                     padding: 0;
+                    transition: color 0.2s;
                 }
                 .back-btn:hover { color: var(--primary-orange); }
 
                 .job-header {
                     display: flex;
                     justify-content: space-between;
-                    align-items: flex-start;
-                    margin-bottom: 3rem;
-                    border-bottom: 1px solid #222;
-                    padding-bottom: 2rem;
+                    align-items: center;
+                    margin-bottom: 2.5rem;
+                    background: #0d0d0d;
+                    border: 1px solid #1a1a1a;
+                    padding: 2rem;
+                    border-radius: 16px;
                 }
                 .header-main {
                     display: flex;
                     gap: 1.5rem;
+                    align-items: center;
                 }
                 .company-logo-lg {
-                    width: 64px;
-                    height: 64px;
-                    background: #222;
-                    border-radius: 12px;
+                    width: 72px;
+                    height: 72px;
+                    background: #1a1a1a;
+                    border: 1px solid #333;
+                    border-radius: 16px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 1.5rem;
-                    color: #666;
+                    font-size: 1.8rem;
+                    color: #555;
+                    flex-shrink: 0;
+                    overflow: hidden;
                 }
                 .job-header h1 {
-                    font-size: 2rem;
+                    font-size: 1.75rem;
                     margin: 0 0 0.5rem 0;
+                    font-weight: 800;
+                    letter-spacing: -0.02em;
                 }
                 .job-meta {
                     display: flex;
                     align-items: center;
-                    gap: 10px;
-                    color: #aaa;
-                    font-size: 1rem;
+                    gap: 12px;
+                    color: #888;
+                    font-size: 0.9rem;
+                    flex-wrap: wrap;
                 }
-                .dot { color: #444; }
                 .meta-tag {
-                    background: rgba(255,255,255,0.1);
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 0.85rem;
+                    color: #fff;
+                    font-weight: 500;
                 }
                 .company-name {
                     color: var(--primary-orange);
-                    font-weight: 500;
+                    font-weight: 600;
+                    font-size: 1rem;
                 }
 
                 .job-layout {
                     display: grid;
-                    grid-template-columns: 1fr 300px;
-                    gap: 3rem;
+                    grid-template-columns: 1fr 340px;
+                    gap: 2.5rem;
                 }
 
                 .detail-section {
-                    margin-bottom: 2.5rem;
+                    background: #0d0d0d;
+                    border: 1px solid #1a1a1a;
+                    border-radius: 16px;
+                    padding: 2rem;
+                    margin-bottom: 2rem;
                 }
                 .detail-section h3 {
-                    font-size: 1.2rem;
-                    margin-bottom: 1rem;
+                    font-size: 1.25rem;
+                    margin-bottom: 1.5rem;
                     color: #fff;
-                    border-left: 3px solid var(--primary-orange);
-                    padding-left: 1rem;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
                 }
                 .description-text {
-                    color: #ccc;
-                    line-height: 1.7;
+                    color: #bbb;
+                    line-height: 1.8;
                     font-size: 1.05rem;
                 }
-                .whitespace-pre-wrap { white-space: pre-wrap; }
 
                 .salary-box {
                     display: inline-flex;
                     align-items: center;
                     gap: 1rem;
-                    background: #111;
-                    border: 1px solid #333;
-                    padding: 1rem 1.5rem;
-                    border-radius: 8px;
+                    background: rgba(76, 209, 55, 0.05);
+                    border: 1px solid rgba(76, 209, 55, 0.1);
+                    padding: 1rem 1.75rem;
+                    border-radius: 12px;
                     color: #4cd137;
-                    font-weight: 600;
-                    font-size: 1.1rem;
+                    font-weight: 700;
+                    font-size: 1.25rem;
                 }
 
                 .sidebar-card {
-                    background: #111;
-                    border: 1px solid #222;
-                    border-radius: 12px;
+                    background: #0d0d0d;
+                    border: 1px solid #1a1a1a;
+                    border-radius: 16px;
                     padding: 1.5rem;
+                    position: sticky;
+                    top: 2rem;
                 }
                 .sidebar-card h4 {
                     margin-top: 0;
-                    margin-bottom: 1rem;
-                    color: #888;
-                    font-size: 0.9rem;
+                    margin-bottom: 1.25rem;
+                    color: #666;
+                    font-size: 0.8rem;
                     text-transform: uppercase;
+                    letter-spacing: 1.5px;
+                    font-weight: 700;
                 }
                 .company-mini-profile {
                     display: flex;
@@ -370,76 +408,123 @@ const JobDetail = () => {
                     margin-bottom: 1.5rem;
                 }
                 .company-avatar {
-                    width: 40px;
-                    height: 40px;
-                    background: #222;
-                    border-radius: 50%;
+                    width: 48px;
+                    height: 48px;
+                    background: #1a1a1a;
+                    border: 1px solid #333;
+                    border-radius: 12px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    color: #666;
+                    font-size: 1.2rem;
+                    color: #555;
+                    overflow: hidden;
                 }
-                .website-link {
-                    display: block;
-                    font-size: 0.85rem;
-                    color: var(--primary-orange);
-                    text-decoration: none;
-                    margin-top: 2px;
-                }
+                .company-info-text strong { display: block; font-size: 1.1rem; margin-bottom: 4px; }
+                .divider { height: 1px; background: #1a1a1a; margin: 1.5rem 0; }
+                .website-link { color: var(--primary-orange); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
                 .safety-badge {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    color: #aaa;
+                    gap: 10px;
+                    color: #4cd137;
                     font-size: 0.9rem;
-                    background: rgba(255,255,255,0.05);
-                    padding: 8px;
-                    border-radius: 6px;
+                    background: rgba(76, 209, 55, 0.05);
+                    padding: 12px;
+                    border-radius: 10px;
+                    font-weight: 600;
                 }
 
                 .apply-section {
-                    margin-top: 3rem;
-                    background: #111;
-                    border: 1px solid #333;
-                    padding: 2rem;
-                    border-radius: 12px;
+                    background: linear-gradient(180deg, #0d0d0d 0%, #050505 100%);
+                    border: 1px solid var(--primary-orange);
+                    padding: 2.5rem;
+                    border-radius: 20px;
+                    box-shadow: 0 10px 40px rgba(237, 80, 0, 0.1);
                 }
-                .apply-form label {
-                    display: block;
-                    margin-bottom: 1rem;
-                    color: #ccc;
-                }
+                .apply-section h3 { border: none; padding: 0; font-size: 1.5rem; text-align: center; margin-bottom: 2rem; }
+                .apply-form label { display: block; margin-bottom: 0.75rem; color: #888; font-size: 0.9rem; font-weight: 500; }
                 .apply-form textarea {
                     width: 100%;
                     background: #000;
-                    border: 1px solid #333;
-                    padding: 1rem;
-                    border-radius: 8px;
+                    border: 1px solid #222;
+                    padding: 1.25rem;
+                    border-radius: 12px;
                     color: white;
                     resize: vertical;
                     margin-bottom: 1.5rem;
+                    font-size: 1rem;
+                    transition: all 0.2s;
                 }
-                .apply-form textarea:focus {
-                     outline: none;
-                     border-color: var(--primary-orange);
-                }
+                .apply-form textarea:focus { border-color: var(--primary-orange); background: #050505; }
+                .form-footer { display: flex; justify-content: center; }
+                .form-footer button { width: 100%; max-width: 400px; height: 50px !important; font-size: 1.1rem !important; }
+
                 .applied-badge {
                     background: rgba(76, 209, 55, 0.1);
                     color: #4cd137;
-                    padding: 10px 20px;
-                    border-radius: 8px;
-                    border: 1px solid #4cd137;
+                    padding: 12px 24px;
+                    border-radius: 99px;
+                    border: 1px solid rgba(76, 209, 55, 0.3);
                     display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: 10px;
+                    font-weight: 700;
+                }
+
+                .success-toast {
+                    position: fixed;
+                    bottom: 2rem;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #4cd137;
+                    color: white;
+                    padding: 1rem 2rem;
+                    border-radius: 12px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+                    z-index: 2000;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
                     font-weight: 600;
+                    animation: slideUp 0.3s ease-out;
+                }
+
+                .mobile-sticky-cta { display: none; }
+
+                @keyframes slideUp {
+                    from { transform: translate(-50%, 100%); opacity: 0; }
+                    to { transform: translate(-50%, 0); opacity: 1; }
                 }
 
                 @media (max-width: 900px) {
                     .job-layout { grid-template-columns: 1fr; }
-                    .job-header { flex-direction: column; gap: 1.5rem; }
-                    .header-actions { width: 100%; }
-                    .apply-box, .apply-box button { width: 100%; }
+                    .job-header { flex-direction: column; align-items: flex-start; gap: 1.5rem; padding: 1.5rem; }
+                    .header-actions { width: 100%; display: none; } /* Hide in header on mobile, use bottom sticky */
+                    .sidebar-card { position: static; }
+                    
+                    .mobile-sticky-cta {
+                        display: block;
+                        position: fixed;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
+                        background: rgba(0, 0, 0, 0.8);
+                        backdrop-filter: blur(10px);
+                        padding: 1rem 1.5rem;
+                        border-top: 1px solid #222;
+                        z-index: 1000;
+                    }
+                    .mobile-sticky-cta button { width: 100%; height: 52px !important; font-size: 1.1rem !important; }
+                    .job-detail-page { padding-bottom: 8rem; }
+                    .job-header h1 { font-size: 1.5rem; }
+                }
+
+                @media (max-width: 480px) {
+                    .detail-section { padding: 1.5rem; }
+                    .detail-section h3 { font-size: 1.1rem; }
+                    .description-text { font-size: 0.95rem; }
+                    .company-logo-lg { width: 60px; height: 60px; }
                 }
             `}</style>
         </div>

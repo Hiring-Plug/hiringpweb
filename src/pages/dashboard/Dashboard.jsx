@@ -251,21 +251,22 @@ const Dashboard = () => {
                 .section-header h3 { margin: 0 0 1rem 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
 
                 /* Actions Side Column */
-                .actions-list { display: flex; flex-direction: column; gap: 1rem; }
-                .action-card-mini {
-                    background: #111;
-                    border: 1px solid #222;
-                    border-radius: 10px;
-                    padding: 1.2rem;
+                .actions-list { display: flex; flex-direction: column; gap: 1.25rem; }
+                .action-card {
+                    background: #0d0d0d;
+                    border: 1px solid #1a1a1a;
+                    border-radius: 16px;
+                    padding: 1.5rem;
                     display: flex;
                     flex-direction: column;
-                    gap: 1rem;
-                    transition: border-color 0.2s;
+                    gap: 1.25rem;
+                    transition: all 0.2s ease;
                 }
-                .action-card-mini:hover { border-color: #444; }
-                .card-icon { font-size: 1.5rem; color: var(--primary-orange); display: flex; align-items: center; gap: 10px; }
-                .action-info h3 { margin: 0; font-size: 1rem; color: #fff; }
-                .action-info p { margin: 5px 0 0 0; color: #777; font-size: 0.85rem; line-height: 1.4; }
+                .action-card:hover { border-color: #333; transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+                .action-icon { font-size: 1.6rem; color: var(--primary-orange); background: rgba(237, 80, 0, 0.1); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+                .action-card h3 { margin: 0; font-size: 1.15rem; font-weight: 700; color: #fff; }
+                .action-card p { margin: 0; color: #888; font-size: 0.9rem; line-height: 1.5; }
+                .action-card button { border-radius: 99px !important; width: fit-content; }
 
                 .activity-feed {
                     background: #111;
@@ -296,22 +297,32 @@ const Dashboard = () => {
                 }
 
                 @media (max-width: 480px) {
-                    .dashboard-home { padding: 0.5rem; }
-                    .stats-row {
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
+                    .dashboard-home { padding: 0.5rem;
                         width: 100%;
-                        gap: 1rem;
+                     }
+                    .stats-row {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 1.5rem;
+                        width: 100%;
                     }
-                    .welcome-card { padding: 1.25rem; }
-                    .welcome-card h1 { font-size: 1.3rem; }
-                    .welcome-card p { font-size: 0.8rem; }
-                    .stat-value { font-size: 1.3rem; }
-                    .stat-label { font-size: 0.6rem; }
+                    .welcome-card { padding: 1.5rem 1rem; }
+                    .welcome-card h1 { font-size: 1.4rem; }
+                    .welcome-card p { font-size: 0.85rem; }
+                    .stat-item { border-bottom: 1px solid #222; width: 100%; padding-bottom: 0.75rem; }
+                    .stat-item:last-child { border: none; }
+                    .stat-value { font-size: 1.6rem; }
+                    .stat-label { font-size: 0.75rem; letter-spacing: 2px; }
                     
-                    .dashboard-grid { gap: 1rem; }
+                    .dashboard-grid { gap: 1.5rem; }
                     .activity-feed { padding: 1.25rem; }
-                    .section-title { font-size: 1rem; }
+                    
+                    /* List items mobile stacked */
+                    .card-content-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+                    .job-row-actions { width: 100%; }
+                    .job-row-actions button { width: 100%; height: 34px !important; }
+                    .action-card button { width: 100%; }
                 }
             `}</style>
         </div>

@@ -131,6 +131,22 @@ const ManageJobs = () => {
                     display: flex;
                     gap: 5px;
                 }
+
+                @media (max-width: 480px) {
+                    .manage-jobs-container { padding: 1rem; }
+                    .section-header h3 { font-size: 1rem; }
+                    .job-card-mini { 
+                        flex-direction: column; 
+                        align-items: flex-start; 
+                        gap: 12px;
+                        padding: 1.25rem 1rem;
+                    }
+                    .job-main { width: 100%; }
+                    .job-main h4 { font-size: 1.1rem; line-height: 1.4; }
+                    .job-stats { font-size: 0.8rem; width: 100%; border-top: 1px solid #222; padding-top: 10px; }
+                    .job-actions { width: 100%; gap: 10px; }
+                    .job-actions button { flex: 1; height: 36px !important; font-size: 0.85rem !important; }
+                }
             `}</style>
         </div>
     );

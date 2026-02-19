@@ -107,7 +107,7 @@ const DashboardLayout = () => {
                         <div className="env-badge">
                             <span className="dot"></span> Production
                         </div>
-                        <button className="icon-btn"><FaBell /></button>
+                        <NotificationBell />
                     </div>
                 </header>
 

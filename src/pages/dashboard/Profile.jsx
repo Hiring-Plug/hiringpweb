@@ -582,8 +582,9 @@ const Profile = () => {
                 @media (max-width: 480px) {
                     .profile-banner { height: 120px; }
                     .profile-grid { 
-                         grid-template-columns: 100px 1fr; /* Slightly smaller left column for 360px support */
-                         gap: 0.6rem;
+                         display: flex;
+                         flex-direction: column;
+                         gap: 1.25rem;
                     }
                     .profile-avatar { 
                         width: 75px; height: 75px; 
@@ -606,12 +607,17 @@ const Profile = () => {
                     .stat-value { font-size: 0.8rem; }
                     .stat-label { font-size: 0.65rem; }
 
+                    /* Services Tags Mobile fix */
+                    .skills-tags { gap: 8px; justify-content: center; }
+                    .skill-tag { font-size: 0.8rem; padding: 5px 12px; }
+
                     /* Narrow screen Project Roles scaling */
-                    .job-card-row { padding: 0.6rem; }
-                    .job-info h4 { font-size: 0.85rem !important; }
-                    .job-type { font-size: 0.7rem !important; }
-                    .project-jobs-section .section-header h3 { font-size: 0.85rem; }
-                    .count-badge { font-size: 0.7rem; padding: 1px 6px; }
+                    .job-card-row { padding: 0.8rem; flex-direction: column; align-items: flex-start; gap: 10px; }
+                    .job-card-row button { width: 100%; height: 32px !important; }
+                    .job-info h4 { font-size: 0.9rem !important; }
+                    .job-type { font-size: 0.75rem !important; }
+                    .project-jobs-section .section-header h3 { font-size: 0.95rem; }
+                    .count-badge { font-size: 0.75rem; padding: 1px 6px; }
                 }
             `}</style>
         </div>
