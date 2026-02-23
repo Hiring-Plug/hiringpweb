@@ -100,7 +100,7 @@ const Navbar = () => {
             </li>
           ))}
           <li className="mobile-nav-item">
-            <Link to="/" className="mobile-nav-link" onClick={toggleMenu}>Log in</Link>
+            <Link to="/login" className="mobile-nav-link" onClick={toggleMenu}>Log in</Link>
           </li>
           <li className="mobile-nav-item">
             <Link to="/signup" className="mobile-btn-signup" onClick={toggleMenu}>Sign up</Link>
