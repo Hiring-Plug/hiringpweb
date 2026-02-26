@@ -47,7 +47,7 @@ const Login = () => {
         try {
             const { error } = await signIn(email, password);
             if (error) throw error;
-            navigate('/app/dashboard'); // Corrected navigation to dashboard
+            navigate('/app/profile'); // Correct navigation to profile
         } catch (err) {
             setError(err.message);
         } finally {
@@ -84,7 +84,7 @@ const Login = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                placeholder="Johndoe@gmail.com"
+                                placeholder="johndoe@email.com"
                             />
                         </div>
 
@@ -174,7 +174,7 @@ const Login = () => {
                     background: #000;
                     color: #fff;
                     font-family: var(--font-main);
-                    overflow: hidden;
+                    overflow-y: auto; /* Changed from hidden to allow scrolling if needed */
                 }
 
                 /* Left Auth Section */
@@ -330,13 +330,14 @@ const Login = () => {
 
                 .brand-card {
                     flex: 1;
+                    height: 100%;
                     background: var(--primary-orange);
                     border-radius: 30px;
-                    padding: 40px;
+                    padding: 30px;
                     display: flex;
                     flex-direction: column;
                     position: relative;
-                    overflow: hidden;
+                    overflow: visible;
                     justify-content: space-between;
                 }
 
@@ -408,25 +409,25 @@ const Login = () => {
                 .promo-box {
                     background: #fff;
                     color: #000;
-                    border-radius: 24px;
-                    padding: 24px;
+                    border-radius: 20px;
+                    padding: 20px;
                     display: flex;
                     justify-content: space-between;
                     align-items: flex-end;
-                    margin-top: 25px;
+                    margin-top: 15px; /* Reduced from 25px */
                     position: relative;
                 }
 
                 .promo-content h3 {
-                    font-size: 1.4rem;
+                    font-size: 1.25rem; /* Reduced from 1.4rem */
                     line-height: 1.2;
-                    margin-bottom: 12px;
+                    margin-bottom: 10px;
                 }
 
                 .promo-content p {
-                    font-size: 0.85rem;
+                    font-size: 0.8rem; /* Reduced from 0.85rem */
                     color: #666;
-                    margin-bottom: 20px;
+                    margin-bottom: 15px;
                     max-width: 90%;
                 }
 

@@ -1,9 +1,9 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
-import { FaBell } from 'react-icons/fa';
+import { FaBell, FaUserCheck, FaUserPlus } from 'react-icons/fa';
+import Button from './Button';
 
 const NotificationBell = () => {
     const { user } = useAuth();
@@ -83,6 +83,41 @@ const NotificationBell = () => {
         }
     };
 
+    const handleApprove = async (e, notif) => {
+        e.stopPropagation(); // Don't trigger notification click
+        const followId = notif.metadata?.follow_id;
+        const followerId = notif.metadata?.follower_id;
+        if (!followId) return;
+
+        try {
+            const { error: followError } = await supabase
+                .from('follows')
+                .update({ status: 'connected' })
+                .eq('id', followId);
+
+            if (followError) throw followError;
+
+            // Mark notification as read
+            await supabase.from('notifications').update({ is_read: true }).eq('id', notif.id);
+
+            // Notify back
+            await supabase.from('notifications').insert([{
+                user_id: followerId,
+                type: 'system',
+                content: `${user.user_metadata?.username || 'Some talent'} approved your connection request!`,
+                link: `/u/${user.user_metadata?.username}`
+            }]);
+
+            // Update local state
+            setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, is_read: true, approved: true } : n));
+            setUnreadCount(prev => Math.max(0, prev - 1));
+            alert('Connection approved!');
+        } catch (err) {
+            console.error('Error approving from notification:', err);
+            alert('Could not approve connection.');
+        }
+    };
+
     return (
         <div className="notification-bell-container" ref={dropdownRef}>
             <div className="bell-icon-wrapper" onClick={handleBellClick}>
@@ -108,7 +143,18 @@ const NotificationBell = () => {
                                 >
                                     <div className="notif-content">
                                         <p>{notif.content}</p>
-                                        <span className="time">{new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        <div className="notif-meta">
+                                            <span className="time">{new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                            {notif.metadata?.follow_id && !notif.approved && !notif.is_read && (
+                                                <button
+                                                    className="approve-btn-professional"
+                                                    onClick={(e) => handleApprove(e, notif)}
+                                                >
+                                                    <FaUserCheck /> Approve
+                                                </button>
+                                            )}
+                                            {notif.approved && <span className="status-tag">Connected</span>}
+                                        </div>
                                     </div>
                                     {!notif.is_read && <div className="unread-dot"></div>}
                                 </div>
@@ -214,8 +260,35 @@ const NotificationBell = () => {
                 .notification-item.unread { background: rgba(237, 80, 0, 0.05); }
 
                 .notif-content p { margin: 0 0 4px 0; font-size: 0.9rem; color: #ddd; line-height: 1.4; }
+                .notif-meta { display: flex; flex-direction: column; align-items: flex-start; }
                 .notif-content .time { font-size: 0.75rem; color: #666; }
                 
+                .approve-btn-professional {
+                    margin-top: 8px;
+                    background: white;
+                    color: black;
+                    border: none;
+                    padding: 4px 12px;
+                    border-radius: 4px;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                .approve-btn-professional:hover {
+                    background: #eee;
+                    transform: translateY(-1px);
+                }
+                .approve-btn-professional svg { font-size: 0.7rem; }
+
+                .status-tag { 
+                    font-size: 0.7rem; color: var(--primary-orange); background: rgba(237, 80, 0, 0.1); 
+                    padding: 2px 8px; border-radius: 4px; margin-top: 4px;
+                }
+
                 .unread-dot {
                     width: 8px;
                     height: 8px;

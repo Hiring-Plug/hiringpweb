@@ -15,6 +15,7 @@ import Litepaper from './pages/Litepaper'
 import DashboardLayout from './components/DashboardLayout'
 import Dashboard from './pages/dashboard/Dashboard'
 import Profile from './pages/dashboard/Profile'
+import PublicProfile from './pages/PublicProfile'
 import Messages from './pages/dashboard/Messages'
 import Freelance from './pages/dashboard/Freelance'
 import AppProjects from './pages/dashboard/AppProjects'
@@ -55,6 +56,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/litepaper" element={<Litepaper />} />
+                <Route path="/u/:username" element={<PublicProfile />} />
 
                 {/* Protected App Routes */}
                 <Route path="/app" element={

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabaseClient';
 import Button from '../../components/Button';
-import { FaUser, FaSave, FaGlobe, FaTwitter, FaImage, FaCoins, FaRocket } from 'react-icons/fa';
+import { FaUser, FaSave, FaGlobe, FaTwitter, FaImage, FaCoins, FaRocket, FaUserCheck, FaUserTimes, FaUsers } from 'react-icons/fa';
 
 const Settings = () => {
     const { user } = useAuth();
@@ -40,10 +40,17 @@ const Settings = () => {
     });
 
     const [uploading, setUploading] = useState(false);
+    const [pendingConnections, setPendingConnections] = useState([]);
+    const [fetchingConnections, setFetchingConnections] = useState(false);
 
     useEffect(() => {
-        if (user) fetchProfile();
-    }, [user]);
+        if (user) {
+            fetchProfile();
+            if (role === 'talent') {
+                fetchPendingConnections();
+            }
+        }
+    }, [user, role]);
 
     const fetchProfile = async () => {
         try {
@@ -85,6 +92,62 @@ const Settings = () => {
             }
         } catch (error) {
             console.error('Error fetching profile:', error);
+        }
+    };
+    const fetchPendingConnections = async () => {
+        setFetchingConnections(true);
+        try {
+            const { data, error } = await supabase
+                .from('follows')
+                .select('id, follower_id, profiles!follows_follower_id_fkey(username, avatar_url, full_name)')
+                .eq('following_id', user.id)
+                .eq('status', 'pending');
+
+            if (error) throw error;
+            setPendingConnections(data || []);
+        } catch (error) {
+            console.error('Error fetching pending connections:', error);
+        } finally {
+            setFetchingConnections(false);
+        }
+    };
+
+    const handleApproveConnection = async (followId, followerId) => {
+        try {
+            const { error } = await supabase
+                .from('follows')
+                .update({ status: 'connected' })
+                .eq('id', followId);
+
+            if (error) throw error;
+
+            // Notify follower
+            await supabase.from('notifications').insert([{
+                user_id: followerId,
+                type: 'system',
+                content: `${user.user_metadata?.username || 'Some talent'} approved your connection request!`,
+                link: `/u/${user.user_metadata?.username}`
+            }]);
+
+            setPendingConnections(prev => prev.filter(c => c.id !== followId));
+            alert('Connection approved!');
+        } catch (error) {
+            console.error('Error approving connection:', error);
+        }
+    };
+
+    const handleDeclineConnection = async (followId) => {
+        try {
+            const { error } = await supabase
+                .from('follows')
+                .delete()
+                .eq('id', followId);
+
+            if (error) throw error;
+            setPendingConnections(prev => prev.filter(c => c.id !== followId));
+            alert('Connection declined.');
+        } catch (error) {
+            console.error('Error declining connection:', error);
         }
     };
 
@@ -206,6 +269,7 @@ const Settings = () => {
                 custom_metrics: {},
                 social_links: formData.social_links,
                 services: formData.services,
+                role: role, // Ensure this is saved
                 skills: isProject ? null : formData.skills.split(',').map(s => s.trim()).filter(Boolean),
                 experience: isProject ? null : formData.experience,
                 updated_at: new Date(),
@@ -423,7 +487,7 @@ const Settings = () => {
                                                     />
                                                 </div>
                                             </div>
-                                            <div class="form-group">
+                                            <div className="form-group">
                                                 <label>Duration</label>
                                                 <input
                                                     value={exp.duration}
@@ -449,6 +513,60 @@ const Settings = () => {
                                 </div>
                             </div>
                         </>
+                    )}
+
+                    {/* Connections Section (Only for Talents) */}
+                    {!isProject && (
+                        <div className="settings-card">
+                            <div className="card-header">
+                                <h3>Pending Connect Requests</h3>
+                            </div>
+                            <div className="card-body">
+                                {fetchingConnections ? (
+                                    <p>Loading requests...</p>
+                                ) : pendingConnections.length > 0 ? (
+                                    <div className="connections-list">
+                                        {pendingConnections.map(conn => (
+                                            <div key={conn.id} className="connection-item">
+                                                <div className="connection-user">
+                                                    <div className="avatar-mini">
+                                                        {conn.profiles?.avatar_url ? (
+                                                            <img src={conn.profiles.avatar_url} alt="" />
+                                                        ) : (
+                                                            <FaUser />
+                                                        )}
+                                                    </div>
+                                                    <div className="user-info">
+                                                        <p className="username">{conn.profiles?.username}</p>
+                                                        <p className="fullname">{conn.profiles?.full_name}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="connection-actions">
+                                                    <Button
+                                                        type="button"
+                                                        variant="primary"
+                                                        size="sm"
+                                                        onClick={() => handleApproveConnection(conn.id, conn.follower_id)}
+                                                    >
+                                                        <FaUserCheck /> Approve
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleDeclineConnection(conn.id)}
+                                                    >
+                                                        <FaUserTimes /> Decline
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="empty-state">No pending requests.</p>
+                                )}
+                            </div>
+                        </div>
                     )}
 
                     <div className="form-actions">
@@ -496,6 +614,23 @@ const Settings = () => {
                 .form-actions { display: flex; justify-content: flex-end; }
 
                 @media(max-width: 600px) { .form-row { flex-direction: column; gap: 0; } }
+
+                /* Connections Styles */
+                .connections-list { display: flex; flex-direction: column; gap: 1rem; }
+                .connection-item { 
+                    display: flex; justify-content: space-between; align-items: center; 
+                    background: #1a1a1a; padding: 1rem; border-radius: 8px; border: 1px solid #333;
+                }
+                .connection-user { display: flex; align-items: center; gap: 12px; }
+                .avatar-mini { 
+                    width: 32px; height: 32px; border-radius: 50%; overflow: hidden; background: #222;
+                    display: flex; align-items: center; justify-content: center; font-size: 0.8rem;
+                }
+                .avatar-mini img { width: 100%; height: 100%; object-fit: cover; }
+                .user-info .username { font-weight: 600; font-size: 0.95rem; margin: 0; }
+                .user-info .fullname { font-size: 0.8rem; color: #666; margin: 0; }
+                .connection-actions { display: flex; gap: 8px; }
+                .empty-state { color: #666; font-style: italic; }
             `}</style>
         </div>
     );

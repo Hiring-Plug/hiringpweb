@@ -140,7 +140,7 @@ const Signup = () => {
                     </div>
                 </div>
                 <style>{`
-                    .signup-container.success-view { height: calc(100vh - 60px); display: flex; align-items: center; justify-content: center; background: #000; color: #fff; margin-top: 60px; }
+                    .signup-container.success-view { height: calc(100vh - 60px); display: flex; align-items: center; justify-content: center; background: #000; color: #fff; margin-top: 60px; zoom: 0.9; }
                     .success-view .auth-section { flex: 1; display: flex; justify-content: center; }
                     .success-title { font-size: 2rem; margin-bottom: 1rem; color: #4ade80; }
                     .success-desc { color: #aaa; margin-bottom: 2rem; }
@@ -343,7 +343,7 @@ const Signup = () => {
                     background: #000;
                     color: #fff;
                     font-family: var(--font-main);
-                    overflow: hidden;
+                    overflow-y: auto;
                 }
 
                 /* Left Auth Section */
@@ -621,13 +621,14 @@ const Signup = () => {
 
                 .brand-card {
                     flex: 1;
+                    height: 100%;
                     background: var(--primary-orange);
                     border-radius: 30px;
-                    padding: 40px;
+                    padding: 30px;
                     display: flex;
                     flex-direction: column;
                     position: relative;
-                    overflow: hidden;
+                    overflow: visible;
                     justify-content: space-between;
                 }
 
@@ -699,25 +700,25 @@ const Signup = () => {
                 .promo-box {
                     background: #fff;
                     color: #000;
-                    border-radius: 24px;
-                    padding: 24px;
+                    border-radius: 20px;
+                    padding: 20px;
                     display: flex;
                     justify-content: space-between;
                     align-items: flex-end;
-                    margin-top: 25px;
+                    margin-top: 15px;
                     position: relative;
                 }
 
                 .promo-content h3 {
-                    font-size: 1.4rem;
+                    font-size: 1.25rem;
                     line-height: 1.2;
-                    margin-bottom: 12px;
+                    margin-bottom: 10px;
                 }
 
                 .promo-content p {
-                    font-size: 0.85rem;
+                    font-size: 0.8rem;
                     color: #666;
-                    margin-bottom: 20px;
+                    margin-bottom: 15px;
                     max-width: 90%;
                 }
 

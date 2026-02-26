@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabaseClient';
-import { FaCamera, FaMapMarkerAlt, FaLink, FaTwitter, FaGithub, FaLinkedin, FaPen, FaBriefcase, FaHeart, FaGlobe, FaStar, FaCheckCircle, FaBuilding, FaDiscord } from 'react-icons/fa';
+import { FaCamera, FaMapMarkerAlt, FaLink, FaTwitter, FaGithub, FaLinkedin, FaPen, FaBriefcase, FaHeart, FaGlobe, FaStar, FaCheckCircle, FaBuilding, FaDiscord, FaShareAlt, FaCopy } from 'react-icons/fa';
 import Button from '../../components/Button';
 import profileCover from '../../assets/7.jpg'; // Default fallback
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ const Profile = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [jobs, setJobs] = useState([]);
+    const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 });
 
     // Profile State
     const [profile, setProfile] = useState({
@@ -36,9 +37,30 @@ const Profile = () => {
     useEffect(() => {
         if (user) {
             fetchProfile();
+            fetchFollowData();
             if (isProject) fetchJobs();
         }
     }, [user]);
+
+    const fetchFollowData = async () => {
+        try {
+            const { count: followersCount } = await supabase
+                .from('follows')
+                .select('*', { count: 'exact', head: true })
+                .eq('following_id', user.id)
+                .in('status', ['following', 'connected']);
+
+            const { count: followingCount } = await supabase
+                .from('follows')
+                .select('*', { count: 'exact', head: true })
+                .eq('follower_id', user.id)
+                .in('status', ['following', 'connected']);
+
+            setFollowCounts({ followers: followersCount || 0, following: followingCount || 0 });
+        } catch (err) {
+            console.error('Error fetching follow data:', err);
+        }
+    };
 
     const fetchProfile = async () => {
         try {
@@ -90,6 +112,12 @@ const Profile = () => {
     ];
 
     const handleEdit = () => navigate('/app/settings');
+
+    const handleShare = () => {
+        const publicUrl = `${window.location.origin}/u/${profile.username}`;
+        navigator.clipboard.writeText(publicUrl);
+        alert('Public profile link copied to clipboard!');
+    };
 
     return (
         <div className={`profile-container ${isProject ? 'project-mode' : ''}`}>
@@ -145,6 +173,11 @@ const Profile = () => {
                                     <span className="verified-badge">
                                         {isProject ? <FaCheckCircle /> : <FaStar />} {isProject ? 'VERIFIED PROJECT' : 'VERIFIED'}
                                     </span>
+                                    {profile.username && (
+                                        <button className="share-icon-btn" onClick={handleShare} title="Copy public profile link">
+                                            <FaShareAlt size={12} />
+                                        </button>
+                                    )}
                                 </>
                             )}
                         </div>
@@ -196,12 +229,18 @@ const Profile = () => {
                                     </div>
                                 ))
                             ) : (
-                                stats.map((stat, i) => (
-                                    <div key={i} className="stat-box">
-                                        <span className="stat-value">{stat.value}</span>
-                                        <span className="stat-label">{stat.label}</span>
+                                <>
+                                    <div className="stat-box">
+                                        <span className="stat-value">{followCounts.followers}</span>
+                                        <span className="stat-label">{isProject ? 'Followers' : 'Connections'}</span>
                                     </div>
-                                ))
+                                    {stats.map((stat, i) => (
+                                        <div key={i} className="stat-box">
+                                            <span className="stat-value">{stat.value}</span>
+                                            <span className="stat-label">{stat.label}</span>
+                                        </div>
+                                    ))}
+                                </>
                             )}
                         </div>
                     </div>
@@ -449,6 +488,26 @@ const Profile = () => {
                 }
                 .profile-container:not(.project-mode) .verified-badge {
                      background: rgba(241, 196, 15, 0.1); color: #f1c40f; border-color: rgba(241, 196, 15, 0.2);
+                }
+
+                .share-icon-btn {
+                    background: rgba(255, 255, 255, 0.05);
+                    color: #888;
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    border: 1px solid #222;
+                    padding: 0;
+                }
+                .share-icon-btn:hover {
+                    background: rgba(237, 80, 0, 0.1);
+                    color: var(--accent);
+                    border-color: var(--accent);
                 }
 
                 .role-line { color: #888; font-size: 0.9rem; margin: 0; font-weight: 500; }

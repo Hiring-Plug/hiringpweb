@@ -12,11 +12,13 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  -webkit-tap-highlight-color: transparent; /* Remove mobile tap highlight */
+  -webkit-tap-highlight-color: transparent;
+  /* Remove mobile tap highlight */
 }
 
 *:focus {
-    outline: none; /* Remove default focus outline (custom styles used instead) */
+  outline: none;
+  /* Remove default focus outline (custom styles used instead) */
 }
 
 html,
@@ -72,12 +74,10 @@ h6 {
 /* Skeleton Loader Styles */
 .skeleton {
   background: #111;
-  background: linear-gradient(
-    90deg,
-    #111 25%,
-    #1a1a1a 50%,
-    #111 75%
-  );
+  background: linear-gradient(90deg,
+      #111 25%,
+      #1a1a1a 50%,
+      #111 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite linear;
   border-radius: 4px;
@@ -87,6 +87,7 @@ h6 {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
