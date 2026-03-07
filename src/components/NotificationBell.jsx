@@ -12,6 +12,23 @@ const NotificationBell = () => {
     const [unreadCount, setUnreadCount] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
+    const audioRef = useRef(null);
+
+    useEffect(() => {
+        // Pre-initialize audio with local asset
+        audioRef.current = new Audio('/notify.mp3');
+        audioRef.current.load(); // Explicitly start loading
+    }, []);
+
+    const playNotificationSound = () => {
+        if (audioRef.current) {
+            audioRef.current.currentTime = 0; // Reset to start
+            audioRef.current.volume = 1.0;
+            audioRef.current.play().catch(err => {
+                console.warn('Notification sound play blocked or failed:', err);
+            });
+        }
+    };
 
     useEffect(() => {
         if (!user) return;
@@ -29,6 +46,8 @@ const NotificationBell = () => {
             }, (payload) => {
                 setNotifications(prev => [payload.new, ...prev]);
                 setUnreadCount(prev => prev + 1);
+                // Play Sound
+                playNotificationSound();
             })
             .subscribe();
 

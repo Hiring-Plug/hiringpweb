@@ -3,18 +3,46 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../components/ConfirmDialog';
 import Button from '../../components/Button';
 import { FaPlus, FaEye, FaEdit, FaTrash, FaBriefcase, FaUsers } from 'react-icons/fa';
 
 const ManageJobs = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { showToast } = useToast();
+    const { confirm } = useConfirm();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (user) fetchMyJobs();
     }, [user]);
+
+    const handleDeleteJob = async (jobId) => {
+        const isConfirmed = await confirm('Are you sure you want to delete this job posting? All associated applications will also be removed.', {
+            variant: 'error',
+            confirmText: 'Delete Job',
+            title: 'Delete Posting'
+        });
+
+        if (!isConfirmed) return;
+
+        try {
+            const { error } = await supabase
+                .from('jobs')
+                .delete()
+                .eq('id', jobId);
+
+            if (error) throw error;
+
+            showToast('Job deleted successfully.', 'success');
+            fetchMyJobs(); // Refresh local list
+        } catch (err) {
+            showToast('Error deleting job: ' + err.message, 'error');
+        }
+    };
 
     const fetchMyJobs = async () => {
         try {
@@ -105,8 +133,11 @@ const ManageJobs = () => {
                                     <Button variant="outline" size="sm" onClick={() => navigate(`/app/jobs/${job.id}`)}>
                                         <FaEye /> View
                                     </Button>
-                                    <Button variant="secondary" size="sm">
+                                    <Button variant="secondary" size="sm" onClick={() => navigate('/app/jobs', { state: { editJob: job } })}>
                                         <FaEdit /> Edit
+                                    </Button>
+                                    <Button variant="outline" size="sm" className="delete-btn" onClick={(e) => { e.stopPropagation(); handleDeleteJob(job.id); }}>
+                                        <FaTrash />
                                     </Button>
                                 </div>
                             </div>
@@ -218,11 +249,20 @@ const ManageJobs = () => {
                     display: flex;
                     gap: 8px;
                 }
+                .delete-btn {
+                    color: #e74c3c !important;
+                    border-color: rgba(231, 76, 60, 0.2) !important;
+                }
+                .delete-btn:hover {
+                    background: rgba(231, 76, 60, 0.1) !important;
+                    border-color: #e74c3c !important;
+                }
 
                 @media (max-width: 768px) {
                     .card-content { flex-direction: column; align-items: flex-start; gap: 1rem; }
                     .card-actions { width: 100%; border-top: 1px solid #1a1a1a; padding-top: 12px; }
                     .card-actions button { flex: 1; }
+                    .card-actions .delete-btn { flex: 0 0 auto; width: 40px; }
                     .stats-row { gap: 1rem; }
                     .panel-header { flex-direction: column; align-items: flex-start; }
                     .panel-header button { width: 100%; }

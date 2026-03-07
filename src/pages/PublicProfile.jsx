@@ -3,11 +3,12 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
-import { FaMapMarkerAlt, FaLink, FaTwitter, FaGithub, FaLinkedin, FaCheckCircle, FaStar, FaBuilding, FaDiscord, FaGlobe, FaUserPlus, FaUserCheck, FaClock } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaLink, FaTwitter, FaGithub, FaLinkedin, FaCheckCircle, FaStar, FaBuilding, FaDiscord, FaGlobe, FaUserPlus, FaUserCheck, FaClock, FaTelegram } from 'react-icons/fa';
 import Button from '../components/Button';
 import profileCover from '../assets/7.jpg'; // Default fallback
 import Skeleton from '../components/Skeleton';
 import SEO from '../components/SEO';
+import { formatSocialLink } from '../utils/socialLinks';
 
 const PublicProfile = () => {
     const { username } = useParams();
@@ -340,16 +341,16 @@ const PublicProfile = () => {
                             ) : (
                                 <>
                                     {profile?.social_links?.twitter && (
-                                        <a href={profile.social_links.twitter} target="_blank" rel="noreferrer" className="social-link"><FaTwitter /></a>
+                                        <a href={formatSocialLink(profile.social_links.twitter, 'twitter')} target="_blank" rel="noreferrer" className="social-link"><FaTwitter /></a>
                                     )}
                                     {profile?.social_links?.linkedin && (
-                                        <a href={profile.social_links.linkedin} target="_blank" rel="noreferrer" className="social-link"><FaLinkedin /></a>
+                                        <a href={formatSocialLink(profile.social_links.linkedin, 'linkedin')} target="_blank" rel="noreferrer" className="social-link"><FaLinkedin /></a>
                                     )}
                                     {profile?.social_links?.telegram && (
-                                        <a href={profile.social_links.telegram} target="_blank" rel="noreferrer" className="social-link"><FaGlobe /></a>
+                                        <a href={formatSocialLink(profile.social_links.telegram, 'telegram')} target="_blank" rel="noreferrer" className="social-link"><FaTelegram /></a>
                                     )}
                                     {profile?.social_links?.discord && (
-                                        <a href={profile.social_links.discord} target="_blank" rel="noreferrer" className="social-link"><FaDiscord /></a>
+                                        <a href={formatSocialLink(profile.social_links.discord, 'discord')} target="_blank" rel="noreferrer" className="social-link"><FaDiscord /></a>
                                     )}
                                     {profile?.website && (
                                         <a href={profile.website} target="_blank" rel="noreferrer" className="website-link">

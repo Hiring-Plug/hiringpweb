@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
-import { FaFileAlt, FaUser, FaBuilding, FaCheck, FaTimes, FaClock, FaChevronRight, FaAddressCard, FaComments } from 'react-icons/fa';
+import { FaFileAlt, FaUser, FaBuilding, FaCheck, FaTimes, FaClock, FaChevronRight, FaAddressCard, FaComments, FaFilePdf } from 'react-icons/fa';
 
 const Applications = () => {
     const { user } = useAuth();
@@ -232,8 +232,6 @@ const Applications = () => {
                                 <div className="preview-content">
                                     {role === 'talent' ? (
                                         <div className="app-snippet">
-                                            <span>Application ID: #{app.id.toString().slice(0, 8)}</span>
-                                            <span>•</span>
                                             <span>Applied: {new Date(app.created_at).toLocaleDateString()}</span>
                                         </div>
                                     ) : (
@@ -275,6 +273,17 @@ const Applications = () => {
                                                 <FaComments /> Message
                                             </button>
                                         </div>
+                                    )}
+                                    {app.resume_url && (
+                                        <a
+                                            href={app.resume_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="action-btn cv-btn"
+                                            style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                        >
+                                            <FaFilePdf /> CV
+                                        </a>
                                     )}
                                     <button className="text-action-btn">
                                         {role === 'talent' ? 'View Job Details' : 'Full Profile'}
@@ -400,6 +409,8 @@ const Applications = () => {
                 .action-btn.hired:hover { background: #27ae60; }
                 .action-btn.message { background: #9b59b6; color: #fff; display: flex; align-items: center; gap: 8px; }
                 .action-btn.message:hover { background: #8e44ad; }
+                .action-btn.cv-btn { background: #333; color: #fff; border: 1px solid #444; }
+                .action-btn.cv-btn:hover { background: #444; border-color: #555; }
 
                 .loading-state, .empty-state-view { 
                     text-align: center; 

@@ -2,7 +2,13 @@ import { createContext, useState, useEffect, useContext } from 'react';
 import { FaBitcoin, FaEthereum, FaLayerGroup, FaGamepad, FaWallet, FaGlobe } from 'react-icons/fa';
 import { supabase } from '../supabaseClient';
 
-const DataContext = createContext();
+const DataContext = createContext({
+    projects: [],
+    applicants: [],
+    loading: true,
+    error: null,
+    refreshData: () => Promise.resolve()
+});
 
 export const useData = () => useContext(DataContext);
 
@@ -180,10 +186,11 @@ export const DataProvider = ({ children }) => {
             // 4. Map DB format to UI format with manual join
             const mapped = jobsData.map(job => {
                 const profile = profilesMap[job.project_id] || {};
-                const projectName = profile.username || job.company || 'Project ' + (job.project_id?.substring(0, 5) || 'Unknown');
+                const projectName = profile.username || job.company || 'Hiring Project';
 
                 return {
                     id: job.id,
+                    project_id: job.project_id,
                     company: projectName,
                     logoIcon: 'FaGlobe',
                     logoUrl: job.logo_url || profile.avatar_url || '',
@@ -197,7 +204,8 @@ export const DataProvider = ({ children }) => {
                     salary: job.salary_range,
                     posted: new Date(job.created_at).toLocaleDateString(),
                     tags: job.tags || [],
-                    description: job.description
+                    description: job.description,
+                    requirements: job.requirements
                 };
             });
 

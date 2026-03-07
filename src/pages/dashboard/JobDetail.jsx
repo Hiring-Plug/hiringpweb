@@ -4,19 +4,27 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/Button';
-import { FaBuilding, FaMapMarkerAlt, FaMoneyBillWave, FaArrowLeft, FaCheckCircle, FaLock } from 'react-icons/fa';
+import { FaBuilding, FaMapMarkerAlt, FaMoneyBillWave, FaArrowLeft, FaCheckCircle, FaLock, FaEdit, FaTrash, FaFilePdf, FaCloudUploadAlt } from 'react-icons/fa';
+import { useData } from '../../context/DataContext';
+import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../components/ConfirmDialog';
 import { sendEmailNotification, EMAIL_TEMPLATES } from '../../services/email';
+import { parseMarkdown } from '../../utils/markdown';
 
 const JobDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { refreshData } = useData();
+    const { showToast } = useToast();
+    const { confirm } = useConfirm();
 
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
     const [applying, setApplying] = useState(false);
     const [hasApplied, setHasApplied] = useState(false);
     const [coverLetter, setCoverLetter] = useState('');
+    const [resumeFile, setResumeFile] = useState(null);
     const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
@@ -45,9 +53,9 @@ const JobDetail = () => {
 
                 if (profileError) {
                     console.warn('Profile fetch error:', profileError);
-                    setJob({ ...jobData, profiles: { username: 'Unknown Project' } });
+                    setJob({ ...jobData, profiles: { username: jobData.company || 'Hiring Project' } });
                 } else {
-                    setJob({ ...jobData, profiles: profileData });
+                    setJob({ ...jobData, profiles: { ...profileData, username: profileData.username || jobData.company || 'Hiring Project' } });
                 }
             }
         } catch (error) {
@@ -64,9 +72,24 @@ const JobDetail = () => {
             .select('id')
             .eq('job_id', id)
             .eq('applicant_id', user.id)
-            .single();
+            .maybeSingle();
 
         if (data) setHasApplied(true);
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.type !== 'application/pdf') {
+                showToast('Please upload a PDF file', 'error');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                showToast('File size must be less than 5MB', 'error');
+                return;
+            }
+            setResumeFile(file);
+        }
     };
 
     const handleApply = async () => {
@@ -74,12 +97,35 @@ const JobDetail = () => {
 
         setApplying(true);
         try {
+            let resume_url = null;
+
+            // 1. Upload Resume if selected
+            if (resumeFile) {
+                const fileExt = resumeFile.name.split('.').pop();
+                const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+                const filePath = `resumes/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('resumes')
+                    .upload(filePath, resumeFile);
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('resumes')
+                    .getPublicUrl(filePath);
+
+                resume_url = publicUrl;
+            }
+
+            // 2. Insert Application
             const { error } = await supabase.from('applications').insert([{
                 job_id: id,
                 applicant_id: user.id,
                 project_id: job.project_id,
-                job_title: job.title, // Critical fix: store job title on the record
+                job_title: job.title,
                 cover_letter: coverLetter,
+                resume_url: resume_url,
                 job_type: 'job',
                 status: 'pending'
             }]);
@@ -114,7 +160,7 @@ const JobDetail = () => {
                     .from('conversations')
                     .select('id')
                     .or(`and(participant1_id.eq.${user.id},participant2_id.eq.${job.project_id}),and(participant1_id.eq.${job.project_id},participant2_id.eq.${user.id})`)
-                    .single();
+                    .maybeSingle();
 
                 let conversationId = existingConv?.id;
 
@@ -145,26 +191,41 @@ const JobDetail = () => {
 
             setHasApplied(true);
             setShowSuccess(true);
+            showToast('Application submitted successfully!', 'success');
+            setCoverLetter('');
             setTimeout(() => setShowSuccess(false), 5000);
         } catch (error) {
             console.error('Application error:', error);
-            // In a real app we'd use a toast component
+            showToast('Failed to submit application: ' + error.message, 'error');
         } finally {
             setApplying(false);
         }
     };
-
-    const parseMarkdown = (text) => {
-        if (!text) return null;
-        // Simple regex to find **bold** and wrap in <strong>
-        const parts = text.split(/(\*\*.*?\*\*)/g);
-        return parts.map((part, i) => {
-            if (part.startsWith('**') && part.endsWith('**')) {
-                return <strong key={i}>{part.slice(2, -2)}</strong>;
-            }
-            return part;
+    const handleDeleteJob = async () => {
+        const isConfirmed = await confirm('Are you sure you want to delete this job posting?', {
+            variant: 'error',
+            confirmText: 'Delete Job',
+            title: 'Delete Posting'
         });
+
+        if (!isConfirmed) return;
+
+        try {
+            const { error } = await supabase
+                .from('jobs')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            if (refreshData) await refreshData();
+            showToast('Job deleted successfully.', 'success');
+            navigate('/app/jobs');
+        } catch (err) {
+            showToast('Error deleting job: ' + err.message, 'error');
+        }
     };
+
 
     if (loading) return <div className="loading-state">Loading job details...</div>;
     if (!job) return <div className="error-state">Job not found.</div>;
@@ -191,7 +252,7 @@ const JobDetail = () => {
                     <div>
                         <h1>{job.title}</h1>
                         <div className="job-meta">
-                            <span className="company-name">{job.profiles?.username}</span>
+                            <span className="company-name">{job.profiles?.username || job.company || 'Hiring Project'}</span>
                             <span className="dot">•</span>
                             <span className="meta-tag">{job.type}</span>
                             <span className="dot">•</span>
@@ -206,7 +267,14 @@ const JobDetail = () => {
                             <FaCheckCircle /> Applied
                         </div>
                     ) : isOwner ? (
-                        <Button variant="outline" onClick={() => navigate('/app/jobs')}>Manage Job</Button>
+                        <div className="owner-actions">
+                            <Button variant="outline" onClick={() => navigate('/app/jobs', { state: { editJob: job } })}>
+                                <FaEdit /> Edit Job
+                            </Button>
+                            <Button variant="outline" style={{ color: '#e74c3c', borderColor: '#e74c3c' }} onClick={handleDeleteJob}>
+                                <FaTrash /> Delete
+                            </Button>
+                        </div>
                     ) : (
                         <div className="apply-desktop-btn">
                             {user ? (
@@ -254,13 +322,43 @@ const JobDetail = () => {
                         <section id="apply-section" className="apply-section">
                             <h3>Apply for this position</h3>
                             <div className="apply-form">
-                                <label>Cover Letter / Note</label>
-                                <textarea
-                                    rows="6"
-                                    placeholder="Introduce yourself and explain why you're a good fit..."
-                                    value={coverLetter}
-                                    onChange={(e) => setCoverLetter(e.target.value)}
-                                />
+                                <div className="form-group">
+                                    <label>Upload CV (PDF)</label>
+                                    <div className={`file-upload-box ${resumeFile ? 'has-file' : ''}`}>
+                                        <input
+                                            type="file"
+                                            id="resume-upload"
+                                            accept=".pdf"
+                                            onChange={handleFileChange}
+                                            style={{ display: 'none' }}
+                                        />
+                                        <label htmlFor="resume-upload" className="file-label">
+                                            {resumeFile ? (
+                                                <div className="file-info">
+                                                    <FaFilePdf className="file-icon" />
+                                                    <span>{resumeFile.name}</span>
+                                                    <button className="remove-file" onClick={(e) => { e.preventDefault(); setResumeFile(null); }}>
+                                                        <FaTrash />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="upload-placeholder">
+                                                    <FaCloudUploadAlt />
+                                                    <span>Click to upload PDF CV (Max 5MB)</span>
+                                                </div>
+                                            )}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>Cover Letter / Note</label>
+                                    <textarea
+                                        rows="6"
+                                        placeholder="Introduce yourself and explain why you're a good fit..."
+                                        value={coverLetter}
+                                        onChange={(e) => setCoverLetter(e.target.value)}
+                                    />
+                                </div>
                                 <div className="form-footer">
                                     <Button variant="primary" onClick={handleApply} disabled={applying}>
                                         {applying ? 'Sending...' : 'Submit Application'}
@@ -384,6 +482,16 @@ const JobDetail = () => {
                     font-size: 1rem;
                 }
 
+                .owner-actions {
+                    display: flex;
+                    gap: 1rem;
+                }
+                .owner-actions button {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+
                 .job-layout {
                     display: grid;
                     grid-template-columns: 1fr 340px;
@@ -485,19 +593,90 @@ const JobDetail = () => {
                 }
                 .apply-section h3 { border: none; padding: 0; font-size: 1.5rem; text-align: center; margin-bottom: 2rem; }
                 .apply-form label { display: block; margin-bottom: 0.75rem; color: #888; font-size: 0.9rem; font-weight: 500; }
+                .form-group {
+                    margin-bottom: 1.5rem;
+                }
+                .form-group label {
+                    display: block;
+                    margin-bottom: 0.8rem;
+                    color: #fff;
+                    font-weight: 500;
+                    font-size: 0.95rem;
+                }
                 .apply-form textarea {
                     width: 100%;
-                    background: #000;
+                    background: #111;
                     border: 1px solid #222;
-                    padding: 1.25rem;
                     border-radius: 12px;
-                    color: white;
-                    resize: vertical;
-                    margin-bottom: 1.5rem;
+                    padding: 1rem;
+                    color: #fff;
+                    font-family: inherit;
                     font-size: 1rem;
                     transition: all 0.2s;
+                    resize: vertical;
                 }
-                .apply-form textarea:focus { border-color: var(--primary-orange); background: #050505; }
+                .apply-form textarea:focus {
+                    outline: none;
+                    border-color: var(--primary-orange);
+                    background: #161616;
+                }
+
+                .file-upload-box {
+                    border: 2px dashed #333;
+                    border-radius: 12px;
+                    padding: 1.5rem;
+                    text-align: center;
+                    transition: all 0.2s;
+                    background: #0d0d0d;
+                }
+                .file-upload-box:hover {
+                    border-color: var(--primary-orange);
+                    background: #111;
+                }
+                .file-upload-box.has-file {
+                    border-style: solid;
+                    border-color: #4cd137;
+                    background: rgba(76, 209, 55, 0.05);
+                }
+                .file-label {
+                    cursor: pointer;
+                    display: block;
+                    margin-bottom: 0 !important;
+                }
+                .upload-placeholder {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 12px;
+                    color: #666;
+                }
+                .upload-placeholder svg {
+                    font-size: 2rem;
+                }
+                .file-info {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 12px;
+                    color: #fff;
+                }
+                .file-icon {
+                    color: #e74c3c;
+                    font-size: 1.5rem;
+                }
+                .remove-file {
+                    background: none;
+                    border: none;
+                    color: #666;
+                    cursor: pointer;
+                    padding: 4px;
+                    transition: color 0.2s;
+                    display: flex;
+                    align-items: center;
+                }
+                .remove-file:hover {
+                    color: #e74c3c;
+                }
                 .form-footer { display: flex; justify-content: center; }
                 .form-footer button { width: 100%; max-width: 400px; height: 50px !important; font-size: 1.1rem !important; }
 

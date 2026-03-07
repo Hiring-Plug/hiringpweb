@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { FaBold, FaItalic, FaListUl } from 'react-icons/fa';
+import { useRef } from 'react';
+import { FaBold, FaItalic, FaListUl, FaHeading } from 'react-icons/fa';
 
 const RichTextEditor = ({ value, onChange, placeholder, label, required = false }) => {
     const textareaRef = useRef(null);
@@ -25,10 +25,55 @@ const RichTextEditor = ({ value, onChange, placeholder, label, required = false 
         }, 0);
     };
 
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            const textarea = textareaRef.current;
+            if (!textarea) return;
+
+            const start = textarea.selectionStart;
+            const text = textarea.value;
+
+            // Find the start of the current line
+            const lastNewLine = text.lastIndexOf('\n', start - 1);
+            const lineStart = lastNewLine === -1 ? 0 : lastNewLine + 1;
+            const currentLine = text.substring(lineStart, start);
+
+            // Check if current line starts with a bullet
+            const bulletMatch = currentLine.match(/^(\s*[-\*]\s+)/);
+            if (bulletMatch) {
+                e.preventDefault();
+                const bullet = bulletMatch[1];
+
+                // If the line is just the bullet, clear it (user wants to end the list)
+                if (currentLine.trim() === '-' || currentLine.trim() === '*') {
+                    const newText = text.substring(0, lineStart) + text.substring(start);
+                    onChange(newText);
+                    setTimeout(() => {
+                        textarea.setSelectionRange(lineStart, lineStart);
+                    }, 0);
+                } else {
+                    const before = text.substring(0, start);
+                    const after = text.substring(start);
+                    const newText = before + '\n' + bullet + after;
+                    onChange(newText);
+
+                    setTimeout(() => {
+                        const newPos = start + 1 + bullet.length;
+                        textarea.setSelectionRange(newPos, newPos);
+                        textarea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }, 0);
+                }
+            }
+        }
+    };
+
     return (
         <div className="rich-text-editor">
             {label && <label>{label}{required && <span style={{ color: '#ed5000' }}> *</span>}</label>}
             <div className="editor-controls">
+                <button type="button" onClick={() => insertText('### ')} title="Heading">
+                    <FaHeading />
+                </button>
                 <button type="button" onClick={() => insertText('**', '**')} title="Bold">
                     <FaBold />
                 </button>
@@ -43,6 +88,7 @@ const RichTextEditor = ({ value, onChange, placeholder, label, required = false 
                 ref={textareaRef}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder={placeholder}
                 required={required}
                 rows="5"

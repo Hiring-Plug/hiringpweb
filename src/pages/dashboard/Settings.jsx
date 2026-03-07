@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabaseClient';
 import Button from '../../components/Button';
-import { FaUser, FaSave, FaGlobe, FaTwitter, FaImage, FaCoins, FaRocket, FaUserCheck, FaUserTimes, FaUsers } from 'react-icons/fa';
+import { FaUser, FaSave, FaGlobe, FaTwitter, FaImage, FaCoins, FaRocket, FaUserCheck, FaUserTimes, FaUsers, FaTelegram, FaDiscord, FaLinkedin } from 'react-icons/fa';
 
 const Settings = () => {
     const { user } = useAuth();
@@ -348,15 +348,15 @@ const Settings = () => {
                                 <div className="form-group">
                                     <label>LinkedIn</label>
                                     <div className="input-icon">
-                                        <FaGlobe />
-                                        <input name="social_linkedin" value={formData.social_links.linkedin} onChange={handleChange} placeholder="LinkedIn URL" />
+                                        <FaLinkedin />
+                                        <input name="social_linkedin" value={formData.social_links.linkedin} onChange={handleChange} placeholder="LinkedIn Profile URL" />
                                     </div>
                                 </div>
                                 <div className="form-group">
                                     <label>Twitter / X</label>
                                     <div className="input-icon">
                                         <FaTwitter />
-                                        <input name="social_twitter" value={formData.social_links.twitter} onChange={handleChange} placeholder="Twitter URL" />
+                                        <input name="social_twitter" value={formData.social_links.twitter} onChange={handleChange} placeholder="Twitter / X Handle" />
                                     </div>
                                 </div>
                             </div>
@@ -364,15 +364,15 @@ const Settings = () => {
                                 <div className="form-group">
                                     <label>Telegram</label>
                                     <div className="input-icon">
-                                        <FaGlobe />
-                                        <input name="social_telegram" value={formData.social_links.telegram} onChange={handleChange} placeholder="Telegram Handle/URL" />
+                                        <FaTelegram />
+                                        <input name="social_telegram" value={formData.social_links.telegram} onChange={handleChange} placeholder="Telegram Handle" />
                                     </div>
                                 </div>
                                 <div className="form-group">
                                     <label>Discord</label>
                                     <div className="input-icon">
-                                        <FaGlobe />
-                                        <input name="social_discord" value={formData.social_links.discord} onChange={handleChange} placeholder="Discord Invite/Handle" />
+                                        <FaDiscord />
+                                        <input name="social_discord" value={formData.social_links.discord} onChange={handleChange} placeholder="Discord Invite URL" />
                                     </div>
                                 </div>
                             </div>

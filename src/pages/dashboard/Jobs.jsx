@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { supabase } from '../../supabaseClient';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../components/ConfirmDialog';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import RichTextEditor from '../../components/RichTextEditor';
-import { FaBriefcase, FaMoneyBillWave, FaMapMarkerAlt, FaPlus, FaBuilding, FaTimes } from 'react-icons/fa';
+import { FaBriefcase, FaMoneyBillWave, FaMapMarkerAlt, FaPlus, FaBuilding, FaTimes, FaEdit, FaTrash } from 'react-icons/fa';
 
 const JOB_TITLE_SUGGESTIONS = [
     "Full Stack Developer", "Frontend Engineer", "Backend Developer",
@@ -23,7 +25,11 @@ const Jobs = () => {
     const { user } = useAuth();
     const { projects, refreshData, loading, error } = useData();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { showToast } = useToast();
+    const { confirm } = useConfirm();
     const [isPosting, setIsPosting] = useState(false); // Modal state
+    const [editingJob, setEditingJob] = useState(null); // Track job being edited
 
     // New Job Form State
     const [newJob, setNewJob] = useState({
@@ -41,13 +47,28 @@ const Jobs = () => {
     const [titleSuggestions, setTitleSuggestions] = useState([]);
     const [tagSuggestions, setTagSuggestions] = useState([]);
 
+    useEffect(() => {
+        if (location.state?.editJob) {
+            handleEditClick(location.state.editJob);
+            // Clear state so it doesn't reopen on refresh
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
+
     const isProject = user?.user_metadata?.role === 'project';
 
     const handlePostJob = async (e) => {
         e.preventDefault();
         try {
             const jobData = {
-                ...newJob,
+                title: newJob.title,
+                type: newJob.type,
+                location: newJob.location,
+                category: newJob.category,
+                salary_range: newJob.salary_range,
+                description: newJob.description,
+                requirements: newJob.requirements,
+                logo_url: newJob.logo_url,
                 project_id: user.id,
                 status: 'open',
                 tags: typeof newJob.tags === 'string'
@@ -55,15 +76,24 @@ const Jobs = () => {
                     : newJob.tags
             };
 
-            const { error: insertError } = await supabase.from('jobs').insert([jobData]);
+            let result;
+            if (editingJob) {
+                result = await supabase
+                    .from('jobs')
+                    .update(jobData)
+                    .eq('id', editingJob.id);
+            } else {
+                result = await supabase.from('jobs').insert([jobData]);
+            }
 
-            if (insertError) throw insertError;
+            if (result.error) throw result.error;
+
             setIsPosting(false);
+            setEditingJob(null);
 
             // Refresh global context so the list updates
             if (refreshData) await refreshData();
-
-            alert('Job posted successfully!');
+            showToast(editingJob ? 'Job updated successfully!' : 'Job published successfully!', 'success');
 
             // Reset form
             setNewJob({
@@ -79,7 +109,47 @@ const Jobs = () => {
             });
 
         } catch (err) {
-            alert('Error posting job: ' + err.message);
+            alert('Error saving job: ' + err.message);
+        }
+    };
+
+    const handleEditClick = (job) => {
+        setEditingJob(job);
+        setNewJob({
+            title: job.role || job.title || '',
+            type: job.type || 'full-time',
+            location: job.location || 'Remote',
+            category: job.category || 'DeFi',
+            salary_range: job.salary || job.salary_range || '',
+            description: job.description || '',
+            requirements: job.requirements || '',
+            tags: Array.isArray(job.tags) ? job.tags.join(', ') : (job.tags || ''),
+            logo_url: job.logoUrl || job.logo_url || ''
+        });
+        setIsPosting(true);
+    };
+
+    const handleDeleteJob = async (jobId) => {
+        const isConfirmed = await confirm('Are you sure you want to delete this job posting?', {
+            variant: 'error',
+            confirmText: 'Delete Job',
+            title: 'Delete Posting'
+        });
+
+        if (!isConfirmed) return;
+
+        try {
+            const { error } = await supabase
+                .from('jobs')
+                .delete()
+                .eq('id', jobId);
+
+            if (error) throw error;
+
+            if (refreshData) await refreshData();
+            showToast('Job deleted successfully.', 'success');
+        } catch (err) {
+            showToast('Error deleting job: ' + err.message, 'error');
         }
     };
 
@@ -142,7 +212,7 @@ const Jobs = () => {
                 )}
 
                 {loading ? (
-                    <p>Loading opportunities...</p>
+                    <p>Loading...</p>
                 ) : liveJobs.length > 0 ? (liveJobs.map(job => (
                     <div key={job.id} className="job-row" onClick={() => navigate(`/app/jobs/${job.id}`)}>
                         <div className="job-main">
@@ -164,6 +234,16 @@ const Jobs = () => {
                             <span className="meta-item"><FaMoneyBillWave /> {job.salary}</span>
                         </div>
                         <div className="job-action">
+                            {isProject && job.project_id === user?.id && (
+                                <div className="owner-actions">
+                                    <button className="icon-action-btn edit" title="Edit Job" onClick={(e) => { e.stopPropagation(); handleEditClick(job); }}>
+                                        <FaEdit />
+                                    </button>
+                                    <button className="icon-action-btn delete" title="Delete Job" onClick={(e) => { e.stopPropagation(); handleDeleteJob(job.id); }}>
+                                        <FaTrash />
+                                    </button>
+                                </div>
+                            )}
                             <Button variant="outline" size="sm">View</Button>
                         </div>
                     </div>
@@ -181,8 +261,8 @@ const Jobs = () => {
                 <div className="modal-overlay" onClick={() => setIsPosting(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>Define New Role</h2>
-                            <button className="close-btn" onClick={() => setIsPosting(false)}><FaTimes /></button>
+                            <h2>{editingJob ? 'Update Role' : 'Define New Role'}</h2>
+                            <button className="close-btn" onClick={() => { setIsPosting(false); setEditingJob(null); }}><FaTimes /></button>
                         </div>
                         <div className="modal-body">
                             <form onSubmit={handlePostJob}>
@@ -276,8 +356,8 @@ const Jobs = () => {
                                     />
                                 </div>
                                 <div className="modal-actions">
-                                    <Button type="button" variant="outline" onClick={() => setIsPosting(false)}>Cancel</Button>
-                                    <Button type="submit" variant="primary">Publish Role</Button>
+                                    <Button type="button" variant="outline" onClick={() => { setIsPosting(false); setEditingJob(null); }}>Cancel</Button>
+                                    <Button type="submit" variant="primary">{editingJob ? 'Update Role' : 'Publish Role'}</Button>
                                 </div>
                             </form>
                         </div>
@@ -335,6 +415,40 @@ const Jobs = () => {
                 }
                 .job-info h3 { margin: 0 0 0.3rem 0; font-size: 1.1rem; color: #fff; }
                 .company-name { color: #888; font-size: 0.9rem; margin: 0; }
+
+                .owner-actions {
+                    display: flex;
+                    gap: 0.5rem;
+                    margin-right: 1rem;
+                }
+                .icon-action-btn {
+                    background: #1a1a1a;
+                    border: 1px solid #333;
+                    color: #888;
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                .icon-action-btn:hover {
+                    color: #fff;
+                    border-color: #555;
+                    background: #222;
+                }
+                .icon-action-btn.edit:hover {
+                    color: var(--primary-orange);
+                    border-color: var(--primary-orange);
+                    background: rgba(237, 80, 0, 0.1);
+                }
+                .icon-action-btn.delete:hover {
+                    color: #e74c3c;
+                    border-color: #e74c3c;
+                    background: rgba(231, 76, 60, 0.1);
+                }
 
                 .job-meta {
                     flex: 2;
