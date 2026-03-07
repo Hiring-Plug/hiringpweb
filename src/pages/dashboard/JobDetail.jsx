@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/Button';
@@ -240,7 +240,7 @@ const JobDetail = () => {
 
             <div className="job-header">
                 <div className="header-main">
-                    <div className="company-logo-lg">
+                    <Link to={job.profiles?.username ? `/u/${job.profiles.username}` : '#'} className="company-logo-lg">
                         {job.logo_url ? (
                             <img src={job.logo_url} alt={job.profiles?.username} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
                         ) : job.profiles?.avatar_url ? (
@@ -248,11 +248,13 @@ const JobDetail = () => {
                         ) : (
                             <FaBuilding />
                         )}
-                    </div>
+                    </Link>
                     <div>
                         <h1>{job.title}</h1>
                         <div className="job-meta">
-                            <span className="company-name">{job.profiles?.username || job.company || 'Hiring Project'}</span>
+                            <Link to={job.profiles?.username ? `/u/${job.profiles.username}` : '#'} className="company-name-link">
+                                {job.profiles?.username || job.company || 'Hiring Project'}
+                            </Link>
                             <span className="dot">•</span>
                             <span className="meta-tag">{job.type}</span>
                             <span className="dot">•</span>
@@ -457,6 +459,10 @@ const JobDetail = () => {
                     color: #555;
                     flex-shrink: 0;
                     overflow: hidden;
+                    transition: transform 0.2s;
+                }
+                .company-logo-lg:hover {
+                    transform: scale(1.05);
                 }
                 .job-header h1 {
                     font-size: 1.75rem;
@@ -476,10 +482,16 @@ const JobDetail = () => {
                     color: #fff;
                     font-weight: 500;
                 }
-                .company-name {
+                .company-name-link {
                     color: var(--primary-orange);
                     font-weight: 600;
                     font-size: 1rem;
+                    text-decoration: none;
+                    transition: opacity 0.2s;
+                }
+                .company-name-link:hover {
+                    opacity: 0.8;
+                    text-decoration: underline;
                 }
 
                 .owner-actions {
