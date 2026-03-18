@@ -4,11 +4,16 @@ import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
 import { FaGoogle, FaGithub, FaWallet, FaArrowRight, FaArrowLeft, FaQuoteLeft, FaStar } from 'react-icons/fa';
 import logo from '../assets/banner-dark-transparent.png';
-import { supabase } from '../supabaseClient'; // Assuming supabase is needed for the profile creation logic
+import { supabase } from '../supabaseClient';
+import { useAccount, useSignMessage, useDisconnect } from 'wagmi';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 
 const Signup = () => {
-    const { signUp } = useAuth();
+    const { signUp, signInWithWallet } = useAuth();
     const navigate = useNavigate();
+
+    // Auth Method State
+    const [authMethod, setAuthMethod] = useState(null); // 'email' | 'wallet' | null
 
     // Form State
     const [formData, setFormData] = useState({
@@ -24,6 +29,12 @@ const Signup = () => {
     const [successMsg, setSuccessMsg] = useState('');
     const [currentTestimonial, setCurrentTestimonial] = useState(0);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    // Web3 Hooks
+    const { address, isConnected } = useAccount();
+    const { signMessageAsync } = useSignMessage();
+    const { openConnectModal } = useConnectModal();
+    const { disconnect } = useDisconnect();
 
     const skillOptions = [
         { value: 'developer', label: 'Developer' },
@@ -71,19 +82,14 @@ const Signup = () => {
         }
     ];
 
-    const nextTestimonial = () => {
-        setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    };
-
-    const prevTestimonial = () => {
-        setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-    };
+    const nextTestimonial = () => setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    const prevTestimonial = () => setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = async (e) => {
+    const handleEmailSubmit = async (e) => {
         e.preventDefault();
         setError(null);
         setLoading(true);
@@ -120,10 +126,57 @@ const Signup = () => {
         }
     };
 
+    // Wallet Verification Effect
+    useEffect(() => {
+        if (authMethod === 'wallet' && isConnected && address && !loading) {
+            handleWalletSignup();
+        }
+    }, [isConnected, address, authMethod]);
+
+    const handleWalletSignup = async () => {
+        if (loading) return;
+        setLoading(true);
+        setError(null);
+        try {
+            console.log("Starting wallet signup verification for:", address);
+            
+            const domain = window.location.host;
+            const message = `Sign in to Hiring Plug with your wallet\n\nDomain: ${domain}\nAddress: ${address}\nStatement: I am authenticating with my Hiring Plug account.\n\nNonce: ${Date.now()}\nIssued At: ${new Date().toISOString()}`;
+            
+            console.log("Requesting signature...");
+            const signature = await signMessageAsync({ message });
+            console.log("Signature received:", signature.substring(0, 10) + "...");
+
+            await signInWithWallet(address, signature, message, true);
+            console.log("Wallet sign-up successful");
+            navigate('/app/profile');
+        } catch (err) {
+            console.error("Signature error:", err);
+            setError(`Wallet verification failed: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const startWalletLogin = () => {
+        console.log("startWalletLogin clicked (Signup). IsConnected:", isConnected, "openConnectModal ready:", !!openConnectModal);
+        setError(null);
+        
+        if (isConnected) {
+            setAuthMethod('wallet');
+            // The useEffect will trigger handleWalletSignup() automatically
+        } else if (openConnectModal) {
+            setAuthMethod('wallet');
+            openConnectModal();
+        } else {
+            console.error("RainbowKit Modal not available yet (Signup).");
+            setError("Connection modal is initializing. If this persists, please refresh the page.");
+        }
+    };
+
     const socialMethods = [
         { icon: <FaGoogle />, name: 'Google', onClick: () => alert('Google Signup - Coming Soon') },
         { icon: <FaGithub />, name: 'GitHub', onClick: () => alert('GitHub Signup - Coming Soon') },
-        { icon: <FaWallet />, name: 'Wallet', onClick: () => alert('Metamask Signup - Coming Soon') }
     ];
 
     if (successMsg) {
@@ -167,130 +220,170 @@ const Signup = () => {
 
                     {error && <div className="error-msg">{error}</div>}
 
-                    <form onSubmit={handleSubmit} className="signup-form">
-                        <div className="form-row">
-                            <div className="input-group">
-                                <label>Username</label>
-                                <input
-                                    name="username"
-                                    type="text"
-                                    value={formData.username}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="Satoshi"
-                                />
+                    {/* METHOD SELECTION SCREEN */}
+                    {!authMethod && (
+                        <div className="method-selection">
+                            <Button variant="outline" className="auth-method-btn" onClick={() => setAuthMethod('email')}>
+                                Sign up with Email
+                            </Button>
+                            <Button variant="primary" className="auth-method-btn wallet-btn" onClick={startWalletLogin}>
+                                <FaWallet /> Sign up with Wallet
+                            </Button>
+                            
+                            <div className="auth-footer" style={{ marginTop: '30px' }}>
+                                <Link to="/login">Already have an account? Log in</Link>
                             </div>
                         </div>
+                    )}
 
-                        <div className="form-row">
-                            <div className="input-group">
-                                <label>Email Address</label>
-                                <input
-                                    name="email"
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="you@example.com"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="form-row">
-                            <div className="input-group">
-                                <label>Password</label>
-                                <input
-                                    name="password"
-                                    type="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="••••••••"
-                                    minLength="6"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="form-row">
-                            <div className="input-group">
-                                <label>I am joining as a...</label>
-                                <div className="role-selector">
-                                    <label className={`role-option ${formData.role === 'talent' ? 'active' : ''}`}>
+                    {/* EMAIL SIGNUP SCREEN */}
+                    {authMethod === 'email' && (
+                        <>
+                            <form onSubmit={handleEmailSubmit} className="signup-form">
+                                <div className="form-row">
+                                    <div className="input-group">
+                                        <label>Username</label>
                                         <input
-                                            type="radio"
-                                            name="role"
-                                            value="talent"
-                                            checked={formData.role === 'talent'}
+                                            name="username"
+                                            type="text"
+                                            value={formData.username}
                                             onChange={handleChange}
+                                            required
+                                            placeholder="Satoshi"
                                         />
-                                        Talent
-                                    </label>
-                                    <label className={`role-option ${formData.role === 'project' ? 'active' : ''}`}>
-                                        <input
-                                            type="radio"
-                                            name="role"
-                                            value="project"
-                                            checked={formData.role === 'project'}
-                                            onChange={handleChange}
-                                        />
-                                        Project
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="form-row">
-                            <div className="input-group">
-                                <label>{formData.role === 'project' ? 'Hiring Position / Role' : 'Primary Focus'}</label>
-                                <div className={`custom-dropdown ${isDropdownOpen ? 'open' : ''}`}>
-                                    <div
-                                        className="dropdown-trigger"
-                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                    >
-                                        {formData.primarySkill
-                                            ? skillOptions.find(opt => opt.value === formData.primarySkill)?.label
-                                            : 'Select your focus'}
-                                        <span className="dropdown-arrow"></span>
                                     </div>
-
-                                    {isDropdownOpen && (
-                                        <div className="dropdown-menu">
-                                            {skillOptions.map((opt) => (
-                                                <div
-                                                    key={opt.value}
-                                                    className={`dropdown-item ${formData.primarySkill === opt.value ? 'selected' : ''}`}
-                                                    onClick={() => selectSkill(opt.value)}
-                                                >
-                                                    {opt.label}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
                                 </div>
-                                {/* Hidden input for form submission if needed, though we use formData state */}
-                                <input type="hidden" name="primarySkill" value={formData.primarySkill} required />
+
+                                <div className="form-row">
+                                    <div className="input-group">
+                                        <label>Email Address</label>
+                                        <input
+                                            name="email"
+                                            type="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            required
+                                            placeholder="you@example.com"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="form-row">
+                                    <div className="input-group">
+                                        <label>Password</label>
+                                        <input
+                                            name="password"
+                                            type="password"
+                                            value={formData.password}
+                                            onChange={handleChange}
+                                            required
+                                            placeholder="••••••••"
+                                            minLength="6"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="form-row">
+                                    <div className="input-group">
+                                        <label>I am joining as a...</label>
+                                        <div className="role-selector">
+                                            <label className={`role-option ${formData.role === 'talent' ? 'active' : ''}`}>
+                                                <input
+                                                    type="radio"
+                                                    name="role"
+                                                    value="talent"
+                                                    checked={formData.role === 'talent'}
+                                                    onChange={handleChange}
+                                                />
+                                                Talent
+                                            </label>
+                                            <label className={`role-option ${formData.role === 'project' ? 'active' : ''}`}>
+                                                <input
+                                                    type="radio"
+                                                    name="role"
+                                                    value="project"
+                                                    checked={formData.role === 'project'}
+                                                    onChange={handleChange}
+                                                />
+                                                Project
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="form-row">
+                                    <div className="input-group">
+                                        <label>{formData.role === 'project' ? 'Hiring Position / Role' : 'Primary Focus'}</label>
+                                        <div className={`custom-dropdown ${isDropdownOpen ? 'open' : ''}`}>
+                                            <div
+                                                className="dropdown-trigger"
+                                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                            >
+                                                {formData.primarySkill
+                                                    ? skillOptions.find(opt => opt.value === formData.primarySkill)?.label
+                                                    : 'Select your focus'}
+                                                <span className="dropdown-arrow"></span>
+                                            </div>
+
+                                            {isDropdownOpen && (
+                                                <div className="dropdown-menu">
+                                                    {skillOptions.map((opt) => (
+                                                        <div
+                                                            key={opt.value}
+                                                            className={`dropdown-item ${formData.primarySkill === opt.value ? 'selected' : ''}`}
+                                                            onClick={() => selectSkill(opt.value)}
+                                                        >
+                                                            {opt.label}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {/* Hidden input for form submission if needed, though we use formData state */}
+                                        <input type="hidden" name="primarySkill" value={formData.primarySkill} required />
+                                    </div>
+                                </div>
+
+                                <Button variant="primary" type="submit" className="signup-btn" disabled={loading}>
+                                    {loading ? 'Creating Account...' : 'Sign Up'}
+                                </Button>
+                            </form>
+
+                            <div className="social-auth">
+                                {socialMethods.map((method, index) => (
+                                    <div key={index} className="social-item">
+                                        <button className="social-icon-btn" onClick={method.onClick}>
+                                            {method.icon}
+                                        </button>
+                                        <span className="social-tooltip">{method.name}</span>
+                                    </div>
+                                ))}
                             </div>
-                        </div>
 
-                        <Button variant="primary" type="submit" className="signup-btn" disabled={loading}>
-                            {loading ? 'Creating Account...' : 'Sign Up'}
-                        </Button>
-                    </form>
-
-                    <div className="social-auth">
-                        {socialMethods.map((method, index) => (
-                            <div key={index} className="social-item">
-                                <button className="social-icon-btn" onClick={method.onClick}>
-                                    {method.icon}
+                            <div className="auth-footer">
+                                <button type="button" className="back-link-btn" onClick={() => setAuthMethod(null)}>
+                                    <FaArrowLeft style={{marginRight: '8px'}}/> Back to options
                                 </button>
-                                <span className="social-tooltip">{method.name}</span>
                             </div>
-                        ))}
-                    </div>
+                        </>
+                    )}
 
-                    <div className="auth-footer">
-                        Already have an account? <Link to="/login">Log In</Link>
-                    </div>
+                    {/* WALLET SIGNUP SCREEN */}
+                    {authMethod === 'wallet' && (
+                        <div className="wallet-loading-screen">
+                            {loading ? (
+                                <div className="text-center">
+                                    <p>Please sign the message in your wallet...</p>
+                                </div>
+                            ) : (
+                                <div className="text-center">
+                                    <Button variant="outline" onClick={() => setAuthMethod(null)}>
+                                        <FaArrowLeft /> Cancel
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -372,6 +465,62 @@ const Signup = () => {
                     color: #aaa;
                     margin-bottom: 20px;
                     font-size: 0.95rem;
+                }
+
+                .method-selection {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+                    margin-top: 20px;
+                }
+
+                .auth-method-btn {
+                    width: 100%;
+                    padding: 12px 16px !important;
+                    font-size: 1rem !important;
+                    border-radius: 8px !important;
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    font-weight: 500 !important;
+                }
+
+                .wallet-btn {
+                    background: #2a2a2a !important; /* Dark grey for wallet */
+                    border: 1px solid #444 !important;
+                    color: #fff !important;
+                }
+                
+                .wallet-btn:hover {
+                    background: #333 !important;
+                }
+
+                .back-link-btn {
+                    background: none;
+                    border: none;
+                    color: #aaa;
+                    font-size: 0.9rem;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 100%;
+                    margin-top: 20px;
+                    transition: color 0.2s;
+                }
+                
+                .back-link-btn:hover {
+                    color: #fff;
+                }
+
+                .wallet-loading-screen {
+                    padding: 40px 0;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 20px;
                 }
 
                 .signup-form {

@@ -113,6 +113,15 @@ const DashboardLayout = () => {
 
                 {/* Page Content */}
                 <div className="content-scrollable">
+                    {user?.email?.endsWith('@wallet.local') && (
+                        <div className="security-banner">
+                            <FaBolt className="banner-icon" />
+                            <span>
+                                <strong>Secure your account:</strong> Please add an email address and password in 
+                                <NavLink to="/app/settings" className="banner-link"> Settings</NavLink> to ensure you can recover your account.
+                            </span>
+                        </div>
+                    )}
                     <Outlet />
                 </div>
             </main>
@@ -316,6 +325,36 @@ const DashboardLayout = () => {
                     flex: 1;
                     padding: 1.5rem;
                     overflow-y: auto;
+                }
+
+                .security-banner {
+                    background: rgba(237, 80, 0, 0.1);
+                    border: 1px solid rgba(237, 80, 0, 0.3);
+                    border-radius: 12px;
+                    padding: 12px 1.5rem;
+                    margin-bottom: 1.5rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    font-size: 0.9rem;
+                    color: #fff;
+                    animation: slideIn 0.3s ease-out;
+                }
+
+                .banner-icon {
+                    color: var(--primary-orange);
+                    flex-shrink: 0;
+                }
+
+                .banner-link {
+                    color: var(--primary-orange);
+                    text-decoration: underline;
+                    font-weight: 600;
+                }
+
+                @keyframes slideIn {
+                    from { opacity: 0; transform: translateY(-10px); }
+                    to { opacity: 1; transform: translateY(0); }
                 }
 
                 @media (max-width: 768px) {

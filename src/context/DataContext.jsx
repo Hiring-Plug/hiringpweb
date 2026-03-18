@@ -169,7 +169,7 @@ export const DataProvider = ({ children }) => {
             if (projectIds.length > 0) {
                 const { data: profilesData, error: profilesError } = await supabase
                     .from('profiles')
-                    .select('id, username, avatar_url, website, contact_email')
+                    .select('id, username, avatar_url, website')
                     .in('id', projectIds);
 
                 if (profilesError) {
@@ -195,7 +195,7 @@ export const DataProvider = ({ children }) => {
                     logoIcon: 'FaGlobe',
                     logoUrl: job.logo_url || profile.avatar_url || '',
                     website: profile.website || job.website || '',
-                    contactEmail: profile.contact_email || job.contactEmail || '',
+                    contactEmail: job.contactEmail || '',
                     notificationEmail: job.notificationEmail || '',
                     role: job.title,
                     category: job.category || 'Other',

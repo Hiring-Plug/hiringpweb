@@ -1,9 +1,11 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../supabaseClient';
+import { supabase, supabaseUrl, supabaseAnonKey } from '../../supabaseClient';
 import Button from '../../components/Button';
-import { FaUser, FaSave, FaGlobe, FaTwitter, FaImage, FaCoins, FaRocket, FaUserCheck, FaUserTimes, FaUsers, FaTelegram, FaDiscord, FaLinkedin } from 'react-icons/fa';
+import { FaUser, FaSave, FaGlobe, FaTwitter, FaImage, FaCoins, FaRocket, FaUserCheck, FaUserTimes, FaUsers, FaTelegram, FaDiscord, FaLinkedin, FaWallet, FaSpinner } from 'react-icons/fa';
+import { useAccount, useSignMessage, useDisconnect } from 'wagmi';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 
 const Settings = () => {
     const { user } = useAuth();
@@ -43,14 +45,165 @@ const Settings = () => {
     const [pendingConnections, setPendingConnections] = useState([]);
     const [fetchingConnections, setFetchingConnections] = useState(false);
 
+    // Auth Data (Email / Password)
+    const [authData, setAuthData] = useState({
+        email: '',
+        password: '',
+        message: ''
+    });
+
+    // Wallet linking state
+    const [userWallets, setUserWallets] = useState([]);
+    const [isLinkingWallet, setIsLinkingWallet] = useState(false);
+    const [linkingLoading, setLinkingLoading] = useState(false); // New loading state for UX
+
+    // Web3 Hooks
+    const { address, isConnected } = useAccount();
+    const { signMessageAsync } = useSignMessage();
+    const { openConnectModal } = useConnectModal();
+    const { disconnect } = useDisconnect();
+
     useEffect(() => {
         if (user) {
             fetchProfile();
+            fetchWallets();
             if (role === 'talent') {
                 fetchPendingConnections();
             }
+            setAuthData(prev => ({
+                ...prev,
+                email: user.email?.endsWith('@wallet.local') ? '' : user.email
+            }));
         }
     }, [user, role]);
+
+    const fetchWallets = async () => {
+        const { data } = await supabase.from('wallets').select('*').eq('user_id', user.id);
+        if (data) setUserWallets(data);
+    };
+
+    // Linking Wallet Effect
+    useEffect(() => {
+        console.log("Wallet Status (Settings):", { isConnected, address });
+        if (isLinkingWallet && isConnected && address) {
+            handleLinkWallet();
+        }
+    }, [isConnected, address, isLinkingWallet]);
+
+    const handleLinkWallet = async () => {
+        if (!address || !user) return;
+
+        // "Change wallet" logic: if user already has wallets, ask to replace
+        if (userWallets.length > 0) {
+            const currentWallet = userWallets[0].wallet_address;
+            if (currentWallet.toLowerCase() === address.toLowerCase()) {
+                alert("This wallet is already linked to your account.");
+                setIsLinkingWallet(false);
+                return;
+            }
+
+            const confirmReplace = window.confirm(
+                `You already have a wallet linked (${currentWallet.substring(0, 6)}...). \n\nDo you want to REPLACE it with your current wallet (${address.substring(0, 6)}...)?`
+            );
+
+            if (!confirmReplace) {
+                setIsLinkingWallet(false);
+                return;
+            }
+
+            setLinkingLoading(true);
+            try {
+                for (const w of userWallets) {
+                    await removeWallet(w.id, true); // Silent remove
+                }
+            } catch (err) {
+                console.error("Replacement failed:", err);
+                setLinkingLoading(false);
+                setIsLinkingWallet(false);
+                return;
+            }
+        }
+
+        try {
+            setLinkingLoading(true);
+            console.log("Starting wallet linking for:", address);
+
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error("No active session found. Please login again.");
+
+            const domain = window.location.host;
+            const message = `Sign in to Hiring Plug with your wallet\n\nDomain: ${domain}\nAddress: ${address}\nStatement: I am linking this wallet to my Hiring Plug account.\n\nNonce: ${session.user.id}\nIssued At: ${new Date().toISOString()}`;
+
+            console.log("Requesting SIWE signature...");
+            const signature = await signMessageAsync({ message });
+            console.log("Signature received:", signature.substring(0, 10) + "...");
+
+            console.log("Requesting wallet-login via fetch (Bypass Mode)...");
+            const response = await fetch(`${supabaseUrl}/functions/v1/wallet-login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${supabaseAnonKey}`,
+                    'apikey': supabaseAnonKey
+                },
+                body: JSON.stringify({
+                    address,
+                    signature,
+                    message,
+                    siwe: true,
+                    user_token: session.access_token
+                })
+            });
+
+            const responseData = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(responseData.message || responseData.error || `Server returned ${response.status}`);
+
+            console.log("Wallet linked successfully result:", responseData);
+            alert(responseData.message || 'Wallet linked successfully!');
+            await fetchWallets();
+        } catch (error) {
+            console.error("Linking error:", error);
+            alert(error.message || "Failed to link wallet. Please try again.");
+        } finally {
+            setLinkingLoading(false);
+            setIsLinkingWallet(false);
+        }
+    };
+
+    const startWalletLink = () => {
+        if (linkingLoading) return;
+        setIsLinkingWallet(true);
+
+        if (!isConnected) {
+            openConnectModal?.();
+        }
+    };
+
+    const getWalletButtonText = () => {
+        if (linkingLoading) return "Linking...";
+        if (!isConnected) return "Connect & Link";
+        
+        const isLinked = userWallets.some(w => w.wallet_address.toLowerCase() === address.toLowerCase());
+        if (isLinked) return "Connected";
+        
+        if (userWallets.length > 0) return "Replace Wallet";
+        return "Link Wallet";
+    };
+
+    const removeWallet = async (walletId, silent = false) => {
+        if (!silent && !confirm("Remove this wallet?")) return;
+        if (!silent) setLoading(true);
+        try {
+            const { error } = await supabase.from('wallets').delete().eq('id', walletId);
+            if (error) throw error;
+            await fetchWallets();
+        } catch (err) {
+            if (!silent) alert('Error removing wallet: ' + err.message);
+            throw err;
+        } finally {
+            if (!silent) setLoading(false);
+        }
+    };
 
     const fetchProfile = async () => {
         try {
@@ -97,14 +250,36 @@ const Settings = () => {
     const fetchPendingConnections = async () => {
         setFetchingConnections(true);
         try {
-            const { data, error } = await supabase
+            // Manual join since standard relationship join is failing due to schema cache/FK issues
+            const { data: followsData, error: followsError } = await supabase
                 .from('follows')
-                .select('id, follower_id, profiles!follows_follower_id_fkey(username, avatar_url, full_name)')
+                .select('id, follower_id')
                 .eq('following_id', user.id)
                 .eq('status', 'pending');
 
-            if (error) throw error;
-            setPendingConnections(data || []);
+            if (followsError) throw followsError;
+
+            if (followsData && followsData.length > 0) {
+                const followerIds = followsData.map(f => f.follower_id);
+                const { data: profilesData, error: profilesError } = await supabase
+                    .from('profiles')
+                    .select('id, username, avatar_url, full_name')
+                    .in('id', followerIds);
+
+                if (profilesError) {
+                    console.warn("Error fetching follower profiles:", profilesError);
+                    setPendingConnections(followsData.map(f => ({ ...f, profiles: null })));
+                } else {
+                    const profilesMap = profilesData.reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
+                    const combinedData = followsData.map(f => ({
+                        ...f,
+                        profiles: profilesMap[f.follower_id] || null
+                    }));
+                    setPendingConnections(combinedData);
+                }
+            } else {
+                setPendingConnections([]);
+            }
         } catch (error) {
             console.error('Error fetching pending connections:', error);
         } finally {
@@ -148,6 +323,37 @@ const Settings = () => {
             alert('Connection declined.');
         } catch (error) {
             console.error('Error declining connection:', error);
+        }
+    };
+
+    const handleAuthChange = (e) => {
+        setAuthData({ ...authData, [e.target.name]: e.target.value });
+    };
+
+    const handleSaveAuth = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setAuthData(prev => ({ ...prev, message: '' }));
+        try {
+            const updates = {};
+            if (authData.email && authData.email !== user.email) updates.email = authData.email;
+            if (authData.password) updates.password = authData.password;
+
+            if (Object.keys(updates).length > 0) {
+                const { error } = await supabase.auth.updateUser(updates, {
+                    emailRedirectTo: window.location.origin + '/app/settings'
+                });
+                if (error) throw error;
+                setAuthData(prev => ({
+                    ...prev,
+                    password: '',
+                    message: updates.email ? 'Check your new email to confirm the change.' : 'Account credentials updated.'
+                }));
+            }
+        } catch (err) {
+            setAuthData(prev => ({ ...prev, message: 'Error: ' + err.message }));
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -407,6 +613,42 @@ const Settings = () => {
                         </div>
                     </div>
 
+                    {/* Connected Wallets Card */}
+                    <div className="settings-card">
+                        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h3>Connected Wallets</h3>
+                            <Button type="button" onClick={startWalletLink} size="sm" variant="outline" disabled={linkingLoading}>
+                                {linkingLoading ? <FaSpinner className="spin" style={{ marginRight: '8px' }} /> : <FaWallet style={{ marginRight: '8px' }} />}
+                                {getWalletButtonText()}
+                            </Button>
+                        </div>
+                        <div className="card-body">
+                            {userWallets.length === 0 ? (
+                                <p style={{ color: '#666', fontStyle: 'italic' }}>No wallets connected yet.</p>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    {userWallets.map(w => (
+                                        <div key={w.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#1a1a1a', padding: '12px 16px', borderRadius: '8px', border: '1px solid #333' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <FaWallet color="#aaa" />
+                                                <span style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.95rem' }}>
+                                                    {w.wallet_address.substring(0, 6)}...{w.wallet_address.substring(38)}
+                                                </span>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeWallet(w.id)}
+                                                style={{ color: '#ff4444', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', textDecoration: 'underline' }}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Role Specifics */}
                     {isProject && (
                         <div className="settings-card">
@@ -575,6 +817,54 @@ const Settings = () => {
                         </Button>
                     </div>
 
+                </form>
+
+                {/* Account Security Card - Separate Form */}
+                <form onSubmit={handleSaveAuth} className="settings-card" style={{ marginTop: '2rem' }}>
+                    <div className="card-header">
+                        <h3>Account & Security</h3>
+                    </div>
+                    <div className="card-body">
+                        <p style={{ color: '#aaa', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                            Add an email and password to secure your account, especially if you signed up with a Web3 wallet.
+                        </p>
+
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Email Address</label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={authData.email}
+                                    onChange={handleAuthChange}
+                                    placeholder="you@example.com"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>New Password</label>
+                                <input
+                                    type="password"
+                                    name="password"
+                                    value={authData.password}
+                                    onChange={handleAuthChange}
+                                    placeholder="Leave blank to keep unchanged"
+                                    minLength="6"
+                                />
+                            </div>
+                        </div>
+
+                        {authData.message && (
+                            <div style={{ marginBottom: '1rem', padding: '10px', borderRadius: '8px', background: authData.message.startsWith('Error') ? 'rgba(231, 76, 60, 0.1)' : 'rgba(74, 222, 128, 0.1)', color: authData.message.startsWith('Error') ? '#e74c3c' : '#4ade80', fontSize: '0.9rem' }}>
+                                {authData.message}
+                            </div>
+                        )}
+
+                        <div className="form-actions">
+                            <Button type="submit" variant="outline" disabled={loading}>
+                                {loading ? 'Updating...' : 'Update Credentials'}
+                            </Button>
+                        </div>
+                    </div>
                 </form>
             </div>
 

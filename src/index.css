@@ -145,3 +145,11 @@ h6 {
 .rich-content-render ul.markdown-list li::marker {
   color: var(--primary-orange);
 }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.spin {
+  animation: spin 1s linear infinite;
+}

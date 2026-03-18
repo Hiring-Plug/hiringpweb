@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
+import { Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -30,66 +30,111 @@ import { DataProvider } from './context/DataContext'
 import { AuthProvider } from './context/AuthContext'
 import { ToastProvider } from './context/ToastContext'
 import { ConfirmProvider } from './components/ConfirmDialog'
+import { useAuth } from './context/AuthContext'
+
+import { WagmiProvider } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit'
+import { config } from './utils/wagmi'
+
+const queryClient = new QueryClient()
+
+// Sub-component to handle global redirects, placed INSIDE AuthProvider
+function AuthRedirectHandler() {
+  const auth = useAuth();
+  
+  if (!auth) return null;
+
+  const { user, loading } = auth;
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    if (!loading) {
+      console.log(`[Redirect-Check] user: ${!!user}, path: ${pathname}, loading: ${loading}`);
+      // Global redirect for authenticated users landing on public entrance pages
+      if (user && (pathname === '/' || pathname === '/login' || pathname === '/signup' || pathname === '/#')) {
+        console.log("[Redirect-Trigger] Authenticated user on public page. Pushing to /app/profile");
+        navigate('/app/profile');
+      }
+    }
+  }, [user, loading, pathname, navigate]);
+
+  return null;
+}
 
 function App() {
   const { pathname } = useLocation();
 
   return (
-    <ErrorBoundary>
-      <DataProvider>
-        <AuthProvider>
-          <ToastProvider>
-            <ConfirmProvider>
-              <ScrollToTop />
-              <div className="app-container">
-                {/* Hide Navbar/Footer for Admin AND Dashboard routes to give full app feel */}
-                {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && <Navbar />}
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider theme={darkTheme({
+          accentColor: '#ED5000',
+          accentColorForeground: 'white',
+          borderRadius: 'large',
+          fontStack: 'system',
+          overlayBlur: 'small',
+        })}>
+          <ErrorBoundary>
+            <DataProvider>
+              <AuthProvider>
+                <AuthRedirectHandler />
+                <ToastProvider>
+                  <ConfirmProvider>
+                    <ScrollToTop />
+                    <div className="app-container">
+                      {/* Hide Navbar/Footer for Admin AND Dashboard routes to give full app feel */}
+                      {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && <Navbar />}
 
-                <main style={{ minHeight: '80vh' }}>
-                  <Routes>
-                    {/* Public Routes */}
-                    <Route path="/" element={<Home />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/solutions" element={<Solutions />} />
-                    <Route path="/resources" element={<Resources />} />
-                    <Route path="/projects" element={<Projects />} />
+                      <main style={{ minHeight: '80vh' }}>
+                        <Routes>
+                          {/* Public Routes */}
+                          <Route path="/" element={<Home />} />
+                          <Route path="/about" element={<About />} />
+                          <Route path="/solutions" element={<Solutions />} />
+                          <Route path="/resources" element={<Resources />} />
+                          <Route path="/projects" element={<Projects />} />
 
-                    <Route path="/communities" element={<Communities />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="/litepaper" element={<Litepaper />} />
-                    <Route path="/u/:username" element={<PublicProfile />} />
+                          <Route path="/communities" element={<Communities />} />
+                          <Route path="/login" element={<Login />} />
+                          <Route path="/signup" element={<Signup />} />
+                          <Route path="/litepaper" element={<Litepaper />} />
+                          <Route path="/u/:username" element={<PublicProfile />} />
 
-                    {/* Protected App Routes */}
-                    <Route path="/app" element={
-                      <ProtectedRoute>
-                        <DashboardLayout />
-                      </ProtectedRoute>
-                    }>
-                      <Route path="dashboard" element={<Dashboard />} />
-                      <Route path="profile" element={<Profile />} />
-                      <Route path="messages" element={<Messages />} />
-                      <Route path="freelance" element={<Freelance />} />
-                      <Route path="projects" element={<AppProjects />} />
-                      <Route path="jobs" element={<Jobs />} />
-                      <Route path="jobs/:id" element={<JobDetail />} />
-                      <Route path="applications" element={<Applications />} />
-                      <Route path="settings" element={<Settings />} />
-                      {/* Redirect /app to /app/dashboard */}
-                      <Route index element={<Navigate to="dashboard" replace />} />
-                    </Route>
+                          {/* Protected App Routes */}
+                          <Route path="/app" element={
+                            <ProtectedRoute>
+                              <DashboardLayout />
+                            </ProtectedRoute>
+                          }>
+                            <Route path="dashboard" element={<Dashboard />} />
+                            <Route path="profile" element={<Profile />} />
+                            <Route path="messages" element={<Messages />} />
+                            <Route path="freelance" element={<Freelance />} />
+                            <Route path="projects" element={<AppProjects />} />
+                            <Route path="jobs" element={<Jobs />} />
+                            <Route path="jobs/:id" element={<JobDetail />} />
+                            <Route path="applications" element={<Applications />} />
+                            <Route path="settings" element={<Settings />} />
+                            {/* Redirect /app to /app/dashboard */}
+                            <Route index element={<Navigate to="dashboard" replace />} />
+                          </Route>
 
-                    {/* Admin Routes */}
-                    <Route path="/admin" element={<Admin />} />
-                  </Routes>
-                </main>
-                {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && pathname !== '/litepaper' && <Footer />}
-              </div>
-            </ConfirmProvider>
-          </ToastProvider>
-        </AuthProvider>
-      </DataProvider>
-    </ErrorBoundary>
+                          {/* Admin Routes */}
+                          <Route path="/admin" element={<Admin />} />
+                        </Routes>
+                      </main>
+                      {!pathname.startsWith('/admin') && !pathname.startsWith('/app') && pathname !== '/litepaper' && <Footer />}
+                    </div>
+                  </ConfirmProvider>
+                </ToastProvider>
+              </AuthProvider>
+            </DataProvider>
+          </ErrorBoundary>
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   )
 }
 

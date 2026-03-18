@@ -1,17 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
 import { FaGoogle, FaGithub, FaWallet, FaArrowRight, FaArrowLeft, FaQuoteLeft, FaStar } from 'react-icons/fa';
 import logo from '../assets/banner-dark-transparent.png';
+import { useAccount, useSignMessage, useDisconnect } from 'wagmi';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 
 const Login = () => {
-    const { signIn } = useAuth();
+    const { signIn, signInWithWallet } = useAuth();
     const navigate = useNavigate();
+
+    // Auth Method State
+    const [authMethod, setAuthMethod] = useState(null); // 'email' | 'wallet' | null
+
+    // Form State
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+
+    // Web3 Hooks
+    const { address, isConnected, status } = useAccount();
+    const { signMessageAsync } = useSignMessage();
+    const { openConnectModal } = useConnectModal();
+    const { disconnect } = useDisconnect();
+
     const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
     const testimonials = [
@@ -32,22 +46,18 @@ const Login = () => {
         }
     ];
 
-    const nextTestimonial = () => {
-        setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    };
+    const nextTestimonial = () => setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    const prevTestimonial = () => setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
 
-    const prevTestimonial = () => {
-        setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-    };
-
-    const handleSubmit = async (e) => {
+    // Email Login Submit
+    const handleEmailSubmit = async (e) => {
         e.preventDefault();
         setError(null);
         setLoading(true);
         try {
             const { error } = await signIn(email, password);
             if (error) throw error;
-            navigate('/app/profile'); // Correct navigation to profile
+            navigate('/app/profile');
         } catch (err) {
             setError(err.message);
         } finally {
@@ -55,10 +65,65 @@ const Login = () => {
         }
     };
 
+    useEffect(() => {
+        // console.log("Wallet Status Update:", { isConnected, address, status, authMethod, loading });
+        if (authMethod === 'wallet' && isConnected && address && !loading) {
+            handleWalletVerification();
+        }
+    }, [isConnected, address, authMethod]); // Removed 'status' to avoid extra triggers
+
+    const handleWalletVerification = async () => {
+        if (loading) {
+            console.log("[Wallet-Auth] Verification already in progress. Skipping redundant call.");
+            return;
+        }
+        
+        setLoading(true);
+        setError(null);
+        try {
+            console.log("Starting wallet verification for:", address);
+
+            const domain = window.location.host;
+            const message = `Sign in to Hiring Plug with your wallet\n\nDomain: ${domain}\nAddress: ${address}\nStatement: I am authenticating with my Hiring Plug account.\n\nNonce: ${Date.now()}\nIssued At: ${new Date().toISOString()}`;
+
+            console.log("Requesting signature...");
+            const signature = await signMessageAsync({ message });
+            console.log("Signature received:", signature.substring(0, 10) + "...");
+            await signInWithWallet(address, signature, message, true);
+            console.log("Wallet sign-in successfully established session.");
+            navigate('/app/profile');
+        } catch (err) {
+            console.error("Signature error:", err);
+            let errMsg = `Wallet verification failed: ${err.message}`;
+            if (err.debug_info) {
+                console.log("Trace:", err.debug_info);
+                errMsg += "\n\nDebug Trace (Check console): " + err.debug_info.join(' -> ');
+            }
+            setError(errMsg);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const startWalletLogin = () => {
+        console.log("startWalletLogin clicked. IsConnected:", isConnected, "openConnectModal ready:", !!openConnectModal);
+        setError(null);
+
+        if (isConnected) {
+            setAuthMethod('wallet');
+            // The useEffect will trigger handleWalletVerification() automatically
+        } else if (openConnectModal) {
+            setAuthMethod('wallet');
+            openConnectModal();
+        } else {
+            console.error("RainbowKit Modal not available yet.");
+            setError("Connection modal is initializing. If this persists, please refresh the page.");
+        }
+    };
+
     const socialMethods = [
         { icon: <FaGoogle />, name: 'Google', onClick: () => alert('Google Login - Coming Soon') },
         { icon: <FaGithub />, name: 'GitHub', onClick: () => alert('GitHub Login - Coming Soon') },
-        { icon: <FaWallet />, name: 'Wallet', onClick: () => alert('Metamask Login - Coming Soon') }
     ];
 
     return (
@@ -71,57 +136,97 @@ const Login = () => {
                     </Link>
 
                     <div className="header-text">
-                        <p>Please Enter your Account details</p>
+                        <p>{authMethod === 'email' ? 'Please Enter your Account details' : 'Log in to your Account'}</p>
                     </div>
 
                     {error && <div className="error-msg">{error}</div>}
 
-                    <form onSubmit={handleSubmit} className="login-form">
-                        <div className="input-group">
-                            <label>Email</label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                placeholder="johndoe@email.com"
-                            />
-                        </div>
+                    {/* METHOD SELECTION SCREEN */}
+                    {!authMethod && (
+                        <div className="method-selection">
+                            <Button variant="outline" className="auth-method-btn" onClick={() => setAuthMethod('email')}>
+                                Continue with Email
+                            </Button>
+                            <Button variant="primary" className="auth-method-btn wallet-btn" onClick={startWalletLogin}>
+                                <FaWallet /> Connect Wallet
+                            </Button>
 
-                        <div className="input-group">
-                            <label>Password</label>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                placeholder="••••••••"
-                            />
-                        </div>
-
-                        <div className="forgot-pass">
-                            <Link to="/forgot-password">Forgot Password</Link>
-                        </div>
-
-                        <Button variant="primary" type="submit" className="signin-btn" disabled={loading}>
-                            {loading ? 'Signing in...' : 'Sign in'}
-                        </Button>
-                    </form>
-
-                    <div className="social-auth">
-                        {socialMethods.map((method, index) => (
-                            <div key={index} className="social-item">
-                                <button className="social-icon-btn" onClick={method.onClick}>
-                                    {method.icon}
-                                </button>
-                                <span className="social-tooltip">{method.name}</span>
+                            <div className="auth-footer" style={{ marginTop: '30px' }}>
+                                <Link to="/signup">Don't have an account? Sign up</Link>
                             </div>
-                        ))}
-                    </div>
+                        </div>
+                    )}
 
-                    <div className="auth-footer">
-                        <Link to="/signup">Create an account</Link>
-                    </div>
+                    {/* EMAIL LOGIN SCREEN */}
+                    {authMethod === 'email' && (
+                        <>
+                            <form onSubmit={handleEmailSubmit} className="login-form">
+                                <div className="input-group">
+                                    <label>Email</label>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                        placeholder="johndoe@email.com"
+                                    />
+                                </div>
+
+                                <div className="input-group">
+                                    <label>Password</label>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        placeholder="••••••••"
+                                    />
+                                </div>
+
+                                <div className="forgot-pass">
+                                    <Link to="/forgot-password">Forgot Password</Link>
+                                </div>
+
+                                <Button variant="primary" type="submit" className="signin-btn" disabled={loading}>
+                                    {loading ? 'Signing in...' : 'Sign in'}
+                                </Button>
+                            </form>
+
+                            <div className="social-auth">
+                                {socialMethods.map((method, index) => (
+                                    <div key={index} className="social-item">
+                                        <button className="social-icon-btn" onClick={method.onClick}>
+                                            {method.icon}
+                                        </button>
+                                        <span className="social-tooltip">{method.name}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="auth-footer">
+                                <button type="button" className="back-link-btn" onClick={() => setAuthMethod(null)}>
+                                    <FaArrowLeft style={{ marginRight: '8px' }} /> Back to options
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* WALLET LOGIN SCREEN */}
+                    {authMethod === 'wallet' && (
+                        <div className="wallet-loading-screen">
+                            {loading ? (
+                                <div className="text-center">
+                                    <p>Please sign the message in your wallet...</p>
+                                </div>
+                            ) : (
+                                <div className="text-center">
+                                    <Button variant="outline" onClick={() => setAuthMethod(null)}>
+                                        <FaArrowLeft /> Cancel
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -201,6 +306,62 @@ const Login = () => {
                     color: #aaa;
                     margin-bottom: 25px;
                     font-size: 0.95rem;
+                }
+
+                .method-selection {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+                    margin-top: 20px;
+                }
+
+                .auth-method-btn {
+                    width: 100%;
+                    padding: 12px 16px !important;
+                    font-size: 1rem !important;
+                    border-radius: 8px !important;
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    font-weight: 500 !important;
+                }
+
+                .wallet-btn {
+                    background: #2a2a2a !important; /* Dark grey for wallet */
+                    border: 1px solid #444 !important;
+                    color: #fff !important;
+                }
+                
+                .wallet-btn:hover {
+                    background: #333 !important;
+                }
+
+                .back-link-btn {
+                    background: none;
+                    border: none;
+                    color: #aaa;
+                    font-size: 0.9rem;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 100%;
+                    margin-top: 20px;
+                    transition: color 0.2s;
+                }
+                
+                .back-link-btn:hover {
+                    color: #fff;
+                }
+
+                .wallet-loading-screen {
+                    padding: 40px 0;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 20px;
                 }
 
                 .login-form {
