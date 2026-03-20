@@ -7,9 +7,11 @@ import logo from '../assets/banner-dark-transparent.png';
 import { supabase } from '../supabaseClient';
 import { useAccount, useSignMessage, useDisconnect } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { useToast } from '../context/ToastContext';
 
 const Signup = () => {
     const { signUp, signInWithWallet } = useAuth();
+    const { showToast } = useToast();
     const navigate = useNavigate();
 
     // Auth Method State
@@ -175,8 +177,8 @@ const Signup = () => {
     };
 
     const socialMethods = [
-        { icon: <FaGoogle />, name: 'Google', onClick: () => alert('Google Signup - Coming Soon') },
-        { icon: <FaGithub />, name: 'GitHub', onClick: () => alert('GitHub Signup - Coming Soon') },
+        { icon: <FaGoogle />, name: 'Google', onClick: () => showToast('Google Signup - Coming Soon', 'info') },
+        { icon: <FaGithub />, name: 'GitHub', onClick: () => showToast('GitHub Signup - Coming Soon', 'info') },
     ];
 
     if (successMsg) {

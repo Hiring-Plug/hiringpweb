@@ -57,46 +57,58 @@ export const ConfirmProvider = ({ children }) => {
                     left: 0;
                     right: 0;
                     bottom: 0;
-                    background: rgba(0, 0, 0, 0.8);
-                    backdrop-filter: blur(4px);
+                    background: rgba(0, 0, 0, 0.7);
+                    backdrop-filter: blur(12px) saturate(180%);
+                    -webkit-backdrop-filter: blur(12px) saturate(180%);
                     display: flex;
                     justify-content: center;
                     align-items: center;
                     z-index: 11000;
-                    animation: fadeIn 0.2s ease;
+                    animation: confirmFadeIn 0.3s ease-out;
                 }
-                @keyframes fadeIn {
+                @keyframes confirmFadeIn {
                     from { opacity: 0; }
                     to { opacity: 1; }
                 }
                 .confirm-dialog {
-                    background: #111;
-                    border: 1px solid #222;
-                    border-radius: 16px;
+                    background: rgba(15, 15, 15, 0.85);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 24px;
                     width: 90%;
-                    max-width: 400px;
-                    padding: 24px;
-                    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-                    animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    max-width: 420px;
+                    padding: 32px;
+                    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+                    animation: confirmScaleUp 0.4s cubic-bezier(0.19, 1, 0.22, 1);
                 }
-                @keyframes scaleUp {
-                    from { transform: scale(0.9); opacity: 0; }
-                    to { transform: scale(1); opacity: 1; }
+                @keyframes confirmScaleUp {
+                    from { transform: scale(0.95) translateY(10px); opacity: 0; }
+                    to { transform: scale(1) translateY(0); opacity: 1; }
                 }
                 .confirm-content h3 {
-                    margin: 0 0 12px 0;
-                    font-size: 1.25rem;
+                    margin: 0 0 16px 0;
+                    font-size: 1.5rem;
+                    font-weight: 800;
+                    letter-spacing: -0.02em;
                     color: #fff;
                 }
                 .confirm-content p {
-                    margin: 0 0 24px 0;
-                    color: #888;
-                    line-height: 1.5;
+                    margin: 0 0 32px 0;
+                    color: #aaa;
+                    line-height: 1.6;
+                    font-size: 1rem;
                 }
                 .confirm-actions {
                     display: flex;
                     justify-content: flex-end;
-                    gap: 12px;
+                    gap: 16px;
+                }
+
+                @media (max-width: 480px) {
+                    .confirm-dialog {
+                        padding: 24px;
+                        width: 95%;
+                    }
+                    .confirm-content h3 { font-size: 1.25rem; }
                 }
             `}</style>
         </ConfirmContext.Provider>

@@ -6,9 +6,11 @@ import { FaGoogle, FaGithub, FaWallet, FaArrowRight, FaArrowLeft, FaQuoteLeft, F
 import logo from '../assets/banner-dark-transparent.png';
 import { useAccount, useSignMessage, useDisconnect } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { useToast } from '../context/ToastContext';
 
 const Login = () => {
     const { signIn, signInWithWallet } = useAuth();
+    const { showToast } = useToast();
     const navigate = useNavigate();
 
     // Auth Method State
@@ -122,8 +124,8 @@ const Login = () => {
     };
 
     const socialMethods = [
-        { icon: <FaGoogle />, name: 'Google', onClick: () => alert('Google Login - Coming Soon') },
-        { icon: <FaGithub />, name: 'GitHub', onClick: () => alert('GitHub Login - Coming Soon') },
+        { icon: <FaGoogle />, name: 'Google', onClick: () => showToast('Google Login - Coming Soon', 'info') },
+        { icon: <FaGithub />, name: 'GitHub', onClick: () => showToast('GitHub Login - Coming Soon', 'info') },
     ];
 
     return (

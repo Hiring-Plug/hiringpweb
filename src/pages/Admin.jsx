@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useData } from '../context/DataContext';
 import Button from '../components/Button';
+import { useToast } from '../context/ToastContext';
 import { FaTrash, FaEdit, FaPlus, FaLock, FaUser, FaBriefcase } from 'react-icons/fa';
 
 const Admin = () => {
+    const { showToast } = useToast();
     const {
         projects, addProject, updateProject, deleteProject,
         applicants, addApplicant, deleteApplicant,
@@ -210,7 +212,7 @@ const Admin = () => {
                         <div className="section-header">
                             <h3>Applicants</h3>
                             {/* Adding applicant manually if needed, usually comes from form */}
-                            <Button variant="secondary" onClick={() => alert('Feature coming soon!')}>
+                            <Button variant="secondary" onClick={() => showToast('Feature coming soon!', 'info')}>
                                 <FaPlus /> Add Talent
                             </Button>
                         </div>

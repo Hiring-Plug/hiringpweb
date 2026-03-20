@@ -1,16 +1,20 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { supabase } from '../../supabaseClient';
 import { FaCamera, FaMapMarkerAlt, FaLink, FaTwitter, FaGithub, FaLinkedin, FaPen, FaBriefcase, FaHeart, FaGlobe, FaStar, FaCheckCircle, FaBuilding, FaDiscord, FaShareAlt, FaCopy, FaTelegram } from 'react-icons/fa';
 import Button from '../../components/Button';
 import profileCover from '../../assets/7.jpg'; // Default fallback
+import blucmk from '../../assets/blucmk.png';
+import goldcmk from '../../assets/goldcmk.png';
 import { useNavigate } from 'react-router-dom';
 import Skeleton from '../../components/Skeleton';
 import { formatSocialLink } from '../../utils/socialLinks';
 
 const Profile = () => {
     const { user } = useAuth();
+    const { showToast } = useToast();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [jobs, setJobs] = useState([]);
@@ -116,7 +120,7 @@ const Profile = () => {
     const handleShare = () => {
         const publicUrl = `${window.location.origin}/u/${profile.username}`;
         navigator.clipboard.writeText(publicUrl);
-        alert('Public profile link copied to clipboard!');
+        showToast('Profile link copied!', 'success');
     };
 
     return (
@@ -171,7 +175,11 @@ const Profile = () => {
                                 <>
                                     <h1>{profile.username || 'Anonymous'}</h1>
                                     <span className="verified-badge">
-                                        <img src="https://png.pngtree.com/png-vector/20230408/ourmid/pngtree-instagram-bule-tick-insta-blue-star-vector-png-image_6695210.png" alt="Verified" className="verified-icon" />
+                                        <img
+                                            src={isProject ? goldcmk : blucmk}
+                                            alt="Verified"
+                                            className="verified-icon"
+                                        />
                                     </span>
                                     {profile.username && (
                                         <button className="share-icon-btn" onClick={handleShare} title="Copy public profile link">
@@ -338,7 +346,7 @@ const Profile = () => {
                                         <h3><FaCheckCircle color="#ED5000" /> Verified Skills</h3>
                                         <p>Take a skill assessment to earn a badge and boost your credibility.</p>
                                     </div>
-                                    <Button variant="glow" onClick={() => alert('Skill Verification Coming Soon!')}>Take Test</Button>
+                                    <Button variant="glow" onClick={() => showToast('Skill Verification Coming Soon!', 'info')}>Take Test</Button>
                                 </div>
 
                                 <div className="content-tabs">
@@ -478,11 +486,11 @@ const Profile = () => {
 
                 .header-info { display: flex; flex-direction: column; gap: 0.5rem; }
                 
-                .name-block { display: flex; align-items: center; gap: 10px; }
+                .name-block { display: flex; align-items: center; gap: 4px; }
                 .name-block h1 { margin: 0; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.02em; color: #fff; }
                 
-                .verified-badge { display: flex; align-items: center; }
-                .verified-icon { width: 24px; height: 24px; object-fit: contain; margin-bottom: -2px; }
+                .verified-badge { display: flex; align-items: center; margin-bottom: -2px; }
+                .verified-icon { width: 1.1em; height: 1.1em; object-fit: contain; margin-bottom: -2px; }
                 .profile-container:not(.project-mode) .verified-badge { background: none; border: none; }
 
                 .share-icon-btn {
@@ -498,6 +506,7 @@ const Profile = () => {
                     transition: all 0.2s;
                     border: 1px solid #222;
                     padding: 0;
+                    margin-left: 8px;
                 }
                 .share-icon-btn:hover {
                     background: rgba(237, 80, 0, 0.1);

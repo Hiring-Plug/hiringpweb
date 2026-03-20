@@ -3,9 +3,12 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
-import { FaMapMarkerAlt, FaLink, FaTwitter, FaGithub, FaLinkedin, FaCheckCircle, FaStar, FaBuilding, FaDiscord, FaGlobe, FaUserPlus, FaUserCheck, FaClock, FaTelegram } from 'react-icons/fa';
+import { useToast } from '../context/ToastContext';
+import { FaMapMarkerAlt, FaLink, FaTwitter, FaGithub, FaLinkedin, FaCheckCircle, FaStar, FaBuilding, FaDiscord, FaGlobe, FaUserPlus, FaUserCheck, FaClock, FaTelegram, FaShareAlt } from 'react-icons/fa';
 import Button from '../components/Button';
 import profileCover from '../assets/7.jpg'; // Default fallback
+import blucmk from '../assets/blucmk.png';
+import goldcmk from '../assets/goldcmk.png';
 import Skeleton from '../components/Skeleton';
 import SEO from '../components/SEO';
 import { formatSocialLink } from '../utils/socialLinks';
@@ -14,6 +17,7 @@ const PublicProfile = () => {
     const { username } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { showToast } = useToast();
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState(null);
     const [jobs, setJobs] = useState([]);
@@ -109,6 +113,12 @@ const PublicProfile = () => {
         } catch (err) {
             console.error('Error fetching follow data:', err);
         }
+    };
+
+    const handleShare = () => {
+        const publicUrl = window.location.href;
+        navigator.clipboard.writeText(publicUrl);
+        showToast('Profile link copied!', 'success');
     };
 
     const handleFollowAction = async () => {
@@ -318,8 +328,15 @@ const PublicProfile = () => {
                                 <>
                                     <h1>{profile?.username || 'Anonymous'}</h1>
                                     <span className="verified-badge">
-                                        <img src="https://png.pngtree.com/png-vector/20230408/ourmid/pngtree-instagram-bule-tick-insta-blue-star-vector-png-image_6695210.png" alt="Verified" className="verified-icon" />
+                                        <img
+                                            src={isProject ? goldcmk : blucmk}
+                                            alt="Verified"
+                                            className="verified-icon"
+                                        />
                                     </span>
+                                    <button className="share-icon-btn" onClick={handleShare} title="Copy public profile link">
+                                        <FaShareAlt size={12} />
+                                    </button>
                                 </>
                             )}
                         </div>
@@ -493,10 +510,25 @@ const PublicProfile = () => {
                 .header-actions { display: flex; gap: 12px; margin-bottom: 20px; }
                 .header-actions button { border-radius: 999px !important; font-weight: 700; padding: 8px 20px; font-size: 0.95rem; height: 40px; }
                 .header-info { display: flex; flex-direction: column; gap: 0.5rem; }
-                .name-block { display: flex; align-items: center; gap: 10px; }
+                .name-block { display: flex; align-items: center; gap: 4px; }
                 .name-block h1 { margin: 0; font-size: 1.8rem; font-weight: 800; color: #fff; }
+                
                 .verified-badge { display: flex; align-items: center; }
-                .verified-icon { width: 24px; height: 24px; object-fit: contain; margin-bottom: -2px; }
+                .verified-icon { width: 1.1em; height: 1.1em; object-fit: contain; margin-bottom: -2px; }
+                .share-icon-btn {
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    color: #888;
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    margin-left: 8px;
+                }
                 .role-line { color: #888; font-size: 0.9rem; margin: 0; }
                 .social-links { display: flex; flex-wrap: wrap; gap: 1.2rem; font-size: 1rem; color: #666; margin: 0.5rem 0; }
                 .social-link { color: #666; transition: color 0.2s; }

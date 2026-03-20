@@ -40,7 +40,7 @@ export const ToastProvider = ({ children }) => {
             <style>{`
                 .toast-container {
                     position: fixed;
-                    bottom: 24px;
+                    top: 24px;
                     right: 24px;
                     display: flex;
                     flex-direction: column;
@@ -50,44 +50,71 @@ export const ToastProvider = ({ children }) => {
                 }
                 .toast {
                     pointer-events: auto;
-                    min-width: 300px;
-                    max-width: 450px;
-                    background: #111;
-                    border: 1px solid #222;
-                    border-radius: 12px;
-                    padding: 16px;
+                    min-width: 220px;
+                    max-width: 360px;
+                    background: rgba(10, 10, 10, 0.75);
+                    backdrop-filter: blur(16px) saturate(180%);
+                    -webkit-backdrop-filter: blur(16px) saturate(180%);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 10px;
+                    padding: 8px 14px;
                     display: flex;
                     align-items: center;
-                    gap: 12px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-                    animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    gap: 10px;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+                    animation: toastSlideIn 0.4s cubic-bezier(0.2, 1, 0.3, 1);
                     color: #fff;
+                    transition: all 0.3s;
                 }
-                @keyframes slideIn {
-                    from { transform: translateX(100%); opacity: 0; }
+                @keyframes toastSlideIn {
+                    from { transform: translateX(30px); opacity: 0; }
                     to { transform: translateX(0); opacity: 1; }
                 }
-                .toast.success { border-left: 4px solid #4cd137; }
-                .toast.error { border-left: 4px solid #e74c3c; }
-                .toast.info { border-left: 4px solid var(--primary-orange); }
+                
+                .toast.success { border-left: 3px solid #4cd137; }
+                .toast.error { border-left: 3px solid #e74c3c; }
+                .toast.info { border-left: 3px solid #ED5000; }
 
-                .toast-icon { font-size: 1.2rem; display: flex; align-items: center; }
-                .toast.success .toast-icon { color: #4cd137; }
-                .toast.error .toast-icon { color: #e74c3c; }
-                .toast.info .toast-icon { color: var(--primary-orange); }
+                .toast-icon { 
+                    font-size: 1.3rem; 
+                    display: flex; 
+                    align-items: center;
+                    padding: 8px;
+                    border-radius: 10px;
+                    background: rgba(255,255,255,0.05);
+                }
+                .toast.success .toast-icon { color: #4cd137; background: rgba(76, 209, 55, 0.1); }
+                .toast.error .toast-icon { color: #e74c3c; background: rgba(231, 76, 60, 0.1); }
+                .toast.info .toast-icon { color: #ED5000; background: rgba(237, 80, 0, 0.1); }
 
-                .toast-message { flex: 1; font-size: 0.95rem; font-weight: 500; }
+                .toast-message { flex: 1; font-size: 0.95rem; font-weight: 600; letter-spacing: -0.01em; }
                 .toast-close {
-                    background: none;
+                    background: rgba(255,255,255,0.05);
                     border: none;
-                    color: #555;
+                    color: #666;
                     cursor: pointer;
-                    padding: 4px;
-                    transition: color 0.2s;
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    transition: all 0.2s;
                     display: flex;
                     align-items: center;
+                    justify-content: center;
                 }
-                .toast-close:hover { color: #fff; }
+                .toast-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+                @media (max-width: 480px) {
+                    .toast-container {
+                        top: auto;
+                        bottom: 20px;
+                        left: 20px;
+                        right: 20px;
+                    }
+                    .toast {
+                        min-width: 0;
+                        width: 100%;
+                    }
+                }
             `}</style>
         </ToastContext.Provider>
     );
