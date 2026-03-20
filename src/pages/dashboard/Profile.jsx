@@ -663,7 +663,7 @@ const Profile = () => {
                         min-width: 60px;
                     }
                     .name-block h1 { font-size: 1.1rem; }
-                    .verified-icon { width: 20px; height: 20px; }
+                    .verified-icon { width: 13px; height: 13px; }
                     .role-line { font-size: 0.75rem !important; }
                     .header-stats { gap: 0.8rem; }
                     .stat-box { gap: 4px; }
