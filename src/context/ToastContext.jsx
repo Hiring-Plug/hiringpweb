@@ -1,22 +1,21 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaTimes } from 'react-icons/fa';
 
 const ToastContext = createContext();
 
+export const useToast = () => useContext(ToastContext);
+
 export const ToastProvider = ({ children }) => {
     const [toasts, setToasts] = useState([]);
 
-    const showToast = useCallback((message, type = 'success', duration = 4000) => {
+    const showToast = (message, type = 'info') => {
         const id = Date.now();
         setToasts(prev => [...prev, { id, message, type }]);
-
-        setTimeout(() => {
-            setToasts(prev => prev.filter(t => t.id !== id));
-        }, duration);
-    }, []);
+        setTimeout(() => removeToast(id), 5000);
+    };
 
     const removeToast = (id) => {
-        setToasts(prev => prev.filter(t => t.id !== id));
+        setToasts(prev => prev.filter(toast => toast.id !== id));
     };
 
     return (
@@ -26,9 +25,9 @@ export const ToastProvider = ({ children }) => {
                 {toasts.map(toast => (
                     <div key={toast.id} className={`toast ${toast.type}`}>
                         <div className="toast-icon">
-                            {toast.type === 'success' && <FaCheckCircle />}
-                            {toast.type === 'error' && <FaExclamationCircle />}
-                            {toast.type === 'info' && <FaInfoCircle />}
+                            {toast.type === 'success' && <FaCheckCircle style={{ color: '#4cd137' }} />}
+                            {toast.type === 'error' && <FaExclamationCircle style={{ color: '#e74c3c' }} />}
+                            {toast.type === 'info' && <FaInfoCircle style={{ color: '#ED5000' }} />}
                         </div>
                         <div className="toast-message">{toast.message}</div>
                         <button className="toast-close" onClick={() => removeToast(toast.id)}>
@@ -37,6 +36,7 @@ export const ToastProvider = ({ children }) => {
                     </div>
                 ))}
             </div>
+
             <style>{`
                 .toast-container {
                     position: fixed;
@@ -44,10 +44,11 @@ export const ToastProvider = ({ children }) => {
                     right: 24px;
                     display: flex;
                     flex-direction: column;
-                    gap: 12px;
-                    z-index: 10000;
+                    gap: 10px;
+                    z-index: 9999;
                     pointer-events: none;
                 }
+
                 .toast {
                     pointer-events: auto;
                     min-width: 220px;
@@ -60,68 +61,68 @@ export const ToastProvider = ({ children }) => {
                     padding: 8px 14px;
                     display: flex;
                     align-items: center;
-                    gap: 10px;
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-                    animation: toastSlideIn 0.4s cubic-bezier(0.2, 1, 0.3, 1);
-                    color: #fff;
-                    transition: all 0.3s;
+                    gap: 12px;
+                    color: white;
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+                    animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    position: relative;
+                    overflow: hidden;
                 }
-                @keyframes toastSlideIn {
-                    from { transform: translateX(30px); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-                
+
                 .toast.success { border-left: 3px solid #4cd137; }
                 .toast.error { border-left: 3px solid #e74c3c; }
                 .toast.info { border-left: 3px solid #ED5000; }
 
                 .toast-icon { 
-                    font-size: 1.3rem; 
+                    font-size: 1.1rem; 
                     display: flex; 
                     align-items: center;
-                    padding: 8px;
-                    border-radius: 10px;
-                    background: rgba(255,255,255,0.05);
+                    padding: 6px;
+                    border-radius: 8px;
+                    background: rgba(255, 255, 255, 0.03);
                 }
-                .toast.success .toast-icon { color: #4cd137; background: rgba(76, 209, 55, 0.1); }
-                .toast.error .toast-icon { color: #e74c3c; background: rgba(231, 76, 60, 0.1); }
-                .toast.info .toast-icon { color: #ED5000; background: rgba(237, 80, 0, 0.1); }
 
-                .toast-message { flex: 1; font-size: 0.95rem; font-weight: 600; letter-spacing: -0.01em; }
+                .toast-message { 
+                    flex: 1; 
+                    font-size: 0.9rem; 
+                    font-weight: 500; 
+                    letter-spacing: -0.01em;
+                    line-height: 1.4;
+                    opacity: 0.95;
+                }
+
                 .toast-close {
-                    background: rgba(255,255,255,0.05);
+                    background: transparent;
                     border: none;
-                    color: #666;
+                    color: rgba(255, 255, 255, 0.4);
                     cursor: pointer;
-                    width: 28px;
-                    height: 28px;
+                    width: 24px;
+                    height: 24px;
                     border-radius: 50%;
                     transition: all 0.2s;
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    padding: 0;
                 }
-                .toast-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
-                @media (max-width: 480px) {
-                    .toast-container {
-                        top: auto;
-                        bottom: 20px;
-                        left: 20px;
-                        right: 20px;
+                .toast-close:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: white;
+                }
+
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%) scale(0.9);
+                        opacity: 0;
                     }
-                    .toast {
-                        min-width: 0;
-                        width: 100%;
+                    to {
+                        transform: translateX(0) scale(1);
+                        opacity: 1;
                     }
                 }
             `}</style>
         </ToastContext.Provider>
     );
-};
-
-export const useToast = () => {
-    const context = useContext(ToastContext);
-    if (!context) throw new Error('useToast must be used within a ToastProvider');
-    return context;
 };
