@@ -140,6 +140,10 @@ export const DataProvider = ({ children }) => {
 
     // Fetch DB Projects
     const fetchDbProjects = async () => {
+        if (!supabase) {
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         setError(null);
         try {

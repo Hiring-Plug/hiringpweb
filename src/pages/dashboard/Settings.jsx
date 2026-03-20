@@ -226,7 +226,6 @@ const Settings = () => {
                     services: data.services || '',
                     tvl: data.tvl || '',
                     funding: data.funding || '',
-                    avatar_url: data.avatar_url || '',
                     custom_metrics: data.custom_metrics || {},
                     skills: Array.isArray(data.skills) ? data.skills.join(', ') : (data.skills || ''),
                     experience: data.experience || [],

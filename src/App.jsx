@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { supabase } from './supabaseClient'
 import { Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -65,6 +66,39 @@ function AuthRedirectHandler() {
 
 function App() {
   const { pathname } = useLocation();
+  const [isConfigured, setIsConfigured] = useState(!!supabase);
+
+  if (!isConfigured) {
+    return (
+      <div style={{
+        backgroundColor: '#000',
+        color: '#fff',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem',
+        textAlign: 'center',
+        fontFamily: 'system-ui, sans-serif'
+      }}>
+        <h1 style={{ color: '#ED5000', marginBottom: '1rem' }}>Configuration Missing</h1>
+        <p style={{ maxWidth: '600px', lineHeight: '1.6', color: '#888' }}>
+          Sustainable environment variables are missing. Please add <strong>VITE_SUPABASE_URL</strong> and <strong>VITE_SUPABASE_ANON_KEY</strong> to your environment settings.
+        </p>
+        <div style={{ marginTop: '2rem', padding: '1rem', border: '1px solid #333', borderRadius: '8px', backgroundColor: '#111', textAlign: 'left' }}>
+          <code style={{ fontSize: '0.9rem' }}>
+            // Required Variables:<br />
+            VITE_SUPABASE_URL=your_project_url<br />
+            VITE_SUPABASE_ANON_KEY=your_anon_key
+          </code>
+        </div>
+        <p style={{ marginTop: '2rem', fontSize: '0.8rem', color: '#444' }}>
+          After adding these variables, please redeploy your application.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <WagmiProvider config={config}>

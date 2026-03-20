@@ -60,7 +60,6 @@ const Admin = () => {
             type: formData.get('type'),
             salary: formData.get('salary'),
             tags: formData.get('tags').split(',').map(tag => tag.trim()),
-            tags: formData.get('tags').split(',').map(tag => tag.trim()),
             description: formData.get('description'),
             logoIcon: formData.get('logoIcon') || 'FaGlobe',
             logoUrl: uploadedLogo || formData.get('logoUrl'),

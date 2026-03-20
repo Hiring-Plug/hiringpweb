@@ -318,7 +318,7 @@ const PublicProfile = () => {
                                 <>
                                     <h1>{profile?.username || 'Anonymous'}</h1>
                                     <span className="verified-badge">
-                                        {isProject ? <FaCheckCircle /> : <FaStar />} {isProject ? 'VERIFIED PROJECT' : 'VERIFIED'}
+                                        <img src="https://png.pngtree.com/png-vector/20230408/ourmid/pngtree-instagram-bule-tick-insta-blue-star-vector-png-image_6695210.png" alt="Verified" className="verified-icon" />
                                     </span>
                                 </>
                             )}
@@ -495,8 +495,8 @@ const PublicProfile = () => {
                 .header-info { display: flex; flex-direction: column; gap: 0.5rem; }
                 .name-block { display: flex; align-items: center; gap: 10px; }
                 .name-block h1 { margin: 0; font-size: 1.8rem; font-weight: 800; color: #fff; }
-                .verified-badge { background: rgba(237, 80, 0, 0.1); color: var(--accent); border: 1px solid rgba(237, 80, 0, 0.2); font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; display: flex; align-items: center; gap: 5px; }
-                .profile-container:not(.project-mode) .verified-badge { background: rgba(241, 196, 15, 0.1); color: #f1c40f; border-color: rgba(241, 196, 15, 0.2); }
+                .verified-badge { display: flex; align-items: center; }
+                .verified-icon { width: 24px; height: 24px; object-fit: contain; margin-bottom: -2px; }
                 .role-line { color: #888; font-size: 0.9rem; margin: 0; }
                 .social-links { display: flex; flex-wrap: wrap; gap: 1.2rem; font-size: 1rem; color: #666; margin: 0.5rem 0; }
                 .social-link { color: #666; transition: color 0.2s; }

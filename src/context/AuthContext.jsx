@@ -18,12 +18,23 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         // Check active session
         const getSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setUser(session?.user || null);
-            setLoading(false);
+            if (!supabase) {
+                setLoading(false);
+                return;
+            }
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                setUser(session?.user || null);
+            } catch (err) {
+                console.error('Session fetch error:', err);
+            } finally {
+                setLoading(false);
+            }
         };
 
         getSession();
+
+        if (!supabase) return;
 
         // Listen for changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -35,6 +46,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const signUp = async (email, password, metadata) => {
+        if (!supabase) throw new Error('Supabase client not initialized');
         return supabase.auth.signUp({
             email,
             password,
@@ -45,6 +57,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const signIn = async (email, password) => {
+        if (!supabase) throw new Error('Supabase client not initialized');
         return supabase.auth.signInWithPassword({
             email,
             password,
@@ -103,6 +116,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const signOut = async () => {
+        if (!supabase) return;
         return supabase.auth.signOut();
     };
 

@@ -71,7 +71,6 @@ const Profile = () => {
                     username: data.username || user.user_metadata?.username,
                     website: data.website,
                     bio: data.bio,
-                    bio: data.bio,
                     skills: Array.isArray(data.skills) ? data.skills : (data.skills ? data.skills.split(',') : []),
                     services: data.services || '',
                     role: data.primary_skill || (isProject ? 'Web3 Protocol' : 'Product Designer'),
@@ -172,7 +171,7 @@ const Profile = () => {
                                 <>
                                     <h1>{profile.username || 'Anonymous'}</h1>
                                     <span className="verified-badge">
-                                        {isProject ? <FaCheckCircle /> : <FaStar />} {isProject ? 'VERIFIED PROJECT' : 'VERIFIED'}
+                                        <img src="https://png.pngtree.com/png-vector/20230408/ourmid/pngtree-instagram-bule-tick-insta-blue-star-vector-png-image_6695210.png" alt="Verified" className="verified-icon" />
                                     </span>
                                     {profile.username && (
                                         <button className="share-icon-btn" onClick={handleShare} title="Copy public profile link">
@@ -482,14 +481,9 @@ const Profile = () => {
                 .name-block { display: flex; align-items: center; gap: 10px; }
                 .name-block h1 { margin: 0; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.02em; color: #fff; }
                 
-                .verified-badge {
-                    background: rgba(237, 80, 0, 0.1); color: var(--accent); border: 1px solid rgba(237, 80, 0, 0.2);
-                    font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;
-                    display: flex; align-items: center; gap: 5px;
-                }
-                .profile-container:not(.project-mode) .verified-badge {
-                     background: rgba(241, 196, 15, 0.1); color: #f1c40f; border-color: rgba(241, 196, 15, 0.2);
-                }
+                .verified-badge { display: flex; align-items: center; }
+                .verified-icon { width: 24px; height: 24px; object-fit: contain; margin-bottom: -2px; }
+                .profile-container:not(.project-mode) .verified-badge { background: none; border: none; }
 
                 .share-icon-btn {
                     background: rgba(255, 255, 255, 0.05);
@@ -660,7 +654,7 @@ const Profile = () => {
                         min-width: 60px;
                     }
                     .name-block h1 { font-size: 1.1rem; }
-                    .verified-badge { font-size: 0.65rem; padding: 1px 6px; }
+                    .verified-icon { width: 20px; height: 20px; }
                     .role-line { font-size: 0.75rem !important; }
                     .header-stats { gap: 0.8rem; }
                     .stat-box { gap: 4px; }
