@@ -9,7 +9,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Origin": "https://www.hiringplug.xyz",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -24,9 +24,13 @@ serve(async (req) => {
             Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
         );
 
-        // 1. Get the current user (sender) from the Authorization header
+        // 1. Verify Authentication
         const authHeader = req.headers.get('Authorization')
         if (!authHeader) throw new Error('Missing Authorization header')
+        
+        const token = authHeader.replace('Bearer ', '')
+        const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser(token)
+        if (authError || !authUser) throw new Error('Invalid or expired token')
 
         // 2. Parse payload
         const { recipientUserId, subject, html, text } = await req.json();

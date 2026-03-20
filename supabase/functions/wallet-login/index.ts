@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 import { verifyMessage } from 'npm:viem';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://www.hiringplug.xyz',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -32,7 +32,7 @@ serve(async (req) => {
     const body = await req.json();
     const { address, signature, message, siwe, user_token, redirectTo } = body;
     const cleanAddress = address?.toLowerCase();
-    
+
     log(`[Auth-Attempt] Address: ${address}, Flow: ${user_token ? 'LINKING' : 'LOGIN'}`);
 
     if (!address || !signature || !message) {
@@ -60,7 +60,7 @@ serve(async (req) => {
     if (user_token) {
       log('[Linking] Verifying user token...');
       const { data: userData, error: authError } = await supabaseAdmin.auth.getUser(user_token);
-      
+
       if (authError || !userData?.user) {
         log(`[Linking-Error] auth.getUser failed: ${authError?.message}`);
         return new Response(JSON.stringify({ error: 'UNAUTHORIZED_LINKING', debug_info, version: VERSION }), {
@@ -118,11 +118,11 @@ serve(async (req) => {
         log(`[Login] NO WALLET RECORD FOUND: ${cleanAddress}. Path: NEW_SIGNUP`);
         isSignup = true;
         targetEmail = `${cleanAddress}@wallet.local`;
-        
+
         // List by email instead of ID to be safe
         const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
         const existing = existingUsers?.users?.find((u: any) => u.email === targetEmail);
-        
+
         if (!existing) {
           log('[Login] Creating NEW auth account.');
           const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -131,7 +131,7 @@ serve(async (req) => {
             user_metadata: { wallet_address: cleanAddress, role: 'talent' }
           });
           if (createError) throw createError;
-          
+
           finalUserId = newUser.user.id;
           await supabaseAdmin.from('wallets').insert([{ user_id: finalUserId, wallet_address: cleanAddress }]);
           await supabaseAdmin.from('profiles').insert([{ id: finalUserId, username: address.slice(0, 8), role: 'talent', updated_at: new Date() }]);
@@ -142,14 +142,14 @@ serve(async (req) => {
       } else {
         finalUserId = walletData.user_id;
         log(`[Login] FOUND WALLET in DB. Associated ID: ${finalUserId}. Path: EXISTING_LINK`);
-        
+
         const { data: userAuth, error: userError } = await supabaseAdmin.auth.admin.getUserById(finalUserId);
-        
+
         if (userError || !userAuth?.user) {
           log(`[Login-Error] User ${finalUserId} missing from auth.users!`);
           throw new Error('Account associated with this wallet not found.');
         }
-        
+
         targetEmail = userAuth.user.email!;
         log(`[Login] Account found: ${targetEmail}`);
       }
@@ -159,18 +159,18 @@ serve(async (req) => {
         type: 'magiclink',
         email: targetEmail,
         options: {
-            redirectTo: redirectTo || undefined
+          redirectTo: redirectTo || undefined
         }
       });
 
       if (linkError) throw linkError;
 
-      return new Response(JSON.stringify({ 
-        success: true, 
+      return new Response(JSON.stringify({
+        success: true,
         is_signup: isSignup,
         target_email: targetEmail,
         user_id: finalUserId,
-        action_link: linkData.properties.action_link, 
+        action_link: linkData.properties.action_link,
         debug_info,
         version: VERSION
       }), {
