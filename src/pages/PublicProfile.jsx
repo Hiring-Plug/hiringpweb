@@ -32,6 +32,13 @@ const PublicProfile = () => {
         }
     }, [username]);
 
+    // Re-fetch follow status once auth session is available (handles page reload race condition)
+    useEffect(() => {
+        if (user && profile?.id) {
+            fetchFollowData(profile.id);
+        }
+    }, [user, profile?.id]);
+
     const fetchPublicProfile = async () => {
         try {
             setLoading(true);
@@ -145,14 +152,14 @@ const PublicProfile = () => {
                 if (error) throw error;
                 setFollowStatus(null);
             } else {
-                // Handle follow/connect
+                // Handle follow/connect (upsert to avoid duplicate key on re-follow)
                 const { error } = await supabase
                     .from('follows')
-                    .insert([{
+                    .upsert([{
                         follower_id: user.id,
                         following_id: profile.id,
                         status: initialStatus
-                    }]);
+                    }], { onConflict: 'follower_id,following_id' });
 
                 if (error) throw error;
                 setFollowStatus(initialStatus);
@@ -179,7 +186,7 @@ const PublicProfile = () => {
             fetchFollowData(profile.id);
         } catch (err) {
             console.error('Error in follow action:', err);
-            alert('Failed to update follow status. Please try again.');
+            showToast('Failed to update follow status. Please try again.', 'error');
         } finally {
             setActionLoading(false);
         }
