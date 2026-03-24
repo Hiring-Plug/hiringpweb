@@ -53,9 +53,9 @@ function AuthRedirectHandler() {
   useEffect(() => {
     if (!loading) {
       console.log(`[Redirect-Check] user: ${!!user}, path: ${pathname}, loading: ${loading}`);
-      // Global redirect for authenticated users landing on public entrance pages
-      if (user && (pathname === '/' || pathname === '/login' || pathname === '/signup' || pathname === '/#')) {
-        console.log("[Redirect-Trigger] Authenticated user on public page. Pushing to /app/profile");
+      // Global redirect for authenticated users landing on entrance pages (Login/Signup)
+      if (user && (pathname === '/login' || pathname === '/signup')) {
+        console.log("[Redirect-Trigger] Authenticated user on auth page. Pushing to /app/profile");
         navigate('/app/profile');
       }
     }

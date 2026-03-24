@@ -117,7 +117,14 @@ export const AuthProvider = ({ children }) => {
 
     const signOut = async () => {
         if (!supabase) return;
-        return supabase.auth.signOut();
+        try {
+            await supabase.auth.signOut();
+        } catch (err) {
+            console.error('Sign out error:', err);
+        } finally {
+            // Force local state update to ensure UI reflects logout even if network fails
+            setUser(null);
+        }
     };
 
     const value = {

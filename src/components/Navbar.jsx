@@ -73,7 +73,18 @@ const Navbar = () => {
           {user ? (
             <>
               <Link to="/app/dashboard" className="btn-dashboard">Go to Dashboard</Link>
-              <button onClick={signOut} className="btn-logout">Log out</button>
+              <button 
+                onClick={async () => {
+                  try {
+                    await signOut();
+                  } catch (err) {
+                    console.error('Logout error:', err);
+                  }
+                }} 
+                className="btn-logout"
+              >
+                Log out
+              </button>
             </>
           ) : (
             <>

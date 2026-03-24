@@ -12,8 +12,13 @@ const DashboardLayout = () => {
     const role = user?.user_metadata?.role || 'talent'; // Default to talent if undefined
 
     const handleSignOut = async () => {
-        await signOut();
-        navigate('/');
+        try {
+            await signOut();
+        } catch (err) {
+            console.error('Logout error:', err);
+        } finally {
+            navigate('/');
+        }
     };
 
     const navItems = role === 'project' ? [
