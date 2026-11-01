@@ -122,7 +122,21 @@ const Signup = () => {
                 navigate('/app/settings');
             }
         } catch (err) {
-            setError(err.message);
+            // Supabase password policy errors dump a raw regex character list — intercept
+            // and replace with a clear, human-readable message.
+            const raw = err.message || '';
+            if (
+                raw.toLowerCase().includes('password') &&
+                (raw.includes('abcdefghijklmnopqrstuvwxyz') ||
+                 raw.toLowerCase().includes('should contain') ||
+                 raw.toLowerCase().includes('characters of the following'))
+            ) {
+                setError(
+                    'Password must be at least 8 characters and include: an uppercase letter (A–Z), a lowercase letter (a–z), a number (0–9), and a special character (e.g. !@#$%).'
+                );
+            } else {
+                setError(raw);
+            }
         } finally {
             setLoading(false);
         }

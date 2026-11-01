@@ -220,7 +220,7 @@ const Settings = () => {
                     website: data.website || '',
                     bio: data.bio || '',
                     primary_skill: data.primary_skill || '',
-                    location: user.user_metadata?.location || '',
+                    location: data.location || '',
                     banner_url: data.banner_url || '',
                     avatar_url: data.avatar_url || '',
                     services: data.services || '',
@@ -471,6 +471,7 @@ const Settings = () => {
                 // Handle JSONB metrics
                 tvl: formData.tvl,
                 funding: formData.funding,
+                location: formData.location,
                 custom_metrics: {},
                 social_links: formData.social_links,
                 services: formData.services,
