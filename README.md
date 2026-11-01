@@ -79,8 +79,8 @@ For auditors and developers reviewing the codebase:
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/your-repo/hiring-plug.git
-    cd hiring-plug/app
+    git clone https://github.com/Hiring-Plug/hiringpweb.git
+    cd hiringpweb/app
     ```
 
 2.  Install dependencies:
@@ -91,9 +91,12 @@ For auditors and developers reviewing the codebase:
 3.  Configure Environment Variables:
     Create a `.env` file in the `app` root:
     ```env
-    VITE_SUPABASE_URL
-    VITE_SUPABASE_ANON_KEY
+    VITE_SUPABASE_URL=your_supabase_project_url
+    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+    VITE_WALLET_CONNECT_PROJECT_ID=your_walletconnect_project_id
+    VITE_ADMIN_EMAILS=admin@example.com,another@example.com
     ```
+    > **Note:** `VITE_ADMIN_EMAILS` is a comma-separated list of email addresses that are granted access to the Admin Console. This variable **must** be set — there is no hardcoded fallback.
 
 4.  Run the Development Server:
     ```bash

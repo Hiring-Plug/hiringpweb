@@ -31,13 +31,15 @@ const Admin = () => {
     // Selected Applicant for Detail View
     const [selectedApplicant, setSelectedApplicant] = useState(null);
 
-    // Admin email whitelist parsing from environment or default
-    const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || 'hiredplug@gmail.com,admin@hiringplug.xyz')
+    // Admin email whitelist — read exclusively from VITE_ADMIN_EMAILS env var.
+    // No hardcoded fallback: if the env var is missing, no one is granted access.
+    const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '')
         .toLowerCase()
         .split(',')
-        .map(email => email.trim());
+        .map(email => email.trim())
+        .filter(Boolean);
 
-    const isAuthorized = user && adminEmails.includes(user.email?.toLowerCase());
+    const isAuthorized = user && adminEmails.length > 0 && adminEmails.includes(user.email?.toLowerCase());
 
     // Fetch data if authorized
     useEffect(() => {
