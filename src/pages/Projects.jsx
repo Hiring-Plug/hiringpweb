@@ -33,16 +33,6 @@ const Projects = () => {
 
     const filteredProjects = filter === 'All' ? sortedProjects : sortedProjects.filter(p => p.category === filter);
 
-    const parseMarkdown = (text) => {
-        if (!text) return null;
-        const parts = text.split(/(\*\*.*?\*\*)/g);
-        return parts.map((part, i) => {
-            if (part && part.startsWith('**') && part.endsWith('**')) {
-                return <strong key={i}>{part.slice(2, -2)}</strong>;
-            }
-            return part;
-        });
-    };
 
     const handleExternalApply = (job) => {
         if (!job?.external_apply_url) return;
@@ -104,17 +94,15 @@ const Projects = () => {
                     </div>
                 ) : filteredProjects.map(job => (
                     <div key={job.id} className="job-card" onClick={() => setSelectedJob(job)}>
+                        {job.is_high_demand && (
+                            <span className="high-demand-badge card-corner-badge">
+                                <FaFire /> High Demand
+                            </span>
+                        )}
                         <div className="job-header">
                             <div className="company-logo">{renderLogo(job)}</div>
                             <div className="job-info">
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                    <h3>{job.role}</h3>
-                                    {job.is_high_demand && (
-                                        <span className="high-demand-badge">
-                                            <FaFire /> High Demand
-                                        </span>
-                                    )}
-                                </div>
+                                <h3>{job.role}</h3>
                                 <p className="company-name">{job.company}</p>
                             </div>
                         </div>
@@ -133,7 +121,7 @@ const Projects = () => {
 
                         <div className="job-footer">
                             <span className="posted-at">Posted {job.posted}</span>
-                            <span className="view-btn">{job.external_apply_url ? ('Apply on ' + (job.external_platform || 'Partner')) : 'View Role'}</span>
+                            <span className="view-btn">View Role</span>
                         </div>
                     </div>
                 ))}
@@ -275,17 +263,22 @@ const Projects = () => {
                 .high-demand-badge {
                     display: inline-flex;
                     align-items: center;
-                    gap: 5px;
-                    background: linear-gradient(135deg, rgba(255, 69, 0, 0.25) 0%, rgba(255, 140, 0, 0.15) 100%);
-                    color: #ff5722;
-                    border: 1px solid rgba(255, 87, 34, 0.4);
-                    padding: 3px 9px;
+                    gap: 4px;
+                    background: rgba(255, 69, 0, 0.18);
+                    color: #ff7043;
+                    border: 1px solid rgba(255, 87, 34, 0.35);
+                    padding: 2px 7px;
                     border-radius: 99px;
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                    letter-spacing: 0.3px;
-                    box-shadow: 0 0 10px rgba(255, 87, 34, 0.2);
+                    font-size: 0.68rem;
+                    font-weight: 600;
+                    letter-spacing: 0.2px;
                     animation: pulseGlow 2.5s infinite alternate;
+                }
+                .card-corner-badge {
+                    position: absolute;
+                    top: 10px;
+                    right: 12px;
+                    z-index: 2;
                 }
                 @keyframes pulseGlow {
                     0% { box-shadow: 0 0 5px rgba(255, 87, 34, 0.2); }
