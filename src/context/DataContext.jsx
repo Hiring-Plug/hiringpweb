@@ -189,16 +189,16 @@ export const DataProvider = ({ children }) => {
 
             // 4. Map DB format to UI format with manual join
             const mapped = jobsData.map(job => {
-                const profile = profilesMap[job.project_id] || {};
-                const projectName = profile.username || job.company || 'Hiring Project';
+                // Use explicit company name or third-party platform; do NOT expose poster's username
+                const displayCompany = job.company || job.external_platform || 'Hiring Partner';
 
                 return {
                     id: job.id,
                     project_id: job.project_id,
-                    company: projectName,
+                    company: displayCompany,
                     logoIcon: 'FaGlobe',
-                    logoUrl: job.logo_url || profile.avatar_url || '',
-                    website: profile.website || job.website || '',
+                    logoUrl: job.logo_url || '',
+                    website: job.website || '', // Do not leak poster profile website
                     contactEmail: job.contactEmail || '',
                     notificationEmail: job.notificationEmail || '',
                     role: job.title,
@@ -209,9 +209,10 @@ export const DataProvider = ({ children }) => {
                     posted: new Date(job.created_at).toLocaleDateString(),
                     tags: job.tags || [],
                     description: job.description,
-                    requirements: job.requirements,
+                    requirements: job.requirements || '',
                     external_platform: job.external_platform || null,
                     external_apply_url: job.external_apply_url || null,
+                    is_high_demand: !!job.is_high_demand,
                     clicks_count: job.clicks_count || 0
                 };
             });

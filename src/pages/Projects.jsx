@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FaMapMarkerAlt, FaClock, FaMoneyBillWave, FaCheckCircle, FaPaperclip, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaClock, FaMoneyBillWave, FaCheckCircle, FaPaperclip, FaExternalLinkAlt, FaFire } from 'react-icons/fa';
+import { parseMarkdown } from '../utils/markdown';
 import { trackJobReferralClick, openExternalJobUrl } from '../utils/jobTracking';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
@@ -106,7 +107,14 @@ const Projects = () => {
                         <div className="job-header">
                             <div className="company-logo">{renderLogo(job)}</div>
                             <div className="job-info">
-                                <h3>{job.role}</h3>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                    <h3>{job.role}</h3>
+                                    {job.is_high_demand && (
+                                        <span className="high-demand-badge">
+                                            <FaFire /> High Demand
+                                        </span>
+                                    )}
+                                </div>
                                 <p className="company-name">{job.company}</p>
                             </div>
                         </div>
@@ -146,28 +154,19 @@ const Projects = () => {
                         <div className="modal-header">
                             <div className="modal-logo">{renderLogo(selectedJob)}</div>
                             <div>
-                                <h2>{selectedJob.role}</h2>
-                                <p className="modal-company">
-                                    {selectedJob.company} • {selectedJob.location}
-                                    {selectedJob.external_apply_url && (
-                                        <span style={{
-                                            marginLeft: '10px',
-                                            background: 'rgba(237, 80, 0, 0.15)',
-                                            color: 'var(--primary-orange)',
-                                            border: '1px solid rgba(237, 80, 0, 0.3)',
-                                            padding: '2px 8px',
-                                            borderRadius: '4px',
-                                            fontSize: '0.75rem',
-                                            fontWeight: 600
-                                        }}>
-                                            Via {selectedJob.external_platform || 'Partner'}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                                    <h2>{selectedJob.role}</h2>
+                                    {selectedJob.is_high_demand && (
+                                        <span className="high-demand-badge">
+                                            <FaFire /> High Demand
                                         </span>
                                     )}
-                                    {selectedJob.website && (
-                                        <span style={{ marginLeft: '10px' }}>
-                                            <a href={selectedJob.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-orange)' }}>
-                                                Visit Website
-                                            </a>
+                                </div>
+                                <p className="modal-company">
+                                    {selectedJob.company || selectedJob.external_platform || 'Hiring Partner'} • {selectedJob.location}
+                                    {selectedJob.external_apply_url && (
+                                        <span className="partner-badge">
+                                            Via {selectedJob.external_platform || 'Partner'}
                                         </span>
                                     )}
                                 </p>
@@ -177,17 +176,30 @@ const Projects = () => {
                         <div className="modal-body">
                             <div className="modal-section">
                                 <h4>Description</h4>
-                                <p className="whitespace-pre-wrap">{parseMarkdown(selectedJob.description)}</p>
-                            </div>
-
-                            <div className="modal-section">
-                                <h4>Key Skills</h4>
-                                <div className="modal-tags">
-                                    {selectedJob.tags.map(tag => (
-                                        <span key={tag} className="tag">{tag}</span>
-                                    ))}
+                                <div className="rendered-markdown-section">
+                                    {parseMarkdown(selectedJob.description)}
                                 </div>
                             </div>
+
+                            {selectedJob.requirements && (
+                                <div className="modal-section">
+                                    <h4>Requirements</h4>
+                                    <div className="rendered-markdown-section">
+                                        {parseMarkdown(selectedJob.requirements)}
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedJob.tags && selectedJob.tags.length > 0 && (
+                                <div className="modal-section">
+                                    <h4>Key Skills</h4>
+                                    <div className="modal-tags">
+                                        {selectedJob.tags.map(tag => (
+                                            <span key={tag} className="tag">{tag}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="modal-application">
@@ -259,6 +271,40 @@ const Projects = () => {
             )}
 
             <style>{`
+
+                .high-demand-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                    background: linear-gradient(135deg, rgba(255, 69, 0, 0.25) 0%, rgba(255, 140, 0, 0.15) 100%);
+                    color: #ff5722;
+                    border: 1px solid rgba(255, 87, 34, 0.4);
+                    padding: 3px 9px;
+                    border-radius: 99px;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    letter-spacing: 0.3px;
+                    box-shadow: 0 0 10px rgba(255, 87, 34, 0.2);
+                    animation: pulseGlow 2.5s infinite alternate;
+                }
+                @keyframes pulseGlow {
+                    0% { box-shadow: 0 0 5px rgba(255, 87, 34, 0.2); }
+                    100% { box-shadow: 0 0 14px rgba(255, 87, 34, 0.4); }
+                }
+                .partner-badge {
+                    margin-left: 10px;
+                    background: rgba(237, 80, 0, 0.15);
+                    color: var(--primary-orange);
+                    border: 1px solid rgba(237, 80, 0, 0.3);
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                }
+                .rendered-markdown-section {
+                    margin-top: 0.5rem;
+                }
+
                 .projects-page {
                     max-width: 1000px;
                     margin: 0 auto;

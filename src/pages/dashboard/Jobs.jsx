@@ -8,7 +8,7 @@ import { useConfirm } from '../../components/ConfirmDialog';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import RichTextEditor from '../../components/RichTextEditor';
-import { FaBriefcase, FaMoneyBillWave, FaMapMarkerAlt, FaPlus, FaBuilding, FaTimes, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaBriefcase, FaMoneyBillWave, FaMapMarkerAlt, FaPlus, FaBuilding, FaTimes, FaEdit, FaTrash, FaFire } from 'react-icons/fa';
 
 const JOB_TITLE_SUGGESTIONS = [
     "Full Stack Developer", "Frontend Engineer", "Backend Developer",
@@ -43,7 +43,9 @@ const Jobs = () => {
         tags: '',
         logo_url: '', // Specific job/project logo
         external_platform: '',
-        external_apply_url: ''
+        external_apply_url: '',
+        company: '',
+        is_high_demand: false
     });
 
     const [titleSuggestions, setTitleSuggestions] = useState([]);
@@ -72,9 +74,11 @@ const Jobs = () => {
                 requirements: newJob.requirements,
                 logo_url: newJob.logo_url,
                 project_id: user.id,
+                company: newJob.company || (newJob.external_apply_url ? newJob.external_platform : 'Hiring Partner'),
                 status: 'open',
                 external_platform: newJob.external_apply_url ? (newJob.external_platform || 'Partner') : null,
                 external_apply_url: newJob.external_apply_url ? newJob.external_apply_url.trim() : null,
+                is_high_demand: !!newJob.is_high_demand,
                 clicks_count: editingJob?.clicks_count || 0,
                 tags: typeof newJob.tags === 'string'
                     ? newJob.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '')
@@ -112,7 +116,9 @@ const Jobs = () => {
                 tags: '',
                 logo_url: '',
                 external_platform: '',
-                external_apply_url: ''
+                external_apply_url: '',
+                company: '',
+                is_high_demand: false
             });
 
         } catch (err) {
@@ -133,7 +139,9 @@ const Jobs = () => {
             tags: Array.isArray(job.tags) ? job.tags.join(', ') : (job.tags || ''),
             logo_url: job.logoUrl || job.logo_url || '',
             external_platform: job.external_platform || '',
-            external_apply_url: job.external_apply_url || ''
+            external_apply_url: job.external_apply_url || '',
+            company: job.company || job.external_platform || '',
+            is_high_demand: !!job.is_high_demand
         });
         setIsPosting(true);
     };
@@ -233,8 +241,15 @@ const Jobs = () => {
                                 )}
                             </div>
                             <div className="job-info">
-                                <h3>{job.role}</h3>
-                                <p className="company-name">{job.company}</p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                    <h3>{job.role}</h3>
+                                    {job.is_high_demand && (
+                                        <span style={{ background: 'rgba(255, 69, 0, 0.2)', color: '#ff5722', border: '1px solid rgba(255, 87, 34, 0.4)', padding: '1px 7px', borderRadius: '99px', fontSize: '0.7rem', fontWeight: 700 }}>
+                                            🔥 High Demand
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="company-name">{job.company || job.external_platform || 'Hiring Partner'}</p>
                             </div>
                         </div>
                         <div className="job-meta">
@@ -280,8 +295,31 @@ const Jobs = () => {
                         </div>
                         <div className="modal-body">
                             <form onSubmit={handlePostJob}>
+                                <div className="form-group">
+                                    <label>Hiring Organization / Company / Third-Party Name *</label>
+                                    <input
+                                        required
+                                        value={newJob.company}
+                                        onChange={e => setNewJob({ ...newJob, company: e.target.value })}
+                                        placeholder="e.g. micro1, Uniswap, Polygon Labs"
+                                    />
+                                    <small style={{ color: '#666', fontSize: '0.75rem' }}>The name displayed to candidates (replaces your personal username).</small>
+                                </div>
+
+                                <div className="form-group" style={{ background: '#111', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #222' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: 0, cursor: 'pointer', color: '#fff' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={newJob.is_high_demand}
+                                            onChange={e => setNewJob({ ...newJob, is_high_demand: e.target.checked })}
+                                            style={{ width: '18px', height: '18px', accentColor: 'var(--primary-orange)' }}
+                                        />
+                                        <span>🔥 <strong>High Demand Role</strong> (show glowing badge)</span>
+                                    </label>
+                                </div>
+
                                 <div className="form-group relative">
-                                    <label>Job Title</label>
+                                    <label>Job Title *</label>
                                     <input
                                         required
                                         value={newJob.title}

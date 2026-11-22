@@ -4,7 +4,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/Button';
-import { FaBuilding, FaMapMarkerAlt, FaMoneyBillWave, FaArrowLeft, FaCheckCircle, FaLock, FaEdit, FaTrash, FaFilePdf, FaCloudUploadAlt, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaBuilding, FaMapMarkerAlt, FaMoneyBillWave, FaArrowLeft, FaCheckCircle, FaLock, FaEdit, FaTrash, FaFilePdf, FaCloudUploadAlt, FaExternalLinkAlt, FaFire } from 'react-icons/fa';
 import { trackJobReferralClick, openExternalJobUrl } from '../../utils/jobTracking';
 import { useData } from '../../context/DataContext';
 import { useToast } from '../../context/ToastContext';
@@ -247,25 +247,36 @@ const JobDetail = () => {
 
             <div className="job-header">
                 <div className="header-main">
-                    <Link to={job.profiles?.username ? `/u/${job.profiles.username}` : '#'} className="company-logo-lg">
+                    <div className="company-logo-lg">
                         {job.logo_url ? (
-                            <img src={job.logo_url} alt={job.profiles?.username} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
-                        ) : job.profiles?.avatar_url ? (
-                            <img src={job.profiles.avatar_url} alt={job.profiles.username} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+                            <img src={job.logo_url} alt={job.company || job.external_platform || 'Company'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
                         ) : (
                             <FaBuilding />
                         )}
-                    </Link>
+                    </div>
                     <div>
-                        <h1>{job.title}</h1>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                            <h1>{job.title}</h1>
+                            {job.is_high_demand && (
+                                <span className="high-demand-badge">
+                                    <FaFire /> High Demand
+                                </span>
+                            )}
+                        </div>
                         <div className="job-meta">
-                            <Link to={job.profiles?.username ? `/u/${job.profiles.username}` : '#'} className="company-name-link">
-                                {job.profiles?.username || job.company || 'Hiring Project'}
-                            </Link>
+                            <span className="company-name-text">
+                                {job.company || job.external_platform || 'Hiring Partner'}
+                            </span>
                             <span className="dot">•</span>
                             <span className="meta-tag">{job.type}</span>
                             <span className="dot">•</span>
                             <span>{job.location}</span>
+                            {job.external_platform && (
+                                <>
+                                    <span className="dot">•</span>
+                                    <span className="partner-tag">Via {job.external_platform}</span>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -404,25 +415,27 @@ const JobDetail = () => {
 
                 <div className="job-sidebar">
                     <div className="sidebar-card company-card">
-                        <h4>Company</h4>
+                        <h4>{job.external_platform ? 'Partner Organization' : 'Hiring Organization'}</h4>
                         <div className="company-mini-profile">
                             <div className="company-avatar">
-                                {job.logo_url || job.profiles?.avatar_url ? (
-                                    <img src={job.logo_url || job.profiles?.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                                {job.logo_url ? (
+                                    <img src={job.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
                                 ) : (
                                     <FaBuilding />
                                 )}
                             </div>
                             <div className="company-info-text">
-                                <strong>{job.profiles?.username}</strong>
-                                {job.profiles?.website && (
-                                    <a href={job.profiles.website} target="_blank" rel="noreferrer" className="website-link">Visit Website</a>
+                                <strong>{job.company || job.external_platform || 'Hiring Partner'}</strong>
+                                {job.external_platform && (
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--primary-orange, #ff6b00)', display: 'block', marginTop: '2px' }}>
+                                        Third-Party Partner
+                                    </span>
                                 )}
                             </div>
                         </div>
                         <div className="divider"></div>
                         <div className="safety-badge">
-                            <FaLock /> Verified Payment
+                            <FaLock /> Verified Role
                         </div>
                     </div>
                 </div>
@@ -447,6 +460,30 @@ const JobDetail = () => {
             )}
 
             <style>{`
+
+                .high-demand-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                    background: linear-gradient(135deg, rgba(255, 69, 0, 0.25) 0%, rgba(255, 140, 0, 0.15) 100%);
+                    color: #ff5722;
+                    border: 1px solid rgba(255, 87, 34, 0.4);
+                    padding: 3px 10px;
+                    border-radius: 99px;
+                    font-size: 0.8rem;
+                    font-weight: 700;
+                    letter-spacing: 0.3px;
+                    box-shadow: 0 0 10px rgba(255, 87, 34, 0.2);
+                }
+                .company-name-text {
+                    font-weight: 600;
+                    color: #fff;
+                }
+                .partner-tag {
+                    color: var(--primary-orange, #ff6b00);
+                    font-weight: 600;
+                }
+
                 .job-detail-page {
                     max-width: 1000px;
                     margin: 0 auto;

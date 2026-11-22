@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
 import Button from '../components/Button';
+import RichTextEditor from '../components/RichTextEditor';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import { 
     FaTrash, FaEdit, FaPlus, FaLock, FaUser, FaBriefcase, 
     FaComments, FaFilePdf, FaClock, FaCheck, FaTimes, FaGlobe, 
-    FaEnvelope, FaChevronDown, FaArrowLeft, FaBan, FaExternalLinkAlt, FaMousePointer 
+    FaEnvelope, FaChevronDown, FaArrowLeft, FaBan, FaExternalLinkAlt, FaMousePointer, FaFire 
 } from 'react-icons/fa';
 
 const Admin = () => {
@@ -28,6 +29,9 @@ const Admin = () => {
     const [uploadedLogo, setUploadedLogo] = useState(null);
     const [logoPreview, setLogoPreview] = useState(null);
     const [jobApplyMode, setJobApplyMode] = useState('internal'); // 'internal' | 'external'
+    const [isHighDemand, setIsHighDemand] = useState(false);
+    const [jobDescription, setJobDescription] = useState('');
+    const [jobRequirements, setJobRequirements] = useState('');
 
     // Selected Applicant for Detail View
     const [selectedApplicant, setSelectedApplicant] = useState(null);
@@ -112,6 +116,9 @@ const Admin = () => {
     const openJobModal = (job = null) => {
         setCurrentJob(job);
         setJobApplyMode(job?.external_apply_url ? 'external' : 'internal');
+        setIsHighDemand(!!job?.is_high_demand);
+        setJobDescription(job?.description || '');
+        setJobRequirements(job?.requirements || '');
         setUploadedLogo(job?.logo_url || null);
         setLogoPreview(job?.logo_url || null);
         setIsJobModalOpen(true);
@@ -126,21 +133,24 @@ const Admin = () => {
         const isExternal = jobApplyMode === 'external';
         const externalPlatform = isExternal ? (formData.get('external_platform')?.trim() || 'Partner') : null;
         const externalApplyUrl = isExternal ? (formData.get('external_apply_url')?.trim() || null) : null;
+        const companyName = formData.get('company')?.trim() || (isExternal ? externalPlatform : 'Hiring Partner');
 
         const jobData = {
             project_id: user.id,
             title: formData.get('role'),
+            company: companyName,
             category: formData.get('category'),
             location: formData.get('location'),
             type: formData.get('type').toLowerCase(),
             salary_range: formData.get('salary'),
             tags: tagsString.split(',').map(tag => tag.trim()).filter(Boolean),
-            description: formData.get('description'),
-            requirements: formData.get('requirements') || '',
+            description: jobDescription,
+            requirements: jobRequirements,
             logo_url: uploadedLogo || formData.get('logoUrl') || '',
             status: 'open',
             external_platform: externalPlatform,
             external_apply_url: externalApplyUrl,
+            is_high_demand: isHighDemand,
             clicks_count: currentJob?.clicks_count || 0
         };
 
@@ -489,12 +499,20 @@ const Admin = () => {
                                                             <div className="job-title-cell">
                                                                 {job.logo_url && <img src={job.logo_url} alt="" className="table-logo" />}
                                                                 <div>
-                                                                    <strong>{job.title}</strong>
-                                                                    {isMyJob ? (
-                                                                        <span className="owner-badge">My Post</span>
-                                                                    ) : (
-                                                                        <span className="community-badge">Community</span>
-                                                                    )}
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                                                        <strong>{job.title}</strong>
+                                                                        {job.is_high_demand && (
+                                                                            <span className="admin-high-demand-pill">🔥 High Demand</span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                                                                        <span style={{ fontSize: '0.75rem', color: '#aaa' }}>{job.company || job.external_platform || 'Partner'}</span>
+                                                                        {isMyJob ? (
+                                                                            <span className="owner-badge">My Post</span>
+                                                                        ) : (
+                                                                            <span className="community-badge">Community</span>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -794,8 +812,37 @@ const Admin = () => {
                                     </>
                                 )}
                                 <div className="form-group">
-                                    <label>Job Title / Role</label>
+                                    <label>Job Title / Role *</label>
                                     <input name="role" defaultValue={currentJob?.title} placeholder="e.g. Lead Smart Contract Engineer" required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Hiring Organization / Company / Third-Party Name *</label>
+                                    <input
+                                        name="company"
+                                        defaultValue={currentJob?.company || currentJob?.external_platform || ''}
+                                        placeholder="e.g. micro1, Uniswap, Polygon Labs"
+                                        required
+                                    />
+                                    <small style={{ color: '#888', fontSize: '0.75rem' }}>
+                                        Displayed as the hiring party on the job post (replaces personal username).
+                                    </small>
+                                </div>
+
+                                <div className="form-group span-2 high-demand-card">
+                                    <label className="high-demand-label">
+                                        <input
+                                            type="checkbox"
+                                            checked={isHighDemand}
+                                            onChange={(e) => setIsHighDemand(e.target.checked)}
+                                        />
+                                        <span className="checkbox-custom"></span>
+                                        <span>
+                                            🔥 <strong>Mark as High Demand Role</strong>
+                                            <small style={{ display: 'block', color: '#888', fontSize: '0.8rem', marginTop: '2px' }}>
+                                                Displays a glowing "🔥 High Demand" badge on the job post and listings.
+                                            </small>
+                                        </span>
+                                    </label>
                                 </div>
                                 <div className="form-group">
                                     <label>Category</label>
@@ -852,12 +899,23 @@ const Admin = () => {
                                     <input name="tags" defaultValue={currentJob?.tags?.join(', ')} placeholder="Solidity, Rust, Auditing" required />
                                 </div>
                                 <div className="form-group span-2">
-                                    <label>Job Description (Markdown Supported)</label>
-                                    <textarea name="description" rows="4" defaultValue={currentJob?.description} placeholder="Describe the responsibilities and daily tasks..." required></textarea>
+                                    <RichTextEditor
+                                        label="Job Description"
+                                        value={jobDescription}
+                                        onChange={setJobDescription}
+                                        placeholder="Describe responsibilities, daily work, team culture, and impact..."
+                                        required
+                                        rows={6}
+                                    />
                                 </div>
                                 <div className="form-group span-2">
-                                    <label>Requirements (One per line / comma separated)</label>
-                                    <textarea name="requirements" rows="3" defaultValue={currentJob?.requirements} placeholder="e.g.&#10;- 3+ years experience with Solidity&#10;- Familiarity with Hardhat/Foundry"></textarea>
+                                    <RichTextEditor
+                                        label="Requirements & Qualifications"
+                                        value={jobRequirements}
+                                        onChange={setJobRequirements}
+                                        placeholder="e.g.&#10;- 3+ years experience with Solidity/Rust&#10;- Experience building DeFi protocols&#10;- Strong unit testing skills"
+                                        rows={5}
+                                    />
                                 </div>
                             </div>
                             <div className="modal-actions">
@@ -939,6 +997,38 @@ const Admin = () => {
                     border-radius: 6px;
                     font-size: 0.85rem;
                     color: #bbb;
+                }
+
+
+                .admin-high-demand-pill {
+                    background: linear-gradient(135deg, rgba(255, 69, 0, 0.25) 0%, rgba(255, 140, 0, 0.15) 100%);
+                    color: #ff5722;
+                    border: 1px solid rgba(255, 87, 34, 0.4);
+                    padding: 1px 7px;
+                    border-radius: 99px;
+                    font-size: 0.65rem;
+                    font-weight: 700;
+                }
+                .high-demand-card {
+                    background: #141414;
+                    border: 1px solid #282828;
+                    padding: 10px 14px;
+                    border-radius: 8px;
+                }
+                .high-demand-label {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 12px;
+                    cursor: pointer;
+                    margin: 0;
+                    color: #fff;
+                }
+                .high-demand-label input[type="checkbox"] {
+                    margin-top: 4px;
+                    width: 18px;
+                    height: 18px;
+                    accent-color: var(--primary-orange, #ff6b00);
+                    cursor: pointer;
                 }
 
                 .admin-dashboard {
