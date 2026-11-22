@@ -37,7 +37,7 @@ const Resources = () => {
             icon: <FaBook />,
             description: "Technical specifications, whitepapers, and operational details of Hiring Plug.",
             links: [
-                { text: "Hiring Plug Whitepaper v1.0", url: "/hiring-plug-whitepaper.pdf", external: true },
+                { text: "Hiring Plug Whitepaper v1.0.0.2", url: "/hiring-plug-whitepaper.pdf", external: true },
                 { text: "Tokenomics & Fee Structure", url: "#" },
                 { text: "Data Room", url: "#" },
                 { text: "Terms of Service", url: "#" }

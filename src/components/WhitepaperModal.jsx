@@ -8,12 +8,12 @@ const WhitepaperModal = ({ isOpen, onClose }) => {
             <div className="whitepaper-options">
                 <div className="option-info">
                     <FaFileAlt className="main-doc-icon" />
-                    <p>Hiring Plug Whitepaper v1.0.0.1</p>
+                    <p>Hiring Plug Whitepaper v1.0.0.2</p>
                 </div>
 
                 <div className="options-grid">
                     <a
-                        href="https://github.com/Hiring-Plug/hiringpweb/blob/main/Documents/Hiring%20Plug%20Whitepaper%201.0.0.1.pdf"
+                        href="https://github.com/Hiring-Plug/hiringpweb/blob/main/Documents/Hiring%20Plug%20Whitepaper%201.0.0.2.pdf"
                         target="_blank"
                         rel="noreferrer"
                         className="wp-option github"
