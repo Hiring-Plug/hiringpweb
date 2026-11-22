@@ -254,11 +254,6 @@ const Jobs = () => {
                         </div>
                         <div className="job-meta">
                             <span className="tag type">{job.type}</span>
-                            {job.external_apply_url && (
-                                <span className="tag" style={{ background: 'rgba(237, 80, 0, 0.15)', color: 'var(--primary-orange)', border: '1px solid rgba(237, 80, 0, 0.3)' }}>
-                                    Via {job.external_platform || 'Partner'} ({job.clicks_count || 0} clicks)
-                                </span>
-                            )}
                             <span className="meta-item"><FaMapMarkerAlt /> {job.location}</span>
                             <span className="meta-item"><FaMoneyBillWave /> {job.salary}</span>
                         </div>
