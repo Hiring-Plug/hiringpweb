@@ -95,8 +95,8 @@ const Projects = () => {
                 ) : filteredProjects.map(job => (
                     <div key={job.id} className="job-card" onClick={() => setSelectedJob(job)}>
                         {job.is_high_demand && (
-                            <span className="high-demand-badge card-corner-badge">
-                                <FaFire /> High Demand
+                            <span className="high-demand-badge">
+                                <FaFire /> HOT
                             </span>
                         )}
                         <div className="job-header">
@@ -260,30 +260,49 @@ const Projects = () => {
 
             <style>{`
 
+                /* Diagonal ribbon badge for high-demand cards */
                 .high-demand-badge {
-                    display: inline-flex;
+                    display: flex;
                     align-items: center;
+                    justify-content: center;
                     gap: 4px;
-                    background: rgba(255, 69, 0, 0.18);
-                    color: #ff7043;
-                    border: 1px solid rgba(255, 87, 34, 0.35);
-                    padding: 2px 7px;
-                    border-radius: 99px;
-                    font-size: 0.68rem;
-                    font-weight: 600;
-                    letter-spacing: 0.2px;
-                    animation: pulseGlow 2.5s infinite alternate;
-                }
-                .card-corner-badge {
                     position: absolute;
-                    top: 10px;
-                    right: 12px;
-                    z-index: 2;
+                    top: 18px;
+                    right: -32px;
+                    width: 130px;
+                    padding: 5px 0;
+                    background: linear-gradient(90deg, #c43a00 0%, #e85000 45%, #ff7a00 100%);
+                    color: #fff;
+                    font-size: 0.6rem;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    transform: rotate(45deg);
+                    transform-origin: center center;
+                    z-index: 3;
+                    box-shadow:
+                        0 2px 10px rgba(255, 80, 0, 0.5),
+                        inset 0 1px 0 rgba(255,255,255,0.15);
+                    pointer-events: none;
                 }
-                @keyframes pulseGlow {
-                    0% { box-shadow: 0 0 5px rgba(255, 87, 34, 0.2); }
-                    100% { box-shadow: 0 0 14px rgba(255, 87, 34, 0.4); }
+                .high-demand-badge::after {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    background: linear-gradient(
+                        105deg,
+                        transparent 30%,
+                        rgba(255,255,255,0.22) 50%,
+                        transparent 70%
+                    );
+                    background-size: 200% 100%;
+                    animation: shimmerSlide 2.8s ease-in-out infinite;
                 }
+                @keyframes shimmerSlide {
+                    0%   { background-position: 200% center; }
+                    100% { background-position: -200% center; }
+                }
+
                 .partner-badge {
                     margin-left: 10px;
                     background: rgba(237, 80, 0, 0.15);
