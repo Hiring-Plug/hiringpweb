@@ -47,8 +47,8 @@ const Communities = () => {
             description: "Follow us for real-time updates and community discussions.",
             type: "social",
             links: [
-                { icon: <FaTwitter />, url: "https://twitter.com/hiring_plug" },
-                { icon: <FaDiscord />, url: "https://discord.gg/hiringplug" },
+                { icon: <FaTwitter />, url: "https://x.com/hiring_plug" },
+                { icon: <FaDiscord />, url: "https://discord.gg/Vr4W8zwbsn" },
                 { icon: <FaTelegram />, url: "https://t.me/hiring_plug" },
                 { icon: <FaLinkedin />, url: "https://linkedin.com/company/hiring-plug" }
             ]

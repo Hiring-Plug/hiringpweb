@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaTwitter, FaDiscord, FaGithub, FaLinkedin, FaTelegram } from 'react-icons/fa';
+import { FaTwitter, FaDiscord, FaGithub, FaLinkedin, FaTelegram, FaMedium } from 'react-icons/fa';
 import WhitepaperModal from './WhitepaperModal';
 
 const Footer = () => {
@@ -42,8 +42,8 @@ const Footer = () => {
                         <ul>
                             <li><a href="/">Guides</a></li>
                             <li><a href="/litepaper">Litepaper</a></li>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); setIsWpModalOpen(true); }}>Whitepaper</a></li>
-                            <li><a href="/">Community</a></li>
+                            <li><a href="https://github.com/Hiring-Plug/hiringpweb/blob/main/Documents/Hiring%20Plug%20Whitepaper%201.0.0.2.pdf" target="_blank" rel="noopener noreferrer">Whitepaper</a></li>
+                            <li><a href="/communities">Community</a></li>
                             <li><a href="/">Events</a></li>
                         </ul>
                     </div>
@@ -60,20 +60,20 @@ const Footer = () => {
                     <div className="footer-col">
                         <h4>Social</h4>
                         <ul>
-                            <li><a href="/">Twitter</a></li>
-                            <li><a href="/">LinkedIn</a></li>
-                            <li><a href="/">Discord</a></li>
-                            <li><a href="/">Telegram</a></li>
-                            <li><a href="/">Medium</a></li>
+                            <li><a href="https://x.com/hiring_plug" target="_blank" rel="noopener noreferrer">Twitter</a></li>
+                            <li><a href="https://www.linkedin.com/company/hiring-plug" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
+                            <li><a href="https://discord.gg/Vr4W8zwbsn" target="_blank" rel="noopener noreferrer">Discord</a></li>
+                            <li><a href="https://t.me/hiring_plug" target="_blank" rel="noopener noreferrer">Telegram</a></li>
+                            <li><a href="https://medium.com/@hiring_plug" target="_blank" rel="noopener noreferrer">Medium</a></li>
                         </ul>
                     </div>
                     <div className="footer-col">
                         <h4>Connect</h4>
                         <ul>
                             <li><a href="/">Partner programme</a></li>
-                            <li><a href="/">Become a contributor</a></li>
+                            <li><a href="mailto:support@hiringplug.xyz">Become a contributor</a></li>
                             <li><a href="/">Refer a friend</a></li>
-                            <li><a href="/">Support</a></li>
+                            <li><a href="mailto:support@hiringplug.xyz">Support</a></li>
                             <li><a href="/">Help centre</a></li>
                         </ul>
                     </div>
@@ -89,11 +89,12 @@ const Footer = () => {
                         <a href="/">Cookie settings</a>
                     </div>
                     <div className="social-icons">
-                        <a href="https://x.com/hiring_plug" target="_blank" rel="noreferrer"><FaTwitter /></a>
-                        <a href="https://t.me/hiring_plug" target="_blank" rel="noreferrer"><FaTelegram /></a>
-                        <a href="https://discord.com" target="_blank" rel="noreferrer"><FaDiscord /></a>
-                        <a href="https://www.linkedin.com/company/hiring-plug" target="_blank" rel="noreferrer"><FaLinkedin /></a>
-                        <a href="https://github.com/Hiring-Plug" target="_blank" rel="noreferrer"><FaGithub /></a>
+                        <a href="https://x.com/hiring_plug" target="_blank" rel="noreferrer" title="Twitter"><FaTwitter /></a>
+                        <a href="https://t.me/hiring_plug" target="_blank" rel="noreferrer" title="Telegram"><FaTelegram /></a>
+                        <a href="https://discord.gg/Vr4W8zwbsn" target="_blank" rel="noreferrer" title="Discord"><FaDiscord /></a>
+                        <a href="https://medium.com/@hiring_plug" target="_blank" rel="noreferrer" title="Medium"><FaMedium /></a>
+                        <a href="https://www.linkedin.com/company/hiring-plug" target="_blank" rel="noreferrer" title="LinkedIn"><FaLinkedin /></a>
+                        <a href="https://github.com/Hiring-Plug" target="_blank" rel="noreferrer" title="GitHub"><FaGithub /></a>
                     </div>
                 </div>
             </div>
