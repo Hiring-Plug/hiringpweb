@@ -41,7 +41,9 @@ const Jobs = () => {
         description: '',
         requirements: '',
         tags: '',
-        logo_url: '' // Specific job/project logo
+        logo_url: '', // Specific job/project logo
+        external_platform: '',
+        external_apply_url: ''
     });
 
     const [titleSuggestions, setTitleSuggestions] = useState([]);
@@ -71,6 +73,9 @@ const Jobs = () => {
                 logo_url: newJob.logo_url,
                 project_id: user.id,
                 status: 'open',
+                external_platform: newJob.external_apply_url ? (newJob.external_platform || 'Partner') : null,
+                external_apply_url: newJob.external_apply_url ? newJob.external_apply_url.trim() : null,
+                clicks_count: editingJob?.clicks_count || 0,
                 tags: typeof newJob.tags === 'string'
                     ? newJob.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '')
                     : newJob.tags
@@ -105,7 +110,9 @@ const Jobs = () => {
                 description: '',
                 requirements: '',
                 tags: '',
-                logo_url: ''
+                logo_url: '',
+                external_platform: '',
+                external_apply_url: ''
             });
 
         } catch (err) {
@@ -124,7 +131,9 @@ const Jobs = () => {
             description: job.description || '',
             requirements: job.requirements || '',
             tags: Array.isArray(job.tags) ? job.tags.join(', ') : (job.tags || ''),
-            logo_url: job.logoUrl || job.logo_url || ''
+            logo_url: job.logoUrl || job.logo_url || '',
+            external_platform: job.external_platform || '',
+            external_apply_url: job.external_apply_url || ''
         });
         setIsPosting(true);
     };
@@ -230,6 +239,11 @@ const Jobs = () => {
                         </div>
                         <div className="job-meta">
                             <span className="tag type">{job.type}</span>
+                            {job.external_apply_url && (
+                                <span className="tag" style={{ background: 'rgba(237, 80, 0, 0.15)', color: 'var(--primary-orange)', border: '1px solid rgba(237, 80, 0, 0.3)' }}>
+                                    Via {job.external_platform || 'Partner'} ({job.clicks_count || 0} clicks)
+                                </span>
+                            )}
                             <span className="meta-item"><FaMapMarkerAlt /> {job.location}</span>
                             <span className="meta-item"><FaMoneyBillWave /> {job.salary}</span>
                         </div>
@@ -355,6 +369,41 @@ const Jobs = () => {
                                         placeholder="Key skills needed..."
                                     />
                                 </div>
+                                <div className="form-group" style={{ background: '#111', padding: '1rem', borderRadius: '8px', border: '1px solid #222' }}>
+                                    <label style={{ fontSize: '1rem', fontWeight: 600, color: '#fff', marginBottom: '0.4rem', display: 'block' }}>
+                                        Third-Party Referral Application (Optional)
+                                    </label>
+                                    <p style={{ color: '#888', fontSize: '0.8rem', marginBottom: '1rem' }}>
+                                        Leave empty if candidates should apply directly on Hiring Plug. If adding a partner job (e.g. micro1), enter the platform name and your referral link below.
+                                    </p>
+                                    <div className="form-row">
+                                        <div className="form-group" style={{ flex: 1 }}>
+                                            <label>Platform Name</label>
+                                            <input
+                                                value={newJob.external_platform}
+                                                onChange={e => setNewJob({ ...newJob, external_platform: e.target.value })}
+                                                placeholder="e.g. micro1"
+                                            />
+                                            <small style={{ color: '#666', fontSize: '0.75rem' }}>Displays as "Apply via [Platform]"</small>
+                                        </div>
+                                        <div className="form-group" style={{ flex: 2 }}>
+                                            <label>Referral / Job Apply URL</label>
+                                            <input
+                                                type="url"
+                                                value={newJob.external_apply_url}
+                                                onChange={e => setNewJob({ ...newJob, external_apply_url: e.target.value })}
+                                                placeholder="https://..."
+                                            />
+                                            <small style={{ color: '#666', fontSize: '0.75rem' }}>Where applicants will be sent. Clicks will be counted.</small>
+                                        </div>
+                                    </div>
+                                    {editingJob?.clicks_count !== undefined && (
+                                        <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: '#aaa' }}>
+                                            Recorded Referral Clicks: <strong style={{ color: 'var(--primary-orange)' }}>{editingJob.clicks_count || 0}</strong>
+                                        </p>
+                                    )}
+                                </div>
+
                                 <div className="modal-actions">
                                     <Button type="button" variant="outline" onClick={() => { setIsPosting(false); setEditingJob(null); }}>Cancel</Button>
                                     <Button type="submit" variant="primary">{editingJob ? 'Update Role' : 'Publish Role'}</Button>

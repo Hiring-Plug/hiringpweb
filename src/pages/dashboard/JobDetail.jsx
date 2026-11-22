@@ -4,7 +4,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/Button';
-import { FaBuilding, FaMapMarkerAlt, FaMoneyBillWave, FaArrowLeft, FaCheckCircle, FaLock, FaEdit, FaTrash, FaFilePdf, FaCloudUploadAlt } from 'react-icons/fa';
+import { FaBuilding, FaMapMarkerAlt, FaMoneyBillWave, FaArrowLeft, FaCheckCircle, FaLock, FaEdit, FaTrash, FaFilePdf, FaCloudUploadAlt, FaExternalLinkAlt } from 'react-icons/fa';
+import { trackJobReferralClick, openExternalJobUrl } from '../../utils/jobTracking';
 import { useData } from '../../context/DataContext';
 import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../components/ConfirmDialog';
@@ -90,6 +91,12 @@ const JobDetail = () => {
             }
             setResumeFile(file);
         }
+    };
+
+    const handleExternalApply = (targetJob = job) => {
+        if (!targetJob?.external_apply_url) return;
+        trackJobReferralClick(targetJob.id, targetJob.clicks_count);
+        openExternalJobUrl(targetJob.external_apply_url);
     };
 
     const handleApply = async () => {
@@ -279,7 +286,12 @@ const JobDetail = () => {
                         </div>
                     ) : (
                         <div className="apply-desktop-btn">
-                            {user ? (
+                            {job.external_apply_url ? (
+                                <Button variant="primary" onClick={() => handleExternalApply(job)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span>Apply via {job.external_platform || 'Partner'}</span>
+                                    <FaExternalLinkAlt />
+                                </Button>
+                            ) : user ? (
                                 <Button variant="primary" onClick={() => document.getElementById('apply-section')?.scrollIntoView({ behavior: 'smooth' })}>
                                     Apply Now
                                 </Button>
@@ -320,54 +332,73 @@ const JobDetail = () => {
                     </section>
 
                     {/* Application Form */}
-                    {!hasApplied && !isOwner && user && (
-                        <section id="apply-section" className="apply-section">
-                            <h3>Apply for this position</h3>
-                            <div className="apply-form">
-                                <div className="form-group">
-                                    <label>Upload CV (PDF)</label>
-                                    <div className={`file-upload-box ${resumeFile ? 'has-file' : ''}`}>
-                                        <input
-                                            type="file"
-                                            id="resume-upload"
-                                            accept=".pdf"
-                                            onChange={handleFileChange}
-                                            style={{ display: 'none' }}
-                                        />
-                                        <label htmlFor="resume-upload" className="file-label">
-                                            {resumeFile ? (
-                                                <div className="file-info">
-                                                    <FaFilePdf className="file-icon" />
-                                                    <span>{resumeFile.name}</span>
-                                                    <button className="remove-file" onClick={(e) => { e.preventDefault(); setResumeFile(null); }}>
-                                                        <FaTrash />
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <div className="upload-placeholder">
-                                                    <FaCloudUploadAlt />
-                                                    <span>Click to upload PDF CV (Max 5MB)</span>
-                                                </div>
-                                            )}
-                                        </label>
-                                    </div>
-                                </div>
-                                <div className="form-group">
-                                    <label>Cover Letter / Note</label>
-                                    <textarea
-                                        rows="6"
-                                        placeholder="Introduce yourself and explain why you're a good fit..."
-                                        value={coverLetter}
-                                        onChange={(e) => setCoverLetter(e.target.value)}
-                                    />
-                                </div>
-                                <div className="form-footer">
-                                    <Button variant="primary" onClick={handleApply} disabled={applying}>
-                                        {applying ? 'Sending...' : 'Submit Application'}
+                    {!hasApplied && !isOwner && (
+                        job.external_apply_url ? (
+                            <section id="apply-section" className="apply-section" style={{ textAlign: 'center', padding: '2.5rem 1.5rem' }}>
+                                <h3>Apply via {job.external_platform || 'Partner Platform'}</h3>
+                                <p style={{ color: '#aaa', margin: '1rem auto 1.8rem', maxWidth: '500px', lineHeight: '1.6' }}>
+                                    This opportunity is hosted externally on <strong>{job.external_platform || 'our partner website'}</strong>. Click below to proceed to the job posting.
+                                </p>
+                                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                    <Button 
+                                        variant="primary" 
+                                        onClick={() => handleExternalApply(job)}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.85rem 2rem', fontSize: '1.05rem' }}
+                                    >
+                                        <span>Apply via {job.external_platform || 'Partner Platform'}</span>
+                                        <FaExternalLinkAlt />
                                     </Button>
                                 </div>
-                            </div>
-                        </section>
+                            </section>
+                        ) : user ? (
+                            <section id="apply-section" className="apply-section">
+                                <h3>Apply for this position</h3>
+                                <div className="apply-form">
+                                    <div className="form-group">
+                                        <label>Upload CV (PDF)</label>
+                                        <div className={`file-upload-box ${resumeFile ? 'has-file' : ''}`}>
+                                            <input
+                                                type="file"
+                                                id="resume-upload"
+                                                accept=".pdf"
+                                                onChange={handleFileChange}
+                                                style={{ display: 'none' }}
+                                            />
+                                            <label htmlFor="resume-upload" className="file-label">
+                                                {resumeFile ? (
+                                                    <div className="file-info">
+                                                        <FaFilePdf className="file-icon" />
+                                                        <span>{resumeFile.name}</span>
+                                                        <button className="remove-file" onClick={(e) => { e.preventDefault(); setResumeFile(null); }}>
+                                                            <FaTrash />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="upload-placeholder">
+                                                        <FaCloudUploadAlt />
+                                                        <span>Click to upload PDF CV (Max 5MB)</span>
+                                                    </div>
+                                                )}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Cover Letter / Note</label>
+                                        <textarea
+                                            rows="6"
+                                            placeholder="Introduce yourself and explain why you're a good fit..."
+                                            value={coverLetter}
+                                            onChange={(e) => setCoverLetter(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="form-footer">
+                                        <Button variant="primary" onClick={handleApply} disabled={applying}>
+                                            {applying ? 'Sending...' : 'Submit Application'}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </section>
+                        ) : null
                     )}
                 </div>
 
@@ -400,7 +431,12 @@ const JobDetail = () => {
             {/* Sticky Mobile CTA */}
             {!hasApplied && !isOwner && !loading && (
                 <div className="mobile-sticky-cta">
-                    {user ? (
+                    {job.external_apply_url ? (
+                        <Button variant="primary" onClick={() => handleExternalApply(job)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <span>Apply via {job.external_platform || 'Partner'}</span>
+                            <FaExternalLinkAlt />
+                        </Button>
+                    ) : user ? (
                         <Button variant="primary" onClick={() => document.getElementById('apply-section')?.scrollIntoView({ behavior: 'smooth' })}>
                             Apply to {job.profiles?.username}
                         </Button>

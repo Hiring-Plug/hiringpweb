@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
     FaTrash, FaEdit, FaPlus, FaLock, FaUser, FaBriefcase, 
     FaComments, FaFilePdf, FaClock, FaCheck, FaTimes, FaGlobe, 
-    FaEnvelope, FaChevronDown, FaArrowLeft, FaBan 
+    FaEnvelope, FaChevronDown, FaArrowLeft, FaBan, FaExternalLinkAlt, FaMousePointer 
 } from 'react-icons/fa';
 
 const Admin = () => {
@@ -27,6 +27,7 @@ const Admin = () => {
     const [currentJob, setCurrentJob] = useState(null); // null for new, object for edit
     const [uploadedLogo, setUploadedLogo] = useState(null);
     const [logoPreview, setLogoPreview] = useState(null);
+    const [jobApplyMode, setJobApplyMode] = useState('internal'); // 'internal' | 'external'
 
     // Selected Applicant for Detail View
     const [selectedApplicant, setSelectedApplicant] = useState(null);
@@ -110,6 +111,7 @@ const Admin = () => {
 
     const openJobModal = (job = null) => {
         setCurrentJob(job);
+        setJobApplyMode(job?.external_apply_url ? 'external' : 'internal');
         setUploadedLogo(job?.logo_url || null);
         setLogoPreview(job?.logo_url || null);
         setIsJobModalOpen(true);
@@ -121,6 +123,10 @@ const Admin = () => {
 
         const formData = new FormData(e.target);
         const tagsString = formData.get('tags') || '';
+        const isExternal = jobApplyMode === 'external';
+        const externalPlatform = isExternal ? (formData.get('external_platform')?.trim() || 'Partner') : null;
+        const externalApplyUrl = isExternal ? (formData.get('external_apply_url')?.trim() || null) : null;
+
         const jobData = {
             project_id: user.id,
             title: formData.get('role'),
@@ -132,7 +138,10 @@ const Admin = () => {
             description: formData.get('description'),
             requirements: formData.get('requirements') || '',
             logo_url: uploadedLogo || formData.get('logoUrl') || '',
-            status: 'open'
+            status: 'open',
+            external_platform: externalPlatform,
+            external_apply_url: externalApplyUrl,
+            clicks_count: currentJob?.clicks_count || 0
         };
 
         try {
@@ -467,6 +476,7 @@ const Admin = () => {
                                                 <th>Type</th>
                                                 <th>Location</th>
                                                 <th>Salary Range</th>
+                                                <th>Apply Method / Clicks</th>
                                                 <th>Actions</th>
                                             </tr>
                                         </thead>
@@ -493,6 +503,22 @@ const Admin = () => {
                                                         <td>{job.location}</td>
                                                         <td>{job.salary_range}</td>
                                                         <td>
+                                                            {job.external_apply_url ? (
+                                                                <div className="external-tracking-cell">
+                                                                    <span className="platform-tag" title={job.external_apply_url}>
+                                                                        <FaExternalLinkAlt style={{ fontSize: '0.65rem', marginRight: '4px' }} />
+                                                                        {job.external_platform || 'External'}
+                                                                    </span>
+                                                                    <div className="clicks-badge" title="Total referral link clicks">
+                                                                        <FaMousePointer style={{ fontSize: '0.7rem', color: 'var(--primary-orange, #ff6b00)' }} />
+                                                                        <span><strong>{job.clicks_count || 0}</strong> clicks</span>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="internal-app-badge">Internal Direct</span>
+                                                            )}
+                                                        </td>
+                                                        <td>
                                                             {isMyJob ? (
                                                                 <div className="table-actions">
                                                                     <button className="action-btn edit" onClick={() => openJobModal(job)} title="Edit Job">
@@ -511,7 +537,7 @@ const Admin = () => {
                                             })}
                                             {dbJobs.length === 0 && (
                                                 <tr>
-                                                    <td colSpan="6" className="empty-table-cell">No jobs found in the database.</td>
+                                                    <td colSpan="7" className="empty-table-cell">No jobs found in the database.</td>
                                                 </tr>
                                             )}
                                         </tbody>
@@ -699,6 +725,74 @@ const Admin = () => {
                                         Only your account will have permissions to edit or delete it.
                                     </p>
                                 </div>
+
+                                <div className="form-group span-2 apply-mode-selector-group">
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '700', color: '#fff' }}>
+                                        Application Method
+                                    </label>
+                                    <div className="apply-mode-pill-toggle">
+                                        <label className={`mode-pill ${jobApplyMode === 'internal' ? 'active' : ''}`}>
+                                            <input
+                                                type="radio"
+                                                name="job_mode_radio"
+                                                checked={jobApplyMode === 'internal'}
+                                                onChange={() => setJobApplyMode('internal')}
+                                                style={{ display: 'none' }}
+                                            />
+                                            <span>Internal (Hiring Plug Profile / Guest Apply)</span>
+                                        </label>
+                                        <label className={`mode-pill ${jobApplyMode === 'external' ? 'active' : ''}`}>
+                                            <input
+                                                type="radio"
+                                                name="job_mode_radio"
+                                                checked={jobApplyMode === 'external'}
+                                                onChange={() => setJobApplyMode('external')}
+                                                style={{ display: 'none' }}
+                                            />
+                                            <span>Third-Party Referral (e.g. micro1)</span>
+                                        </label>
+                                    </div>
+                                    <small style={{ color: '#888', marginTop: '6px', display: 'block' }}>
+                                        {jobApplyMode === 'internal' 
+                                            ? 'Candidates apply directly on Hiring Plug with Fast Apply or Guest Application.'
+                                            : 'Candidates see a direct "Apply via [Platform]" button that redirects to your referral link and tracks clicks.'}
+                                    </small>
+                                </div>
+
+                                {jobApplyMode === 'external' && (
+                                    <>
+                                        <div className="form-group">
+                                            <label>Third-Party Platform Name *</label>
+                                            <input
+                                                name="external_platform"
+                                                defaultValue={currentJob?.external_platform || ''}
+                                                placeholder="e.g. micro1"
+                                                required={jobApplyMode === 'external'}
+                                            />
+                                            <small style={{ color: '#aaa', fontSize: '0.75rem' }}>
+                                                The button will display: "Apply via [Platform Name]"
+                                            </small>
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Referral / Job Apply URL *</label>
+                                            <input
+                                                name="external_apply_url"
+                                                type="url"
+                                                defaultValue={currentJob?.external_apply_url || ''}
+                                                placeholder="https://www.micro1.ai/jobs/... or your referral link"
+                                                required={jobApplyMode === 'external'}
+                                            />
+                                            <small style={{ color: '#aaa', fontSize: '0.75rem' }}>
+                                                The link candidates will be taken to when clicking Apply.
+                                            </small>
+                                        </div>
+                                        {currentJob && (
+                                            <div className="form-group span-2 current-clicks-stat">
+                                                <span>Total Referral Clicks: <strong style={{ color: 'var(--primary-orange, #ff6b00)' }}>{currentJob.clicks_count || 0}</strong> clicks recorded</span>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
                                 <div className="form-group">
                                     <label>Job Title / Role</label>
                                     <input name="role" defaultValue={currentJob?.title} placeholder="e.g. Lead Smart Contract Engineer" required />
@@ -776,6 +870,77 @@ const Admin = () => {
             )}
 
             <style>{`
+
+                .external-tracking-cell {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                }
+                .platform-tag {
+                    display: inline-flex;
+                    align-items: center;
+                    background: rgba(237, 80, 0, 0.15);
+                    color: var(--primary-orange, #ff6b00);
+                    border: 1px solid rgba(237, 80, 0, 0.3);
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    width: fit-content;
+                }
+                .clicks-badge {
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                    color: #aaa;
+                    font-size: 0.75rem;
+                }
+                .internal-app-badge {
+                    display: inline-block;
+                    background: #1c1c1c;
+                    color: #777;
+                    border: 1px solid #2a2a2a;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 0.75rem;
+                }
+                .apply-mode-pill-toggle {
+                    display: flex;
+                    gap: 10px;
+                    background: #111;
+                    padding: 6px;
+                    border-radius: 8px;
+                    border: 1px solid #252525;
+                }
+                .mode-pill {
+                    flex: 1;
+                    text-align: center;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    color: #888;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+                .mode-pill:hover {
+                    color: #fff;
+                    background: #191919;
+                }
+                .mode-pill.active {
+                    background: #222;
+                    color: var(--primary-orange, #ff6b00);
+                    border: 1px solid rgba(237, 80, 0, 0.4);
+                }
+                .current-clicks-stat {
+                    background: #111;
+                    border: 1px dashed #333;
+                    padding: 10px 14px;
+                    border-radius: 6px;
+                    font-size: 0.85rem;
+                    color: #bbb;
+                }
+
                 .admin-dashboard {
                     min-height: 100vh;
                     background: #000;

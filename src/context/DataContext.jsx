@@ -209,7 +209,10 @@ export const DataProvider = ({ children }) => {
                     posted: new Date(job.created_at).toLocaleDateString(),
                     tags: job.tags || [],
                     description: job.description,
-                    requirements: job.requirements
+                    requirements: job.requirements,
+                    external_platform: job.external_platform || null,
+                    external_apply_url: job.external_apply_url || null,
+                    clicks_count: job.clicks_count || 0
                 };
             });
 

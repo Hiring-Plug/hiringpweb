@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FaMapMarkerAlt, FaClock, FaMoneyBillWave, FaCheckCircle, FaPaperclip } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaClock, FaMoneyBillWave, FaCheckCircle, FaPaperclip, FaExternalLinkAlt } from 'react-icons/fa';
+import { trackJobReferralClick, openExternalJobUrl } from '../utils/jobTracking';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import SEO from '../components/SEO';
@@ -40,6 +41,12 @@ const Projects = () => {
             }
             return part;
         });
+    };
+
+    const handleExternalApply = (job) => {
+        if (!job?.external_apply_url) return;
+        trackJobReferralClick(job.id, job.clicks_count);
+        openExternalJobUrl(job.external_apply_url);
     };
 
     const handleOneClickApply = (e) => {
@@ -118,7 +125,7 @@ const Projects = () => {
 
                         <div className="job-footer">
                             <span className="posted-at">Posted {job.posted}</span>
-                            <span className="view-btn">View Role</span>
+                            <span className="view-btn">{job.external_apply_url ? ('Apply on ' + (job.external_platform || 'Partner')) : 'View Role'}</span>
                         </div>
                     </div>
                 ))}
@@ -142,6 +149,20 @@ const Projects = () => {
                                 <h2>{selectedJob.role}</h2>
                                 <p className="modal-company">
                                     {selectedJob.company} • {selectedJob.location}
+                                    {selectedJob.external_apply_url && (
+                                        <span style={{
+                                            marginLeft: '10px',
+                                            background: 'rgba(237, 80, 0, 0.15)',
+                                            color: 'var(--primary-orange)',
+                                            border: '1px solid rgba(237, 80, 0, 0.3)',
+                                            padding: '2px 8px',
+                                            borderRadius: '4px',
+                                            fontSize: '0.75rem',
+                                            fontWeight: 600
+                                        }}>
+                                            Via {selectedJob.external_platform || 'Partner'}
+                                        </span>
+                                    )}
                                     {selectedJob.website && (
                                         <span style={{ marginLeft: '10px' }}>
                                             <a href={selectedJob.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-orange)' }}>
@@ -170,7 +191,30 @@ const Projects = () => {
                         </div>
 
                         <div className="modal-application">
-                            {applicationStep === 'success' ? (
+                            {selectedJob.external_apply_url ? (
+                                <div className="external-apply-wrapper" style={{ textAlign: 'center', padding: '1rem 0' }}>
+                                    <Button
+                                        variant="primary"
+                                        onClick={() => handleExternalApply(selectedJob)}
+                                        className="full-width-btn external-apply-btn"
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '8px',
+                                            fontSize: '1.05rem',
+                                            padding: '0.9rem',
+                                            width: '100%'
+                                        }}
+                                    >
+                                        <span>Apply via {selectedJob.external_platform || 'Partner Platform'}</span>
+                                        <FaExternalLinkAlt />
+                                    </Button>
+                                    <p style={{ marginTop: '0.8rem', color: '#888', fontSize: '0.85rem' }}>
+                                        You will be redirected to {selectedJob.external_platform || 'the partner website'} to complete your application.
+                                    </p>
+                                </div>
+                            ) : applicationStep === 'success' ? (
                                 <div className="success-message">
                                     <FaCheckCircle className="success-icon" />
                                     <h3>Application Sent!</h3>

@@ -20,6 +20,7 @@ create table profiles (
   custom_metrics jsonb, -- For specific stats
   funding text,
   tvl text,
+  location text,
   social_links jsonb, -- For LinkedIn, Telegram, Discord, Twitter
 
   primary key (id),
@@ -87,7 +88,10 @@ create table jobs (
   category text,
   logo_url text,
   tags text[],
-  status text default 'open' check (status in ('open', 'closed'))
+  status text default 'open' check (status in ('open', 'closed')),
+  external_platform text,
+  external_apply_url text,
+  clicks_count integer default 0
 );
 
 alter table jobs enable row level security;
@@ -246,3 +250,18 @@ create policy "Users can update their follows/connections."
 create policy "Users can unfollow/disconnect."
   on follows for delete
   using ( auth.uid() = follower_id );
+
+-- RPC to increment job referral link clicks without exposing full update access
+create or replace function increment_job_clicks(target_job_id bigint)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  update jobs
+  set clicks_count = coalesce(clicks_count, 0) + 1
+  where id = target_job_id;
+end;
+$$;
+
+grant execute on function increment_job_clicks(bigint) to anon, authenticated;
